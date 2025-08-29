@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Remove the first 'coding:' line from all DSM5/*.py to avoid syntax/annotation issues.
-- يحذف سطر الترميز من بداية الملف إن وُجد (أي سطر يحتوي على 'coding')
+Fix/remove broken 'coding: utf-8' headers in DSM5/*.py
+- يحذف أي سطر ترميز في أول سطرين، سواء كان مع # أو بدونه أو بشرطات غريبة
 - يزيل BOM إن وُجد
-- يجرّب استيراد كل ملف للتأكد أن الأمور تمام
+- يختبر الاستيراد لكل ملف بعد الإصلاح
 """
 
 import os, io, re, importlib.util, sys
@@ -11,10 +11,19 @@ import os, io, re, importlib.util, sys
 ROOT = os.path.dirname(__file__)
 DSM_DIR = os.path.join(ROOT, "DSM5")
 
-coding_re = re.compile(r"^\s*#.*coding\s*:\s*utf-?8", re.I)
+# يطابق كل الأشكال الممكنة لسطر الترميز (مع # أو بدونه)
+coding_any_re = re.compile(r"""
+    ^\s*              # مسافات بالبداية
+    (?:\#\s*)?        # اختيارياً #
+    (?:-+\*-\s*)?     # اختيارياً -*- ببعض التحريفات
+    (?:coding)        # كلمة coding
+    \s*:\s*
+    utf-?8            # utf-8 أو utf8
+    (?:\s*\*-\-)?     # اختيارياً -*- بنهاية السطر
+    \s*$
+""", re.IGNORECASE | re.VERBOSE)
 
 def clean_one(path: str) -> bool:
-    """يحذف سطر الترميز الأول إن وُجد. يرجّع True إذا تعدّل الملف."""
     with io.open(path, "r", encoding="utf-8-sig", errors="replace") as f:
         lines = f.readlines()
 
@@ -23,14 +32,20 @@ def clean_one(path: str) -> bool:
 
     changed = False
 
-    # إزالة BOM إن وُجد في أول سطر
+    # أزل BOM من أول سطر إن وُجد
     if lines[0].startswith("\ufeff"):
         lines[0] = lines[0].lstrip("\ufeff")
         changed = True
 
-    # لو أول سطر تعليق فيه كلمة coding → احذفه
-    if coding_re.match(lines[0]):
-        lines.pop(0)
+    # افحص أول سطرين: إذا أي واحد يحتوي تعليمة ترميز بأي شكل -> احذفه
+    to_delete = []
+    for i in range(min(2, len(lines))):
+        if coding_any_re.match(lines[i]):
+            to_delete.append(i)
+    if to_delete:
+        # احذف من الأخير للأول حتى لا تتغير الفهارس
+        for i in reversed(to_delete):
+            del lines[i]
         changed = True
 
     if changed:
@@ -40,7 +55,6 @@ def clean_one(path: str) -> bool:
     return changed
 
 def import_test(path: str):
-    """تأكد أن الملف يُستورد بدون أخطاء بايثون."""
     name = os.path.splitext(os.path.basename(path))[0]
     spec = importlib.util.spec_from_file_location(name, path)
     mod = importlib.util.module_from_spec(spec)  # type: ignore
@@ -55,7 +69,7 @@ def main():
     edited = 0
     failed = []
 
-    print(f"🔧 تنظيف ملفات داخل: {DSM_DIR}\n")
+    print(f"🔧 تنظيف داخل: {DSM_DIR}\n")
     for fn in sorted(os.listdir(DSM_DIR)):
         if not fn.endswith(".py"):
             continue
