@@ -5,69 +5,51 @@ Unified DSM-5 Arabic site + Telegram bot + WhatsApp webhook (Twilio)
 
 المتطلبات (pip):
     flask
-    python-telegram-bot==21.*   # للبوت تيليجرام (async)
-    twilio                      # لو بتفعّل واتساب عبر Twilio
+    python-telegram-bot==21.*   # للبوت تيليجرام (اختياري)
+    twilio                      # لو بتفعّل واتساب عبر Twilio (اختياري)
 
-هيكلة المشروع المتوقعة:
+هيكلة متوقعة:
 project_root/
-    site_app.py          ← هذا الملف (يوحّد الموقع + تيليجرام + واتساب)
-    dsm_index.py         ← ملف التجميع الذي يحمّل ملفات DSM5
-    DSM5/
-        01_anxiety_disorders.py
-        ...
-        19_other_disorders.py
+    site_app.py
+    dsm_index.py
+    DSM5/  (الملفات 01..19)
 
-متغيرات البيئة (ENV):
-    BOT_TOKEN=<توكن BotFather>            # لتشغيل بوت تيليجرام (اختياري)
-    TELEGRAM_ENABLE=1                     # لتمكين تشغيل البوت (افتراضي 1 إذا BOT_TOKEN موجود)
-    PORT=5000                             # بورت Flask
-ملاحظات واتساب (Twilio):
-    - فعّل رقم واتساب على Twilio ووجّه Webhook إلى: https://YOUR_DOMAIN/whatsapp
-    - لا يلزم ENV خاص هنا، الرد يتم بدون مفاتيح (Twilio يتصل بالمسار مباشرة)
+ENV:
+    BOT_TOKEN=<توكن BotFather>   # لتشغيل تيليجرام (اختياري)
+    TELEGRAM_ENABLE=1            # افتراضي 1 إذا وُجد التوكن
+    PORT=5000
 """
 
 from __future__ import annotations
 
-import os
-import json
-import threading
-from typing import Dict, Any, List
-
-# --- Flask (الموقع + API) ---
+import os, json, threading
 from flask import Flask, request, jsonify, abort, Response, render_template_string
-
-# --- DSM index (قاعدة البيانات الموحّدة) ---
 import dsm_index as dsm
 
-# --- Twilio (واتساب) ---
+# Twilio (واتساب) — اختياري
 try:
     from twilio.twiml.messaging_response import MessagingResponse
     TWILIO_OK = True
 except Exception:
     TWILIO_OK = False
 
-# --- Telegram (async) ---
+# Telegram — اختياري
 TELEGRAM_AVAILABLE = False
 try:
     from telegram import Update
-    from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
+    from telegram.ext import Application, CommandHandler, MessageHandler, filters
     TELEGRAM_AVAILABLE = True
 except Exception:
     TELEGRAM_AVAILABLE = False
 
-# ------------------------------------------------------------------------------
-# إعدادات عامة
-# ------------------------------------------------------------------------------
 APP_TITLE = "DSM-5 (AR) — موسى"
 PORT = int(os.getenv("PORT", "5000"))
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-TELEGRAM_ENABLE = os.getenv("TELEGRAM_ENABLE", "1") == "1" and BOT_TOKEN is not None
+TELEGRAM_ENABLE = os.getenv("TELEGRAM_ENABLE", "1") == "1" and bool(BOT_TOKEN)
 
 app = Flask(__name__)
 
-# ------------------------------------------------------------------------------
-# قوالب HTML مضمّنة (Jinja2)
-# ------------------------------------------------------------------------------
+# ============================= HTML Templates =============================
 BASE_HTML = r"""
 <!doctype html>
 <html lang="ar" dir="rtl">
@@ -97,7 +79,6 @@ BASE_HTML = r"""
     .btn:hover { filter: brightness(1.1); }
     .kbd { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; background: #0b1220; border: 1px solid #1f2937; padding: 2px 6px; border-radius: 6px; color: var(--muted); }
     .markdown h1 { font-size: 26px; margin: 10px 0 6px; }
-    .markdown p { line-height: 1.8; }
     .markdown ul { line-height: 1.9; }
     footer { color: var(--muted); text-align: center; padding: 24px 0; }
     .empty { color: var(--muted); padding: 24px 0; }
@@ -242,44 +223,29 @@ SEARCH_HTML = r"""
 {% endblock %}
 """
 
-# ------------------------------------------------------------------------------
-# صفحات الموقع + REST API
-# ------------------------------------------------------------------------------
+# ============================= Website & API =============================
 @app.route("/")
 def home():
-    cats = []
     labels = {
-        "anxiety": "اضطرابات القلق",
-        "ocd_related": "الوسواس القهري والمرتبطة",
-        "mood": "اضطرابات المزاج",
-        "schizo_spectrum": "طيف الفصام",
-        "neurodevelopmental": "اضطرابات النمو العصبي",
-        "trauma_stressor": "اضطرابات الكرب والشدّة",
-        "dissociative": "اضطرابات تفارقية",
-        "somatic": "أعراض جسدية وما يرتبط بها",
-        "feeding_eating": "اضطرابات الأكل",
-        "elimination": "اضطرابات الإطراح",
-        "sleep_wake": "النوم/الاستيقاظ",
-        "sexual_dys": "الوظائف الجنسية",
-        "gender_dysphoria": "الهوية الجندرية",
-        "disruptive_impulse": "الاضطرابات التخريبية والاندفاع",
-        "substance": "الاضطرابات المتعلقة بالمواد",
-        "neurocognitive": "الاضطرابات الإدراكية",
-        "personality": "اضطرابات الشخصية",
-        "paraphilic": "الولع الجنسي",
-        "other": "أخرى/غير محددة",
+        "anxiety": "اضطرابات القلق", "ocd_related": "الوسواس القهري والمرتبطة", "mood": "اضطرابات المزاج",
+        "schizo_spectrum": "طيف الفصام", "neurodevelopmental": "اضطرابات النمو العصبي",
+        "trauma_stressor": "اضطرابات الكرب والشدّة", "dissociative": "اضطرابات تفارقية",
+        "somatic": "أعراض جسدية وما يرتبط بها", "feeding_eating": "اضطرابات الأكل",
+        "elimination": "اضطرابات الإطراح", "sleep_wake": "النوم/الاستيقاظ",
+        "sexual_dys": "الوظائف الجنسية", "gender_dysphoria": "الهوية الجندرية",
+        "disruptive_impulse": "الاضطرابات التخريبية والاندفاع", "substance": "الاضطرابات المتعلقة بالمواد",
+        "neurocognitive": "الاضطرابات الإدراكية", "personality": "اضطرابات الشخصية",
+        "paraphilic": "الولع الجنسي", "other": "أخرى/غير محددة",
     }
-    for cat_key in dsm.categories():
-        count = len(dsm.REGISTRY.get(cat_key, {}))
-        cats.append({"key": cat_key, "label_ar": labels.get(cat_key, cat_key), "count": count})
-
-    # render base + index
+    cats = []
+    for cat in dsm.categories():
+        cats.append({"key": cat, "label_ar": labels.get(cat, cat), "count": len(dsm.REGISTRY.get(cat, {}))})
     page = render_template_string(BASE_HTML, title="الفئات")
     page += render_template_string(INDEX_HTML, cats=cats)
     return page
 
 @app.route("/cat/<category>")
-def category_page(category: str):
+def category_page(category):
     if category not in dsm.REGISTRY:
         abort(404)
     ds = dsm.REGISTRY[category]
@@ -301,7 +267,7 @@ def category_page(category: str):
     return page
 
 @app.route("/dsm/<category>/<key>")
-def disorder_page(category: str, key: str):
+def disorder_page(category, key):
     try:
         d = dsm.get(category, key)
     except KeyError:
@@ -319,20 +285,20 @@ def search_page():
     page += render_template_string(SEARCH_HTML, hits=hits, q=q)
     return page
 
-# --- REST API ---
+# REST API
 @app.get("/api/categories")
 def categories_api():
     return jsonify(dsm.categories())
 
 @app.get("/api/cat/<category>")
-def category_api(category: str):
+def category_api(category):
     if category not in dsm.REGISTRY:
         abort(404)
     items = [{"key": k, "name_ar": v.get("name_ar",""), "name_en": v.get("name_en","")} for k, v in dsm.REGISTRY[category].items()]
     return jsonify(items)
 
 @app.get("/api/dsm/<category>/<key>")
-def disorder_api(category: str, key: str):
+def disorder_api(category, key):
     try:
         d = dsm.get(category, key)
     except KeyError:
@@ -349,58 +315,45 @@ def export_all_json_route():
     data = dsm.export_all_json(indent=2)
     return Response(data, mimetype="application/json")
 
-# ------------------------------------------------------------------------------
-# واتساب (Twilio Webhook)
-# ------------------------------------------------------------------------------
+# ============================= WhatsApp (Twilio) =============================
 @app.route("/whatsapp", methods=["POST"])
 def whatsapp_reply():
     if not TWILIO_OK:
         return "Twilio غير مُثبّت على هذا السيرفر.", 500
-
     incoming_msg = request.values.get("Body", "").strip()
     resp = MessagingResponse()
     msg = resp.message()
-
     if not incoming_msg:
         msg.body("أرسل اسم اضطراب أو كلمة مفتاحية (مثال: PTSD، قلق، وسواس).")
         return str(resp)
-
-    # بحث عام
     hits = dsm.search_all(incoming_msg)
     if not hits:
-        msg.body("ما لقيت نتيجة 🔍 — جرّب مثلاً: anxiety, ocd, ptsd, mood, personality")
+        msg.body("ما لقيت نتيجة 🔍 — جرّب: anxiety, ocd, ptsd")
     else:
-        # نرسل أول نتيجة (لتقليل طول الرسائل في واتساب)
         h = hits[0]
         md = dsm.to_markdown(h["category"], h["key"])
-        # واتساب يدعم نص عادي؛ markdown سيظهر كنص منسّق بسيط
         msg.body(md)
-
     return str(resp)
 
-# ------------------------------------------------------------------------------
-# Telegram Bot (تشغيل بالخلفية إن وجد BOT_TOKEN)
-# ------------------------------------------------------------------------------
+# ============================= Telegram (background) =============================
 def start_telegram_bot_in_background():
     if not TELEGRAM_AVAILABLE or not TELEGRAM_ENABLE:
-        print("Telegram bot disabled or package not available.")
+        print("Telegram bot disabled or unavailable.")
         return
 
-    async def start(update: "Update", context: "ContextTypes.DEFAULT_TYPE"):
+    async def start(update, context):
         cats = dsm.categories()
         msg = "أهلاً بك 👋\nاكتب اسم فئة أو اضطراب، مثل: anxiety, mood, ptsd, gad\n\nالفئات:\n" + "\n".join(cats)
         await update.message.reply_text(msg)
 
-    async def search_handler(update: "Update", context: "ContextTypes.DEFAULT_TYPE"):
+    async def search_handler(update, context):
         text = (update.message.text or "").strip()
         hits = dsm.search_all(text)
         if not hits:
             await update.message.reply_text("ما لقيت نتيجة 🔍 — جرّب: anxiety, ocd, ptsd")
             return
-        # نرسل لحد 3 نتائج لتجنب سبام
         for h in hits[:3]:
             md = dsm.to_markdown(h["category"], h["key"])
-            # Telegram يدعم MarkdownV2/HTML؛ سنرسل نص عادي لتفادي التعقيد
             await update.message.reply_text(md)
 
     async def run_async():
@@ -411,18 +364,14 @@ def start_telegram_bot_in_background():
         await app_tg.initialize()
         await app_tg.start()
         await app_tg.updater.start_polling()
-        # ملاحظة: لا نعمل await idle() هنا لأننا نشغّل في Thread منفصلة.
 
     def runner():
         import asyncio
         asyncio.run(run_async())
 
-    thread = threading.Thread(target=runner, daemon=True)
-    thread.start()
+    threading.Thread(target=runner, daemon=True).start()
 
-# ------------------------------------------------------------------------------
-# معالجات أخطاء
-# ------------------------------------------------------------------------------
+# ============================= Run =============================
 @app.errorhandler(404)
 def not_found(e):
     page = render_template_string(BASE_HTML, title="غير موجود")
@@ -431,12 +380,7 @@ def not_found(e):
     )
     return page, 404
 
-# ------------------------------------------------------------------------------
-# تشغيل الخادم
-# ------------------------------------------------------------------------------
 if __name__ == "__main__":
-    # شغّل بوت تيليجرام بالخلفية (إذا كان BOT_TOKEN موجود)
     start_telegram_bot_in_background()
-    # شغّل موقع Flask
-    print(f"Running Flask on 0.0.0.0:{PORT} • Telegram={'ON' if TELEGRAM_ENABLE else 'OFF'} • WhatsApp route=/whatsapp")
+    print(f"Running Flask on 0.0.0.0:{PORT} • Telegram={'ON' if TELEGRAM_ENABLE else 'OFF'} • WhatsApp=/whatsapp")
     app.run(host="0.0.0.0", port=PORT, debug=True)
