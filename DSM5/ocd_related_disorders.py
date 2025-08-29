@@ -1,4 +1,4 @@
- -*- coding: utf-8 -*-#
+# -*- coding: utf-8 -*-
 
 """ DSM-5 OCD & Related Disorders (Arabic, structured for app/bot use) File: DSM5/ocd_related_disorders.py
 
