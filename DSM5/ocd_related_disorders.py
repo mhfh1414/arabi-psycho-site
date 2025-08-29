@@ -1,5 +1,8 @@
--*- coding: utf-8 -*-
-
+"""
+DSM-5 OCD & Related Disorders (Arabic)
+ملف: ocd_related_disorders.py
+"""
+# بقية الاستيرادات…
 """ DSM-5 OCD & Related Disorders (Arabic, structured for app/bot use) File: DSM5/ocd_related_disorders.py
 
 Usage: from DSM5.ocd_related_disorders import list_disorders, get_disorder, search, to_markdown, checklist, export_json
