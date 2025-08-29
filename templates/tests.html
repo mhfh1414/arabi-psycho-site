@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الاختبارات النفسية - عربي سايكو</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body{background:#f8f9fa;font-family:'Tajawal',sans-serif}
+    .navbar{background:#198754}.navbar a{color:#fff!important;font-weight:bold}
+    .card{border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,.05)}
+    .q{padding:10px;border-bottom:1px dashed #e9ecef}
+  </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark">
+  <div class="container">
+    <a class="navbar-brand" href="/">عربي سايكو</a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="/">الرئيسية</a></li>
+        <li class="nav-item"><a class="nav-link" href="/dsm">DSM-5</a></li>
+        <li class="nav-item"><a class="nav-link" href="/cbt">CBT</a></li>
+        <li class="nav-item"><a class="nav-link active" href="/tests">الاختبارات</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-4">
+
+  <h2 class="mb-3">اختبارات سريعة</h2>
+  <p class="text-muted">بعد كل سؤال اختر «نعم/لا» أو قيّم من 0 إلى 3. النتيجة تظهر مباشرة.</p>
+
+  <!-- مثال: GAD-2 -->
+  <div class="card p-3 mb-3" id="gad2">
+    <h5>GAD-2 • مؤشر القلق العام</h5>
+    <div class="q">
+      1) القلق أو التوتر أو الشعور على الحافة خلال آخر أسبوعين؟
+      <select class="form-select form-select-sm mt-2 score">
+        <option value="0">0 = إطلاقاً</option>
+        <option value="1">1 = عدة أيام</option>
+        <option value="2">2 = أكثر من نصف الأيام</option>
+        <option value="3">3 = تقريباً كل يوم</option>
+      </select>
+    </div>
+    <div class="q">
+      2) عدم القدرة على التوقف عن القلق أو التحكم به؟
+      <select class="form-select form-select-sm mt-2 score">
+        <option value="0">0 = إطلاقاً</option>
+        <option value="1">1 = عدة أيام</option>
+        <option value="2">2 = أكثر من نصف الأيام</option>
+        <option value="3">3 = تقريباً كل يوم</option>
+      </select>
+    </div>
+    <div class="text-end mt-2">
+      <button class="btn btn-sm btn-primary" onclick="calc('gad2',6,3,'قد يشير إلى قلق عام (GAD).')">احسب النتيجة</button>
+      <span class="ms-2 fw-bold" id="gad2_result"></span>
+    </div>
+  </div>
+
+  <!-- مثال: PHQ-2 -->
+  <div class="card p-3 mb-3" id="phq2">
+    <h5>PHQ-2 • مؤشر الاكتئاب</h5>
+    <div class="q">
+      1) قلة الاهتمام أو المتعة في عمل الأشياء؟
+      <select class="form-select form-select-sm mt-2 score">
+        <option value="0">0 = إطلاقاً</option>
+        <option value="1">1 = عدة أيام</option>
+        <option value="2">2 = أكثر من نصف الأيام</option>
+        <option value="3">3 = تقريباً كل يوم</option>
+      </select>
+    </div>
+    <div class="q">
+      2) الشعور بالحزن أو الكآبة أو اليأس؟
+      <select class="form-select form-select-sm mt-2 score">
+        <option value="0">0 = إطلاقاً</option>
+        <option value="1">1 = عدة أيام</option>
+        <option value="2">2 = أكثر من نصف الأيام</option>
+        <option value="3">3 = تقريباً كل يوم</option>
+      </select>
+    </div>
+    <div class="text-end mt-2">
+      <button class="btn btn-sm btn-primary" onclick="calc('phq2',6,3,'قد يشير إلى اكتئاب ويستحسن إكمال PHQ-9.')">احسب النتيجة</button>
+      <span class="ms-2 fw-bold" id="phq2_result"></span>
+    </div>
+  </div>
+
+  <!-- مثال: أسئلة نعم/لا (OCD مبسّط) -->
+  <div class="card p-3 mb-3" id="ocd_yn">
+    <h5>فحص وسواس قهري مبسّط (نعم/لا)</h5>
+    <div class="q">1) هل تتكرر لديك أفكار مزعجة لا ترغبها؟
+      <select class="form-select form-select-sm mt-2 yn">
+        <option value="0">لا</option><option value="1">نعم</option>
+      </select>
+    </div>
+    <div class="q">2) هل تقوم بطقوس/سلوكيات لتخفيف القلق (غسل، فحص، ترتيب...)؟
+      <select class="form-select form-select-sm mt-2 yn">
+        <option value="0">لا</option><option value="1">نعم</option>
+      </select>
+    </div>
+    <div class="text-end mt-2">
+      <button class="btn btn-sm btn-primary" onclick="calcYN('ocd_yn',1,'قد يشير إلى وسواس قهري')">احسب النتيجة</button>
+      <span class="ms-2 fw-bold" id="ocd_yn_result"></span>
+    </div>
+  </div>
+
+  <p class="text-muted small">هذه أدوات مسحية وليست تشخيصاً نهائياً. يُستحسن مراجعة مختص.</p>
+</div>
+
+<footer class="container text-center mt-4 mb-4 text-muted">
+  © 2025 عربي سايكو
+</footer>
+
+<script>
+  function calc(id,max,cut,text){
+    const box = document.getElementById(id);
+    const scores = [...box.querySelectorAll('.score')].map(s=>Number(s.value));
+    const sum = scores.reduce((a,b)=>a+b,0);
+    const res = document.getElementById(id+'_result');
+    res.textContent = `المجموع: ${sum}/${max}` + (sum>=cut?` • ${text}`:'');
+  }
+  function calcYN(id,cut,text){
+    const box = document.getElementById(id);
+    const sum = [...box.querySelectorAll('.yn')].map(s=>Number(s.value)).reduce((a,b)=>a+b,0);
+    const res = document.getElementById(id+'_result');
+    res.textContent = `إجابات نعم: ${sum}` + (sum>=cut?` • ${text}.`:'');
+  }
+</script>
+</body>
+</html>
