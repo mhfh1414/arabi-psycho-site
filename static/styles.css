@@ -1,21 +1,27 @@
 body {
   font-family: 'Cairo', sans-serif;
-  background: linear-gradient(to bottom, #e0f7fa, #ffffff);
+  background-color: #f8f9fa;
 }
 
-h1, h2, h3 {
-  color: #003366;
-  font-weight: bold;
+.hero-section {
+  background: linear-gradient(rgba(0, 51, 102, 0.7), rgba(0, 51, 102, 0.7)),
+              url("{{ url_for('static', filename='banner.jpg') }}") no-repeat center center/cover;
+  height: 80vh;
 }
 
-.navbar-brand {
-  font-size: 1.4rem;
+.hero-section h1 {
+  font-size: 3rem;
+  color: #ffffff;
+}
+
+.hero-section p {
+  font-size: 1.25rem;
+  color: #e0f7fa;
 }
 
 .btn-primary {
   background-color: #0077b6;
   border: none;
-  transition: 0.3s;
 }
 
 .btn-primary:hover {
