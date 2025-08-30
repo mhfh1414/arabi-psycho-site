@@ -1,67 +1,83 @@
+/* الخلفية والألوان الأساسية */
 body {
+  font-family: 'Tajawal', Arial, sans-serif;
   margin: 0;
-  font-family: 'Tajawal', sans-serif;
-  background: #e6f4f9; /* سماوي فاتح */
-  color: #001f3f;      /* كحلي */
-  text-align: center;
+  padding: 0;
+  background-color: #f8faff;
+  color: #333;
 }
 
-/* شريط علوي */
-.navbar {
-  background: #001f3f; /* كحلي */
+/* شريط العنوان */
+header {
+  background: linear-gradient(to right, #0d47a1, #1976d2); /* كحلي متدرج */
   color: #fff;
   padding: 15px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
 }
 
-.navbar a {
-  color: #fff;
-  margin: 0 10px;
+/* القائمة العلوية */
+nav {
+  background-color: #1565c0;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 10px;
+}
+
+nav a {
+  color: white;
   text-decoration: none;
   font-weight: bold;
 }
 
-.navbar a:hover {
-  text-decoration: underline;
+nav a:hover {
+  color: #ffeb3b; /* اصفر عند المرور */
 }
 
 /* المحتوى */
-.content {
-  padding: 40px 20px;
+.container {
+  padding: 30px;
+  text-align: center;
 }
 
-.btn {
-  display: inline-block;
-  background: #0074D9; /* أزرق سماوي */
+/* الأزرار */
+button, .btn {
+  background-color: #1976d2;
+  border: none;
+  padding: 12px 20px;
   color: #fff;
-  padding: 15px 25px;
-  margin: 10px;
-  border-radius: 8px;
-  text-decoration: none;
-  font-size: 18px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin: 5px;
 }
 
-.btn:hover {
-  background: #005fa3;
+button:hover, .btn:hover {
+  background-color: #0d47a1;
 }
 
 /* الفوتر */
-.footer {
-  margin-top: 50px;
-  padding: 20px;
-  background: #001f3f;
-  color: #fff;
+footer {
+  margin-top: 30px;
+  background-color: #0d47a1;
+  color: white;
+  text-align: center;
+  padding: 15px;
+  position: relative;
+  bottom: 0;
+  width: 100%;
 }
 
-.footer .icon {
-  font-size: 28px;
+/* أيقونات واتساب وتيليجرام */
+.social-icons {
+  margin-top: 10px;
+}
+
+.social-icons a {
   margin: 0 10px;
   color: white;
+  font-size: 24px;
   text-decoration: none;
-}
-
-.footer .icon:hover {
-  opacity: 0.8;
 }
