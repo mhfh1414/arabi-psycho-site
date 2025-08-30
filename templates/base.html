@@ -1,72 +1,40 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{% block title %}عربي سايكو{% endblock %}</title>
-
-  <!-- خط + أيقونات -->
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;800&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-
-  <!-- ستايلنا -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>عربي سايكو</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
   <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
 </head>
 <body>
-
-  <!-- رأس -->
-  <header class="site-header">
-    <div class="container row between center">
-      <div class="brand">
-        <i class="fa-solid fa-brain"></i>
-        <span>عربي سايكو</span>
-      </div>
-      <nav class="nav">
-        <a href="/">الرئيسية</a>
-        <a href="/dsm">DSM-5</a>
-        <a href="/cbt">CBT</a>
-        <a href="/tests">الاختبارات</a>
-      </nav>
-    </div>
-  </header>
-
-  <!-- هيرو (قابلة للتبديل حسب الصفحة) -->
-  {% block hero %}
-  <section class="hero">
+  <!-- شريط علوي -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
     <div class="container">
-      <h1>صحتك النفسية أولويتنا</h1>
-      <p>منصة عربية مبسّطة لأدلة DSM-5 وتمارين CBT والاختبارات النفسية.</p>
-      <div class="hero-actions">
-        <a class="btn primary" href="/dsm"><i class="fa-solid fa-book"></i> تصفّح DSM-5</a>
-        <a class="btn ghost" href="/cbt"><i class="fa-solid fa-check-double"></i> تمارين CBT</a>
+      <a class="navbar-brand fw-bold" href="/">🌿 عربي سايكو</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="/">الرئيسية</a></li>
+          <li class="nav-item"><a class="nav-link" href="/dsm">DSM-5</a></li>
+          <li class="nav-item"><a class="nav-link" href="/cbt">CBT</a></li>
+          <li class="nav-item"><a class="nav-link" href="/tests">الاختبارات</a></li>
+          <li class="nav-item"><a class="nav-link" href="/case_study">دراسة حالة</a></li>
+        </ul>
       </div>
     </div>
-  </section>
-  {% endblock %}
+  </nav>
 
-  <!-- محتوى الصفحة -->
-  <main class="container">
+  <!-- محتوى -->
+  <main class="container my-5">
     {% block content %}{% endblock %}
   </main>
 
-  <!-- تواصل عائم -->
-  <div class="floating">
-    <a class="whatsapp" href="https://wa.me/966530565696" target="_blank" aria-label="واتساب"><i class="fab fa-whatsapp"></i></a>
-    <a class="telegram" href="https://t.me/Mhfh1414" target="_blank" aria-label="تيليجرام"><i class="fab fa-telegram"></i></a>
-  </div>
-
-  <!-- ذيل -->
-  <footer class="site-footer">
-    <div class="container row between center">
-      <p>© 2025 عربي سايكو — جميع الحقوق محفوظة</p>
-      <div class="mini-links">
-        <a href="/">الرئيسية</a>
-        <a href="/dsm">DSM-5</a>
-        <a href="/cbt">CBT</a>
-        <a href="/tests">الاختبارات</a>
-      </div>
-    </div>
+  <!-- فوتر -->
+  <footer class="text-center text-white bg-dark py-3 mt-5">
+    <p>© 2025 عربي سايكو - جميع الحقوق محفوظة</p>
   </footer>
-
 </body>
 </html>
