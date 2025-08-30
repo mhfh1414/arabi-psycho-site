@@ -1,21 +1,22 @@
 {% extends "base.html" %}
-{% set active = 'dsm' %}
-{% block content %}
-<h1 class="h4 mb-3">DSM-5 — الفئات</h1>
+{% block title %}عربي سايكو — الرئيسية{% endblock %}
 
-<div class="row g-3">
-  {% for c in categories %}
-    <div class="col-md-6 col-lg-4">
-      <a class="card card-link card-soft h-100" href="{{ url_for('dsm_cat', key=c.key) }}">
-        <div class="card-body">
-          <div class="small text-muted">({{ c.id }})</div>
-          <div class="fw-semibold mb-1">{{ c.name_ar }}</div>
-          <div class="badge bg-soft-navy text-navy">عدد العناصر: {{ c.count }}</div>
-        </div>
-      </a>
-    </div>
-  {% else %}
-    <div class="text-muted">لا توجد بيانات بعد.</div>
-  {% endfor %}
-</div>
+{% block content %}
+<section class="cards">
+  <article class="card">
+    <h3><i class="fa-solid fa-book"></i> DSM-5 بالعربية</h3>
+    <p>تصنيفات واضطرابات مع بحث سريع وتصدير JSON.</p>
+    <p style="margin-top:10px"><a class="btn" href="/dsm">ادخل الآن</a></p>
+  </article>
+  <article class="card">
+    <h3><i class="fa-solid fa-check-double"></i> تمارين CBT</h3>
+    <p>أوراق عمل وتمارين معرفية سلوكية مبسّطة.</p>
+    <p style="margin-top:10px"><a class="btn" href="/cbt">ابدأ التمرين</a></p>
+  </article>
+  <article class="card">
+    <h3><i class="fa-solid fa-vial"></i> اختبارات</h3>
+    <p>مجموعة اختبارات نفسية شائعة مع نتائج فورية.</p>
+    <p style="margin-top:10px"><a class="btn" href="/tests">جرّب اختبار</a></p>
+  </article>
+</section>
 {% endblock %}
