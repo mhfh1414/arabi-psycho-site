@@ -1,22 +1,44 @@
-{% extends "base.html" %}
-{% set active = 'home' %}
-{% block content %}
-<div class="row g-3">
-  <div class="col-lg-8">
-    <div class="card card-soft">
-      <div class="card-body">
-        <h1 class="h4 mb-2">مرحبًا بك 👋</h1>
-        <p class="mb-0">واجهة جديدة بألوان سماوية وكحلية. انتقل إلى تبويب DSM-5 للتصفّح أو استخدم البحث بالأعلى.</p>
-      </div>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>عربي سايكو</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- شريط علوي -->
+  <header class="navbar">
+    <h1>عــربـي سـايـكـو</h1>
+    <nav>
+      <a href="{{ url_for('home') }}">الرئيسية</a>
+      <a href="{{ url_for('dsm') }}">DSM-5</a>
+      <a href="{{ url_for('cbt') }}">CBT</a>
+      <a href="{{ url_for('tests') }}">الاختبارات</a>
+    </nav>
+  </header>
+
+  <!-- محتوى رئيسي -->
+  <main class="content">
+    <h2>مرحبًا بك في عربي سايكو</h2>
+    <p>منصة عربية نفسية شاملة: مراجع DSM-5، العلاج السلوكي المعرفي (CBT)، الاختبارات النفسية، وخطط علاجية متكاملة.</p>
+
+    <div class="buttons">
+      <a class="btn" href="{{ url_for('dsm') }}">📘 الأمراض النفسية (DSM-5)</a>
+      <a class="btn" href="{{ url_for('cbt') }}">🧠 العلاج السلوكي المعرفي CBT</a>
+      <a class="btn" href="{{ url_for('tests') }}">📊 الاختبارات</a>
     </div>
-  </div>
-  <div class="col-lg-4">
-    <a class="card card-link card-soft h-100" href="{{ url_for('dsm_index') }}">
-      <div class="card-body d-flex align-items-center justify-content-between">
-        <span class="fw-bold">الانتقال إلى DSM-5</span>
-        <span class="btn btn-primary">فتح</span>
-      </div>
-    </a>
-  </div>
-</div>
-{% endblock %}
+  </main>
+
+  <!-- أيقونات تواصل -->
+  <footer class="footer">
+    <p>تواصل معنا:</p>
+    <a href="https://wa.me/966530565696" target="_blank" class="icon whatsapp"><i class="fab fa-whatsapp"></i></a>
+    <a href="https://t.me/Mhfh1414" target="_blank" class="icon telegram"><i class="fab fa-telegram"></i></a>
+    <p>© 2025 عربي سايكو. جميع الحقوق محفوظة.</p>
+  </footer>
+
+</body>
+</html>
