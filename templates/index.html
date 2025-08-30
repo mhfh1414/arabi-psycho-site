@@ -1,98 +1,22 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>عربي سايكو</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body {
-      background-color: #f8f9fa;
-      font-family: 'Tajawal', sans-serif;
-    }
-    .navbar {
-      background-color: #198754;
-    }
-    .navbar a {
-      color: #fff !important;
-      font-weight: bold;
-    }
-    .hero {
-      text-align: center;
-      padding: 60px 20px;
-      background: #198754;
-      color: #fff;
-      border-radius: 10px;
-      margin: 20px 0;
-    }
-    .card {
-      border-radius: 15px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    footer {
-      margin-top: 50px;
-      text-align: center;
-      padding: 15px;
-      background: #198754;
-      color: white;
-      border-radius: 10px;
-    }
-  </style>
-</head>
-<body>
-
-  <!-- القائمة -->
-  <nav class="navbar navbar-expand-lg navbar-dark">
-    <div class="container">
-      <a class="navbar-brand" href="/">عربي سايكو</a>
-      <div class="collapse navbar-collapse">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="/dsm">DSM-5</a></li>
-          <li class="nav-item"><a class="nav-link" href="/cbt">العلاج السلوكي المعرفي</a></li>
-          <li class="nav-item"><a class="nav-link" href="/tests">الاختبارات النفسية</a></li>
-          <li class="nav-item"><a class="nav-link" href="/about">من نحن</a></li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
-  <!-- مقدمة -->
-  <div class="hero">
-    <h1>مرحباً بك في عربي سايكو</h1>
-    <p>دليلك النفسي المتكامل: DSM-5، CBT، والاختبارات النفسية والشخصية</p>
-  </div>
-
-  <!-- الأقسام الرئيسية -->
-  <div class="container">
-    <div class="row text-center">
-      <div class="col-md-4">
-        <div class="card p-4">
-          <h3>DSM-5</h3>
-          <p>اكتشف التصنيفات الكاملة للاضطرابات النفسية.</p>
-          <a href="/dsm" class="btn btn-success">عرض</a>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card p-4">
-          <h3>CBT</h3>
-          <p>العلاج السلوكي المعرفي مع جميع فروعه.</p>
-          <a href="/cbt" class="btn btn-success">عرض</a>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card p-4">
-          <h3>الاختبارات</h3>
-          <p>أكبر مجموعة من الاختبارات النفسية والشخصية.</p>
-          <a href="/tests" class="btn btn-success">ابدأ الآن</a>
-        </div>
+{% extends "base.html" %}
+{% set active = 'home' %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card card-soft">
+      <div class="card-body">
+        <h1 class="h4 mb-2">مرحبًا بك 👋</h1>
+        <p class="mb-0">واجهة جديدة بألوان سماوية وكحلية. انتقل إلى تبويب DSM-5 للتصفّح أو استخدم البحث بالأعلى.</p>
       </div>
     </div>
   </div>
-
-  <!-- الفوتر -->
-  <footer>
-    <p>© 2025 عربي سايكو - جميع الحقوق محفوظة</p>
-  </footer>
-
-</body>
-</html>
+  <div class="col-lg-4">
+    <a class="card card-link card-soft h-100" href="{{ url_for('dsm_index') }}">
+      <div class="card-body d-flex align-items-center justify-content-between">
+        <span class="fw-bold">الانتقال إلى DSM-5</span>
+        <span class="btn btn-primary">فتح</span>
+      </div>
+    </a>
+  </div>
+</div>
+{% endblock %}
