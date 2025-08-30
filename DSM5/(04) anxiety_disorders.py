@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DSM-5 Anxiety Disorders (Arabic)
 ملف: DSM5/anxiety_disorders.py
