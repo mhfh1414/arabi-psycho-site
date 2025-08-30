@@ -1,25 +1,49 @@
 {% extends "base.html" %}
+{% block title %}عربي سايكو — منصتك النفسية{% endblock %}
 {% block content %}
-<!-- قسم البانر -->
-<header class="hero-section text-white d-flex align-items-center justify-content-center">
-  <div class="text-center">
-    <h1 class="fw-bold display-4">عربي سايكو 🌿</h1>
-    <p class="lead mt-3">منصتك النفسية المتكاملة للعلاج المعرفي السلوكي DSM-5، CBT، والاختبارات</p>
-    <div class="mt-4">
-      <a href="/dsm" class="btn btn-primary btn-lg mx-2">دخول DSM-5</a>
-      <a href="/cbt" class="btn btn-outline-light btn-lg mx-2">العلاج المعرفي السلوكي CBT</a>
-      <a href="/tests" class="btn btn-success btn-lg mx-2">الاختبارات النفسية</a>
-      <a href="/case_study" class="btn btn-warning btn-lg mx-2">دراسة حالة</a>
+
+<header class="hero-section text-white d-flex align-items-center">
+  <div class="container text-center">
+    <h1 class="display-5 fw-bold">صحتك النفسية أولويتنا</h1>
+    <p class="lead mt-2">
+      منصة عربية موثوقة تجمع DSM-5 والعلاج المعرفي السلوكي CBT والاختبارات والأدوات العملية.
+    </p>
+    <div class="mt-4 d-flex flex-wrap gap-3 justify-content-center">
+      <a href="/dsm" class="btn btn-primary btn-lg px-4">الدخول إلى DSM-5</a>
+      <a href="/cbt" class="btn btn-outline-light btn-lg px-4">العلاج المعرفي السلوكي CBT</a>
+      <a href="/tests" class="btn btn-success btn-lg px-4">الاختبارات النفسية</a>
+      <a href="/case_study" class="btn btn-warning btn-lg px-4 text-dark">نموذج دراسة حالة</a>
     </div>
   </div>
 </header>
 
-<!-- قسم تعريف -->
-<section class="container my-5 text-center">
-  <h2 class="fw-bold text-primary">لماذا عربي سايكو؟</h2>
-  <p class="mt-3 fs-5">
-    لأن صحتك النفسية هي أولويتنا، جمعنا لك المراجع العلمية والأدوات العلاجية
-    في منصة واحدة تساعدك على فهم ذاتك والتغلب على التحديات النفسية بخطوات عملية.
-  </p>
+<section class="container my-5">
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="h-100 card feature shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title fw-bold text-primary mb-2">تشخيص علمي واضح</h5>
+          <p class="card-text">ملفات DSM-5 بالعربية منظمة للاستخدام العلاجي والسريري، مع بحث سريع وأقسام مرتبة.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="h-100 card feature shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title fw-bold text-primary mb-2">CBT عملي خطوة بخطوة</h5>
+          <p class="card-text">بروتوكولات جلسات، واجبات بيتية، ونماذج أفكار/مشاعر/سلوك مُهيكلة للممارسة الفعلية.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="h-100 card feature shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title fw-bold text-primary mb-2">اختبارات ومقاييس</h5>
+          <p class="card-text">مجموعة أدوات تقييم مختارة لبدء الخطة العلاجية وقياس التقدم بشكل دوري.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
+
 {% endblock %}
