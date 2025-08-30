@@ -1,0 +1,67 @@
+body {
+  margin: 0;
+  font-family: 'Tajawal', sans-serif;
+  background: #e6f4f9; /* سماوي فاتح */
+  color: #001f3f;      /* كحلي */
+  text-align: center;
+}
+
+/* شريط علوي */
+.navbar {
+  background: #001f3f; /* كحلي */
+  color: #fff;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar a {
+  color: #fff;
+  margin: 0 10px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.navbar a:hover {
+  text-decoration: underline;
+}
+
+/* المحتوى */
+.content {
+  padding: 40px 20px;
+}
+
+.btn {
+  display: inline-block;
+  background: #0074D9; /* أزرق سماوي */
+  color: #fff;
+  padding: 15px 25px;
+  margin: 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 18px;
+}
+
+.btn:hover {
+  background: #005fa3;
+}
+
+/* الفوتر */
+.footer {
+  margin-top: 50px;
+  padding: 20px;
+  background: #001f3f;
+  color: #fff;
+}
+
+.footer .icon {
+  font-size: 28px;
+  margin: 0 10px;
+  color: white;
+  text-decoration: none;
+}
+
+.footer .icon:hover {
+  opacity: 0.8;
+}
