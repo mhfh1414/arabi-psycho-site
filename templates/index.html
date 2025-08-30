@@ -1,34 +1,13 @@
 {% extends "base.html" %}
-{% block title %}عربي سايكو — ابدأ التقييم والخطة العلاجية{% endblock %}
-
 {% block content %}
-<section class="cards">
-  <article class="card">
-    <h3><i class="fa-solid fa-clipboard-check"></i> التقييم السريع</h3>
-    <p>أسئلة موجّهة لفرز الأعراض وتحديد المسار الأنسب وفق DSM-5.</p>
-    <p class="meta"><i class="fa-regular fa-clock"></i> 3–5 دقائق</p>
-    <p style="margin-top:12px"><a class="btn" href="/dsm?mode=triage">ابدأ الآن</a></p>
-  </article>
-
-  <article class="card">
-    <h3><i class="fa-solid fa-diagnoses"></i> تشخيص مبدئي</h3>
-    <p>مطابقة الأعراض مع معايير DSM-5 لإصدار انطباع أولي غير تشخيص نهائي.</p>
-    <p class="meta"><i class="fa-regular fa-shield"></i> بدون تخزين بيانات</p>
-    <p style="margin-top:12px"><a class="btn" href="/dsm">انتقل</a></p>
-  </article>
-
-  <article class="card">
-    <h3><i class="fa-solid fa-list-check"></i> خطة CBT</h3>
-    <p>بناء خطة علاجية بمهمات أسبوعية وسجل تقدم.</p>
-    <p class="meta"><i class="fa-solid fa-calendar-week"></i> خطوات عملية</p>
-    <p style="margin-top:12px"><a class="btn" href="/cbt">ابنِ خطتك</a></p>
-  </article>
-
-  <article class="card">
-    <h3><i class="fa-solid fa-vial"></i> اختبارات داعمة</h3>
-    <p>PHQ-9, GAD-7, وغيرها للمساعدة في المتابعة.</p>
-    <p class="meta"><i class="fa-regular fa-circle-check"></i> مقاييس معتمدة</p>
-    <p style="margin-top:12px"><a class="btn" href="/tests">ابدأ اختبار</a></p>
-  </article>
-</section>
+<div class="text-center py-5">
+  <h1>صحتك النفسية أولوية 🌿</h1>
+  <p class="lead mt-3">منصة عربية متكاملة للعلاج النفسي، CBT، DSM-5، والاختبارات.</p>
+  <div class="mt-4">
+    <a href="/dsm" class="btn btn-primary btn-lg mx-2">دخول DSM-5</a>
+    <a href="/cbt" class="btn btn-outline-primary btn-lg mx-2">العلاج المعرفي السلوكي CBT</a>
+    <a href="/tests" class="btn btn-success btn-lg mx-2">الاختبارات النفسية</a>
+    <a href="/case_study" class="btn btn-warning btn-lg mx-2">دراسة حالة</a>
+  </div>
+</div>
 {% endblock %}
