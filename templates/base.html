@@ -1,34 +1,72 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>عربي سايكو</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}عربي سايكو{% endblock %}</title>
+
+  <!-- خط + أيقونات -->
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+  <!-- ستايلنا -->
+  <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
 </head>
 <body>
-  <header>
-    منصة عربي سايكو – صحتك النفسية أولوية
+
+  <!-- رأس -->
+  <header class="site-header">
+    <div class="container row between center">
+      <div class="brand">
+        <i class="fa-solid fa-brain"></i>
+        <span>عربي سايكو</span>
+      </div>
+      <nav class="nav">
+        <a href="/">الرئيسية</a>
+        <a href="/dsm">DSM-5</a>
+        <a href="/cbt">CBT</a>
+        <a href="/tests">الاختبارات</a>
+      </nav>
+    </div>
   </header>
 
-  <nav>
-    <a href="/">الرئيسية</a>
-    <a href="/dsm">DSM-5</a>
-    <a href="/cbt">CBT</a>
-    <a href="/tests">الاختبارات</a>
-  </nav>
+  <!-- هيرو (قابلة للتبديل حسب الصفحة) -->
+  {% block hero %}
+  <section class="hero">
+    <div class="container">
+      <h1>صحتك النفسية أولويتنا</h1>
+      <p>منصة عربية مبسّطة لأدلة DSM-5 وتمارين CBT والاختبارات النفسية.</p>
+      <div class="hero-actions">
+        <a class="btn primary" href="/dsm"><i class="fa-solid fa-book"></i> تصفّح DSM-5</a>
+        <a class="btn ghost" href="/cbt"><i class="fa-solid fa-check-double"></i> تمارين CBT</a>
+      </div>
+    </div>
+  </section>
+  {% endblock %}
 
-  <div class="container">
+  <!-- محتوى الصفحة -->
+  <main class="container">
     {% block content %}{% endblock %}
+  </main>
+
+  <!-- تواصل عائم -->
+  <div class="floating">
+    <a class="whatsapp" href="https://wa.me/966530565696" target="_blank" aria-label="واتساب"><i class="fab fa-whatsapp"></i></a>
+    <a class="telegram" href="https://t.me/Mhfh1414" target="_blank" aria-label="تيليجرام"><i class="fab fa-telegram"></i></a>
   </div>
 
-  <footer>
-    <p>© 2025 عربي سايكو – جميع الحقوق محفوظة</p>
-    <div class="social-icons">
-      <a href="https://wa.me/966530565696" target="_blank"><i class="fab fa-whatsapp"></i></a>
-      <a href="https://t.me/Mhfh1414" target="_blank"><i class="fab fa-telegram"></i></a>
+  <!-- ذيل -->
+  <footer class="site-footer">
+    <div class="container row between center">
+      <p>© 2025 عربي سايكو — جميع الحقوق محفوظة</p>
+      <div class="mini-links">
+        <a href="/">الرئيسية</a>
+        <a href="/dsm">DSM-5</a>
+        <a href="/cbt">CBT</a>
+        <a href="/tests">الاختبارات</a>
+      </div>
     </div>
   </footer>
+
 </body>
 </html>
