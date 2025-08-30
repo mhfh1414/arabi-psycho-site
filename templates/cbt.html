@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+{% block title %}العلاج المعرفي السلوكي (CBT){% endblock %}
+{% block content %}
+
+<!-- Hero -->
+<section class="py-5 bg-gradient text-white rounded-4 shadow-sm">
+  <div class="container">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-8">
+        <h1 class="display-6 fw-bold mb-3">العلاج المعرفي السلوكي (CBT)</h1>
+        <p class="lead mb-4">
+          برنامج علاجي مُنظم خطوة بخطوة يجمع بين تعديل الأفكار والسلوك
+          مع أدوات عملية وجداول عمل جاهزة للطباعة. يمكنك البدء فورًا
+          أو تحميل الخطة الكاملة بصيغة PDF.
+        </p>
+        <div class="d-flex gap-2 flex-wrap">
+          <a class="btn btn-light btn-lg px-4" href="#program">ابدأ البرنامج</a>
+          <a class="btn btn-outline-light btn-lg px-4"
+             href="{{ url_for('static', filename='files/CBT_full_plan.pdf') }}" target="_blank">
+            تحميل الخطة الكاملة (PDF)
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-4 text-center d-none d-lg-block">
+        <span class="display-1" aria-hidden="true">🧠</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- محتوى الصفحة -->
+<section id="program" class="py-5">
+  <div class="container">
+
+    <!-- تبويب الخطوات الرئيسية -->
+    <ul class="nav nav-pills justify-content-center gap-2 flex-wrap mb-4">
+      <li class="nav-item"><a class="nav-link active" data-bs-toggle="pill" href="#intro">مقدمة</a></li>
+      <li class="nav-item"><a class="nav-link" data-bs-toggle="pill" href="#assessment">التقييم</a></li>
+      <li class="nav-item"><a class="nav-link" data-bs-toggle="pill" href="#formulation">الخطة العلاجية</a></li>
+      <li class="nav-item"><a class="nav-link" data-bs-toggle="pill" href="#sessions">جدول الجلسات</a></li>
+      <li class="nav-item"><a class="nav-link" data-bs-toggle="pill" href="#worksheets">النماذج والتمارين</a></li>
+      <li class="nav-item"><a class="nav-link" data-bs-toggle="pill" href="#case">دراسة حالة كاملة</a></li>
+    </ul>
+
+    <div class="tab-content">
+
+      <!-- مقدمة -->
+      <div class="tab-pane fade show active" id="intro">
+        <div class="card shadow-sm border-0">
+          <div class="card-body p-4">
+            <h2 class="h4 mb-3">ما هو CBT؟</h2>
+            <p>
+              يركز CBT على العلاقة بين الفِكر والمشاعر والسلوك. الهدف هو
+              اكتشاف الأنماط المعرفية غير المفيدة، اختبارها، واستبدالها
+              باستجابات أكثر توازنًا، مع تدريب سلوكي تدريجي لتثبيت التغيير.
+            </p>
+            <ul class="mb-0">
+              <li>قصير المدى، مُنظم، قائم على الأدلة.</li>
+              <li>يعتمد على واجبات منزلية وجداول (أفكار/نشاط/تعرض/تعزيز).</li>
+              <li>قابل للقياس عبر مقاييس عرضية أسبوعية.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- التقييم -->
+      <div class="tab-pane fade" id="assessment">
+        <div class="row g-4">
+          <div class="col-lg-6">
+            <div class="card h-100 shadow-sm border-0">
+              <div class="card-body p-4">
+                <h2 class="h5 mb-3">1) خط أساس (Baseline)</h2>
+                <p class="mb-2">استخدم المقاييس المعيارية لقياس شدة الأعراض أسبوعيًا:</p>
+                <ul>
+                  <li>القلق: <a target="_blank" href="{{ url_for('static', filename='files/GAD7_ar.pdf') }}">GAD-7 (عربي)</a></li>
+                  <li>الاكتئاب: <a target="_blank" href="{{ url_for('static', filename='files/PHQ9_ar.pdf') }}">PHQ-9 (عربي)</a></li>
+                </ul>
+                <p class="small text-muted mb-0">نصيحة: احتفظ بمنحنى تقدّم مبسّط (تاريخ ← درجة) للمراجعة في كل جلسة.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card h-100 shadow-sm border-0">
+              <div class="card-body p-4">
+                <h2 class="h5 mb-3">2) أهداف علاجية ذكية SMART</h2>
+                <ul class="mb-3">
+                  <li>محددة وقابلة للقياس وواقعية ومرتبطة بالوظيفة ومؤطّرة زمنياً.</li>
+                  <li>مثال: “الخروج للتسوّق 3 مرات/أسبوع لمدة 20 دقيقة” خلال 4 أسابيع.</li>
+                </ul>
+                <a class="btn btn-outline-primary"
+                   href="{{ url_for('static', filename='files/CBT_goals_sheet.docx') }}" target="_blank">
+                  نموذج تحديد الأهداف
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- الصياغة والخطة -->
+      <div class="tab-pane fade" id="formulation">
+        <div class="card shadow-sm border-0">
+          <div class="card-body p-4">
+            <h2 class="h5 mb-3">الصياغة المعرفية السلوكية (5 مجالات)</h2>
+            <div class="row g-3">
+              <div class="col-md-6 col-lg-4">
+                <div class="list-group small">
+                  <div class="list-group-item fw-bold">الموقف/المُثير</div>
+                  <div class="list-group-item">أين؟ من؟ ماذا حدث؟</div>
+                </div>
+              </div>
+              <div class="col-md-6 col-lg-4">
+                <div class="list-group small">
+                  <div class="list-group-item fw-bold">أفكار تلقائية</div>
+                  <div class="list-group-item">محتوى الفكرة/الصور/المعنى الشخصي.</div>
+                </div>
+              </div>
+              <div class="col-md-6 col-lg-4">
+                <div class="list-group small">
+                  <div class="list-group-item fw-bold">المشاعر + شدة</div>
+                  <div class="list-group-item">% انزعاج، قلق، حزن…</div>
+                </div>
+              </div>
+              <div class="col-md-6 col-lg-4">
+                <div class="list-group small">
+                  <div class="list-group-item fw-bold">سلوك</div>
+                  <div class="list-group-item">تجنب/اطمئنان/انسحاب/سلامة…</div>
+                </div>
+              </div>
+              <div class="col-md-6 col-lg-4">
+                <div class="list-group small">
+                  <div class="list-group-item fw-bold">استجابات بديلة</div>
+                  <div class="list-group-item">تحدّي معرفي + تجارب سلوكية.</div>
+                </div>
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <h3 class="h6">مكوّنات الخطة</h3>
+            <ol class="mb-3">
+              <li>التثقيف النفسي (نموذج CBT). </li>
+              <li>تتبّع الأفكار المشوّهة وتحدّيها بالأدلة.</li>
+              <li>تنشيط سلوكي + جدولة ممتعات/معنى.</li>
+              <li>تعرض تدريجي (سلم هرمي) + منع الاستجابة إن لزم.</li>
+              <li>مهارات تنظيم انفعالي/تنفس/يقظة ذهنية داعمة.</li>
+              <li>وقاية من الانتكاسة (خطة صيانة).</li>
+            </ol>
+
+            <a class="btn btn-primary"
+               href="{{ url_for('static', filename='files/CBT_formulation_sheet.pdf') }}" target="_blank">
+              نموذج الصياغة (PDF)
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- جدول الجلسات -->
+      <div class="tab-pane fade" id="sessions">
+        <div class="card shadow-sm border-0">
+          <div class="card-body p-4">
+            <h2 class="h5 mb-3">جدول جلسات مقترح (8–12 جلسة)</h2>
+
+            <div class="accordion" id="planAcc">
+              {% set sessions = [
+                ('الجلسة 1','تعارف + عقد علاجي + تثقيف نموذج CBT + وضع أهداف + مقياس خط أساس. واجب: تتبّع مواقف/أفكار.'),
+                ('الجلسة 2','مراجعة الواجب + تدريب تحدّي أفكار (دليل مع/ضد) + تنشيط سلوكي أساسي.'),
+                ('الجلسة 3','هرم التعرض (إن وُجد قلق/وسواس/رهاب) + مهارات تنفس/يقظة. واجب: خطوة تعرض 1.'),
+                ('الجلسة 4','تجارب سلوكية لاختبار المعتقدات + منع استجابة (إن لزم).'),
+                ('الجلسة 5','تعميق التحدّي المعرفي + جدولة ممتعات/قيمة.'),
+                ('الجلسة 6','حلّ المشكلات + مهارات تواصل/حدود (عند الحاجة).'),
+                ('الجلسة 7','توحيد المكاسب + مراجعة البيانات (منحنى المقاييس).'),
+                ('الجلسة 8','وقاية الانتكاسة + خطة صيانة لمدة 3 أشهر.')
+              ] %}
+              {% for i, s in enumerate(sessions) %}
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="h{{ i }}">
+                  <button class="accordion-button {{ 'collapsed' if i>0 }}" type="button"
+                          data-bs-toggle="collapse" data-bs-target="#c{{ i }}">
+                    {{ s[0] }}
+                  </button>
+                </h2>
+                <div id="c{{ i }}" class="accordion-collapse collapse {{ 'show' if i==0 }}"
+                     data-bs-parent="#planAcc">
+                  <div class="accordion-body">{{ s[1] }}</div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+
+            <div class="mt-4 d-flex gap-2 flex-wrap">
+              <a class="btn btn-outline-primary"
+                 href="{{ url_for('static', filename='files/CBT_session_checklist.pdf') }}" target="_blank">
+                قائمة مراجعة الجلسة
+              </a>
+              <a class="btn btn-outline-primary"
+                 href="{{ url_for('static', filename='files/CBT_relapse_prevention.docx') }}" target="_blank">
+                خطة الوقاية من الانتكاسة
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- النماذج والتمارين -->
+      <div class="tab-pane fade" id="worksheets">
+        <div class="row g-4">
+          {% set sheets = [
+            ('سجل الأفكار (3 أعمدة)', 'files/CBT_thought_record_basic.pdf'),
+            ('سجل الأفكار الموسّع (5 مجالات)', 'files/CBT_thought_record_5areas.pdf'),
+            ('سلم التعرض التدريجي', 'files/CBT_exposure_hierarchy.xlsx'),
+            ('جدولة الأنشطة/التنشيط السلوكي', 'files/CBT_activity_schedule.docx'),
+            ('متابعة المقاييس الأسبوعية', 'files/CBT_weekly_metrics.xlsx')
+          ] %}
+          {% for item in sheets %}
+          <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm">
+              <div class="card-body p-4 d-flex flex-column">
+                <h3 class="h6 mb-2">{{ item[0] }}</h3>
+                <p class="text-muted small flex-grow-1">نموذج جاهز للطباعة والاستخدام المنزلي.</p>
+                <a class="btn btn-primary mt-2"
+                   href="{{ url_for('static', filename=item[1]) }}" target="_blank">تحميل</a>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- دراسة حالة كاملة -->
+      <div class="tab-pane fade" id="case">
+        <div class="card shadow-sm border-0">
+          <div class="card-body p-4">
+            <h2 class="h5 mb-3">دراسة حالة (قلق اجتماعي – مختصرة عملية)</h2>
+
+            <div class="row g-4">
+              <div class="col-lg-6">
+                <div class="list-group small">
+                  <div class="list-group-item fw-bold">الخلفية</div>
+                  <div class="list-group-item">
+                    طالب جامعي يشكو خوفًا من التقييم السلبي وتجنّب العروض.
+                    الدرجات: GAD-7=13 (متوسط)، PHQ-9=7 (خفيف).
+                  </div>
+                  <div class="list-group-item fw-bold">الأهداف</div>
+                  <div class="list-group-item">
+                    تقديم عرض قصير داخل القاعة 5 دقائق خلال 8 أسابيع
+                    + تواصل اجتماعي مرتين أسبوعيًا.
+                  </div>
+                  <div class="list-group-item fw-bold">الصياغة</div>
+                  <div class="list-group-item">
+                    أفكار: “سأبدو غبيًا/سيضحكون”. سلوك: تجنّب، طمأنة.
+                    خطة: تحدّي معرفي + تعرض هرمي تدريجي + مهارات تنفس.
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-lg-6">
+                <div class="list-group small">
+                  <div class="list-group-item fw-bold">الجدول العلاجي (مختصر)</div>
+                  <div class="list-group-item">
+                    أسابيع 1–2: تثقيف + تحدّي أفكار أساسية.<br>
+                    أسابيع 3–6: تعرض تدريجي (إلقاء سؤال، قراءة فقرة، عرض 2–3 دقائق، ثم 5 دقائق).<br>
+                    أسابيع 7–8: توحيد المكاسب + خطة صيانة.
+                  </div>
+                  <div class="list-group-item fw-bold">النتائج</div>
+                  <div class="list-group-item">
+                    هبوط GAD-7 إلى 6، تحقيق هدف العرض 5 دقائق،
+                    انخفاض التجنّب وزيادة التفاعل الاجتماعي.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 d-flex gap-2 flex-wrap">
+              <a class="btn btn-outline-primary"
+                 href="{{ url_for('static', filename='files/CBT_case_full.pdf') }}" target="_blank">
+                تنزيل دراسة الحالة الكاملة (PDF)
+              </a>
+              <a class="btn btn-outline-secondary"
+                 href="{{ url_for('static', filename='files/CBT_progress_template.xlsx') }}" target="_blank">
+                قالب متابعة التقدّم
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /tab-content -->
+
+  </div>
+</section>
+
+<!-- أزرار تواصل عائمة -->
+<a class="fab fab-wa" href="https://wa.me/966500000000" target="_blank" aria-label="WhatsApp">
+  <i class="bi bi-whatsapp"></i>
+</a>
+<a class="fab fab-tg" href="https://t.me/your_telegram" target="_blank" aria-label="Telegram">
+  <i class="bi bi-telegram"></i>
+</a>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .bg-gradient{background:linear-gradient(90deg,#1e3a8a,#2563eb);}
+  .fab{position:fixed; inset-inline-start:16px; width:48px; height:48px; border-radius:999px;
+       display:grid; place-items:center; color:#fff; z-index:1050; box-shadow:0 6px 20px rgba(0,0,0,.2)}
+  .fab-wa{bottom:88px; background:#25D366;}
+  .fab-tg{bottom:28px; background:#229ED9;}
+</style>
+<!-- أيقونات Bootstrap -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // تمرير ناعم للرابط "ابدأ البرنامج"
+  document.querySelectorAll('a[href^="#"]').forEach(a=>{
+    a.addEventListener('click',e=>{
+      const id=a.getAttribute('href'); if(id.length<2) return;
+      const el=document.querySelector(id); if(!el) return;
+      e.preventDefault(); el.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  });
+</script>
+{% endblock %}
