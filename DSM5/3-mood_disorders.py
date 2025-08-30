@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DSM-5 Mood Disorders (Arabic)
 ملف: DSM5/mood_disorders.py
