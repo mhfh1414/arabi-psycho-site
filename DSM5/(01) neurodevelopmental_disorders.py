@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DSM-5 Neurodevelopmental Disorders (Arabic)
 ملف: DSM5/neurodevelopmental_disorders.py
