@@ -1,34 +1,34 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>عربي سايكو</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <!-- أيقونات -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>عربي سايكو</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+  <header>
+    منصة عربي سايكو – صحتك النفسية أولوية
+  </header>
 
-    <div class="navbar">
-        <a href="/">الرئيسية</a>
-        <a href="/dsm">DSM-5</a>
-        <a href="/cbt">CBT</a>
-        <a href="/tests">الاختبارات</a>
+  <nav>
+    <a href="/">الرئيسية</a>
+    <a href="/dsm">DSM-5</a>
+    <a href="/cbt">CBT</a>
+    <a href="/tests">الاختبارات</a>
+  </nav>
+
+  <div class="container">
+    {% block content %}{% endblock %}
+  </div>
+
+  <footer>
+    <p>© 2025 عربي سايكو – جميع الحقوق محفوظة</p>
+    <div class="social-icons">
+      <a href="https://wa.me/966530565696" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="https://t.me/Mhfh1414" target="_blank"><i class="fab fa-telegram"></i></a>
     </div>
-
-    <main>
-        {% block content %}
-        {% endblock %}
-    </main>
-
-    <div class="footer">
-        <p>© 2025 عربي سايكو - جميع الحقوق محفوظة</p>
-        <div class="social-icons">
-            <a href="https://wa.me/966530565696" target="_blank"><i class="fab fa-whatsapp"></i></a>
-            <a href="https://t.me/Mhfh1414" target="_blank"><i class="fab fa-telegram"></i></a>
-        </div>
-    </div>
-
+  </footer>
 </body>
 </html>
