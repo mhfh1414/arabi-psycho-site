@@ -1,84 +1,23 @@
-:root{
-  --navy:#0e1a2b;        /* كحلي عميق */
-  --blue:#134a9e;        /* أزرق علاجي */
-  --sky:#f3f7ff;         /* سماوي فاتح للخلفية */
-  --ink:#0f172a;         /* نص أسود مزرق */
-  --muted:#64748b;       /* نص خافت */
-  --white:#fff;
-  --primary:#2aa5ff;     /* زر أساسي */
-  --ok:#17b57c;
-  --radius:16px;
-  --shadow:0 14px 36px rgba(10,24,46,.12);
+body {
+  font-family: 'Cairo', sans-serif;
+  background: linear-gradient(to bottom, #e0f7fa, #ffffff);
 }
 
-*{box-sizing:border-box}
-html,body{margin:0;padding:0;font-family:'Tajawal',system-ui,Arial}
-body{color:var(--ink);background:var(--sky);}
-
-/* حاويات */
-.container{width:min(1100px,92%);margin-inline:auto}
-.row{display:flex;gap:16px}
-.between{justify-content:space-between}
-.center{align-items:center}
-
-/* رأس */
-.site-header{
-  background:linear-gradient(90deg,var(--navy),#10294a 55%, var(--blue));
-  color:var(--white); position:sticky; top:0; z-index:20; box-shadow:var(--shadow);
+h1, h2, h3 {
+  color: #003366;
+  font-weight: bold;
 }
-.brand{display:flex;gap:10px;align-items:center;font-weight:800;font-size:22px}
-.brand i{font-size:22px}
-.nav{display:flex;gap:8px}
-.nav a{color:#e6eefc;text-decoration:none;font-weight:700;padding:10px 14px;border-radius:10px}
-.nav a:hover{background:rgba(255,255,255,.08)}
 
-/* هيرو */
-.hero{padding:58px 0 66px;margin:0 0 26px 0;text-align:center;color:#fff}
-.hero-clinic{
-  background:
-    radial-gradient(1400px 460px at 50% -12%, rgba(255,255,255,.16), transparent),
-    linear-gradient(180deg,#1756b6 0%,#0f3f86 100%);
+.navbar-brand {
+  font-size: 1.4rem;
 }
-.hero h1{margin:6px 0 8px 0;font-size:38px;letter-spacing:.2px;font-weight:800}
-.hero p{margin:0;color:#e6efff}
-.hero .hero-kicker{display:inline-block;padding:6px 12px;border:1px solid rgba(255,255,255,.35);border-radius:999px;color:#eaf2ff;font-size:13px;letter-spacing:.5px}
 
-.hero-actions{margin-top:18px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-primary {
+  background-color: #0077b6;
+  border: none;
+  transition: 0.3s;
+}
 
-/* أزرار */
-.btn{display:inline-flex;gap:8px;align-items:center;font-weight:800;border-radius:12px;padding:12px 18px;text-decoration:none}
-.btn.primary{background:var(--primary);color:#062845;box-shadow:var(--shadow)}
-.btn.primary:hover{filter:brightness(.96)}
-.btn.outline{border:2px solid rgba(255,255,255,.65);color:#fff}
-.btn.outline:hover{background:rgba(255,255,255,.14)}
-.btn.ghost{background:rgba(255,255,255,.1);color:#fff}
-.btn.ghost:hover{background:rgba(255,255,255,.18)}
-
-/* شريط ثقة */
-.trustbar{list-style:none;margin:16px 0 0 0;padding:0;display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
-.trustbar li{display:flex;gap:8px;align-items:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);padding:8px 12px;border-radius:999px;font-weight:700}
-
-/* بطاقات */
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
-.card{background:var(--white);padding:20px;border-radius:var(--radius);box-shadow:var(--shadow)}
-.card h3{margin:0 0 6px 0}
-.card p{margin:0;color:var(--muted)}
-.card .meta{margin-top:10px;color:#0f5132;background:#d1fae5;border:1px solid #94eace;padding:6px 10px;border-radius:999px;display:inline-flex;gap:6px;align-items:center}
-
-/* فوتر */
-.site-footer{background:var(--navy);color:#cbd5e1;margin-top:42px;padding:18px 0}
-.site-footer a{color:#cbd5e1;text-decoration:none;margin-inline:8px}
-.site-footer a:hover{color:#fff}
-
-/* تواصل عائم */
-.floating{position:fixed;left:18px;bottom:18px;display:flex;flex-direction:column;gap:10px;z-index:30}
-.floating a{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;color:#fff;text-decoration:none;box-shadow:var(--shadow)}
-.floating .whatsapp{background:#25D366}
-.floating .telegram{background:#229ED9}
-
-/* استجابة */
-@media (max-width:640px){
-  .nav{gap:4px}
-  .nav a{padding:8px 10px}
-  .hero h1{font-size:30px}
+.btn-primary:hover {
+  background-color: #023e8a;
 }
