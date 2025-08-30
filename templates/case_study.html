@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">📝 نموذج دراسة حالة</h2>
+    <form method="POST" action="/submit_case_study">
+        <div class="mb-3">
+            <label class="form-label">الاسم:</label>
+            <input type="text" class="form-control" name="name" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">العمر:</label>
+            <input type="number" class="form-control" name="age" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">الحالة الاجتماعية:</label>
+            <select class="form-control" name="marital_status">
+                <option>أعزب</option>
+                <option>متزوج</option>
+                <option>مطلق</option>
+                <option>أرمل</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">عدد أفراد الأسرة:</label>
+            <input type="number" class="form-control" name="family_members">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">المستوى التعليمي:</label>
+            <input type="text" class="form-control" name="education">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">الوضع الاجتماعي/الاقتصادي:</label>
+            <textarea class="form-control" name="social_status"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">الحالة الصحية:</label>
+            <textarea class="form-control" name="health"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">ملاحظات أخرى:</label>
+            <textarea class="form-control" name="notes"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">إرسال</button>
+    </form>
+</div>
+{% endblock %}
