@@ -1,81 +1,144 @@
-import os, importlib.util, types
+"""
+DSM-5 Anxiety Disorders (Arabic)
+ملف: 01_anxiety_disorders.py
+"""
 
-DSM_DIR = os.path.join(os.path.dirname(__file__), "DSM5")
-REGISTRY = {}
-CATEGORIES_META = {}
+from typing import Dict, List, Any
+import json
 
-def _load_module_from_path(path: str) -> types.ModuleType:
-    spec = importlib.util.spec_from_file_location(os.path.basename(path), path)
-    mod = importlib.util.module_from_spec(spec)
-    assert spec and spec.loader
-    spec.loader.exec_module(mod)  # type: ignore
-    return mod
+# واجهة موحّدة يقرأها dsm_index.py
+CATEGORY: str = "anxiety"
+LABEL_AR: str = "اضطرابات القلق"
 
-def _expected_name_from_filename(fn: str) -> str:
-    """يرجع اسم المتغيّر القديم المتوقع من اسم الملف: 01_anxiety_disorders.py -> ANXIETY_DISORDERS"""
-    name_no_ext = os.path.splitext(fn)[0]
-    # احذف الرقم والبروفكس (01_) إن وجد
-    parts = name_no_ext.split("_", 1)
-    base = parts[1] if parts and parts[0].isdigit() and len(parts[0]) <= 3 else name_no_ext
-    # مثال: anxiety_disorders -> ANXIETY_DISORDERS
-    return base.upper()
+DATA: Dict[str, Any] = {
+    "meta": {
+        "version": "v1.0",
+        "source": "DSM-5 (مبسّط للاستخدام البرمجي)",
+        "label_ar": LABEL_AR,
+        "category": CATEGORY,
+    },
+    "items": [
+        {
+            "id": "GAD",
+            "name_ar": "اضطراب القلق العام",
+            "name_en": "Generalized Anxiety Disorder",
+            "overview": "قلق وتوتر مفرط صعب التحكم فيه مع أعراض جسدية وتأثر وظيفي.",
+            "duration": "معظم الأيام لمدة ≥ 6 أشهر",
+            "criteria": [
+                "قلق وتوتر مفرط بشأن عدد من الأحداث أو الأنشطة.",
+                "صعوبة في التحكم بالقلق.",
+                "ثلاثة أو أكثر: توتر/إجهاد عضلي، تهيّج، صعوبة تركيز، اضطراب نوم، تعب سهل، توتر داخلي.",
+                "يسبّب ضيقًا معتبرًا أو اختلالًا وظيفيًا.",
+                "غير مفسَّر بشكل أفضل بمادة/حالة طبية أو اضطراب آخر."
+            ],
+            "specifiers": ["خفيف", "متوسط", "شديد"],
+            "differentials": ["فرط نشاط الغدة الدرقية", "الاكتئاب", "اضطراب الهلع"],
+            "notes": "العلاج المعرفي السلوكي وSSRIs خيارات خط أول."
+        },
+        {
+            "id": "PD",
+            "name_ar": "اضطراب الهلع",
+            "name_en": "Panic Disorder",
+            "overview": "نوبات هلع مفاجئة متكررة يتبعها قلق توقعي أو تغيّر سلوكي تجنّبي.",
+            "duration": "≥ شهر واحد من القلق التوقعي/التجنب بعد النوبات",
+            "criteria": [
+                "نوبات هلع متكررة وغير متوقعة.",
+                "قلق/انشغال مستمر بحدوث نوبات أخرى أو نتائجها لمدة شهر أو أكثر.",
+                "تغيّر سلوكي ملحوظ ذو طبيعة تجنبية.",
+                "غير مفسَّر بشكل أفضل بمواد/حالات طبية (مثل فرط الدرقية) أو اضطراب آخر."
+            ],
+            "specifiers": [],
+            "differentials": ["رهاب الساح", "فرط التهوية الوظيفي", "أمراض قلبية"],
+            "notes": "التثقيف + تمارين التنفّس + SSRIs/SSNRIs؛ بنزوديازيبين قصير الأمد بحذر."
+        },
+        {
+            "id": "AGOR",
+            "name_ar": "رُهاب الساحات/الأماكن",
+            "name_en": "Agoraphobia",
+            "overview": "خوف/تجنب لمواقف قد يكون فيها صعب الهروب أو الحصول على مساعدة عند ظهور أعراض مشابهة للهلع.",
+            "duration": "≥ 6 أشهر",
+            "criteria": [
+                "خوف ملحوظ من موقفين أو أكثر (المواصلات العامة، الأماكن المفتوحة، الأماكن المغلقة، الوقوف في صف/الزحام، خارج المنزل وحده).",
+                "تثير المواقف خوفًا/قلقًا دائمًا وتُتجنب أو تحتاج مرافق.",
+                "الخوف غير متناسب مع الخطر الفعلي ويسبّب اختلالًا وظيفيًا.",
+                "غير مفسَّر بشكل أفضل باضطراب آخر."
+            ],
+            "specifiers": [],
+            "differentials": ["اضطراب الهلع", "الرهاب الاجتماعي", "الرهاب النوعي"],
+            "notes": "تعريض تدريجي مع علاج معرفي سلوكي؛ أدوية خط أول SSRIs عند الحاجة."
+        },
+        {
+            "id": "SPPH",
+            "name_ar": "الرُّهاب النوعي",
+            "name_en": "Specific Phobia",
+            "overview": "خوف/تجنب شديدان لموضوع/موقف محدد (حيوان، دم/حقن، مواقف طبيعية...).",
+            "duration": "≥ 6 أشهر",
+            "criteria": [
+                "خوف أو قلق ملحوظ من شيء/موقف محدد.",
+                "يثير التعرض استجابة فورية تقريبًا، والموقف يُتجنب أو يُتحمّل بقلق شديد.",
+                "الخوف غير متناسب ويسبّب اختلالًا وظيفيًا.",
+                "غير مفسَّر باضطراب آخر."
+            ],
+            "specifiers": ["حيوانات", "بيئة طبيعية", "دم/حقن/إصابة", "مواقفية", "أخرى"],
+            "differentials": ["الرهاب الاجتماعي", "الوسواس القهري إن كان الدافع أفكارًا وسواسية"],
+            "notes": "تعريض منظّم فعال جدًا؛ أدوية نادرًا ما تلزم."
+        },
+        {
+            "id": "SAD",
+            "name_ar": "اضطراب القلق الاجتماعي (الرهاب الاجتماعي)",
+            "name_en": "Social Anxiety Disorder",
+            "overview": "خوف من التقييم السلبي في المواقف الاجتماعية/الأدائية مع تجنّب واضح.",
+            "duration": "≥ 6 أشهر",
+            "criteria": [
+                "خوف ملحوظ من موقف اجتماعي أو أدائي يتعرض فيه الشخص لتدقيق الآخرين.",
+                "الخوف من التصرف بشكل يُقيَّم سلبيًا (إحراج/رفض).",
+                "المواقف تثير خوفًا دائمًا وتُتجنب أو تُتحمّل بقلق شديد.",
+                "يسبّب اختلالًا وظيفيًا وغير مفسَّر باضطراب آخر."
+            ],
+            "specifiers": ["Performance only (الأداء فقط)"],
+            "differentials": ["الرهاب النوعي", "طيف التوحد", "اضطرابات شخصية"],
+            "notes": "CBT اجتماعي + SSRIs؛ بروبرانولول قبل الأداء في بعض الحالات."
+        },
+        {
+            "id": "SEP",
+            "name_ar": "اضطراب قلق الانفصال",
+            "name_en": "Separation Anxiety Disorder",
+            "overview": "قلق مفرط من الانفصال عن أشخاص التعلق يتجاوز المتوقع للعمر.",
+            "duration": "أطفال ≥ 4 أسابيع؛ بالغون ≥ 6 أشهر",
+            "criteria": [
+                "ضيق مفرط عند توقع/حدوث الانفصال عن المنزل أو أشخاص التعلق.",
+                "قلق مستمر بشأن فقدان أشخاص التعلق أو حدوث مكروه لهم.",
+                "رفض الذهاب بعيدًا/البقاء وحده/النوم بعيدًا بسبب الخوف من الانفصال.",
+                "كوابيس أو أعراض جسدية عند الانفصال.",
+                "يسبّب اختلالًا وظيفيًا وغير مفسَّر باضطراب آخر."
+            ],
+            "specifiers": [],
+            "differentials": ["الرهاب الاجتماعي", "GAD", "نوبات هلع"],
+            "notes": "تدخلات أسرية/مدرسية + CBT؛ أدوية فقط للحالات الشديدة."
+        },
+        {
+            "id": "SEL_MUT",
+            "name_ar": "الخَرَس الاختياري",
+            "name_en": "Selective Mutism",
+            "overview": "فشل ثابت في الكلام في مواقف اجتماعية محددة رغم الكلام الطبيعي في مواقف أخرى.",
+            "duration": "≥ 1 شهر (عدا الشهر الأول من المدرسة)",
+            "criteria": [
+                "فشل في الكلام في مواقف اجتماعية متوقَّع فيها الكلام (كالمدرسة) رغم القدرة على الكلام في مواقف أخرى.",
+                "يؤثر في التحصيل/التواصل.",
+                "المدة ≥ شهر وليس بسبب عدم التمكّن من اللغة.",
+                "غير مفسَّر باضطراب تواصلي/طيف التوحد/فصام."
+            ],
+            "specifiers": [],
+            "differentials": ["الرهاب الاجتماعي", "اضطرابات النطق", "طيف التوحد"],
+            "notes": "تدخلات سلوكية داعمة وتمكينيات لغوية؛ تعاون الأسرة والمدرسة أساسي."
+        }
+    ]
+}
 
-def load_all() -> None:
-    REGISTRY.clear(); CATEGORIES_META.clear()
 
-    for fn in sorted(os.listdir(DSM_DIR)):
-        if not fn.endswith(".py") or fn == "__init__.py":
-            continue
-        path = os.path.join(DSM_DIR, fn)
-        mod = _load_module_from_path(path)
+# (اختياري) دوال مساعدة بسيطة، لا تؤثر على التحميل إن لم تُستخدم:
+def list_ids() -> List[str]:
+    return [it["id"] for it in DATA.get("items", [])]
 
-        # 1) جرّب الواجهة الجديدة (CATEGORY / LABEL_AR / DATA)
-        category = getattr(mod, "CATEGORY", None)
-        data = getattr(mod, "DATA", None)
-        label = getattr(mod, "LABEL_AR", None)
-
-        # 2) لو غير موجودة، جرّب الواجهة القديمة: <NAME>_DISORDERS
-        if data is None:
-            expected = _expected_name_from_filename(fn)  # e.g. ANXIETY_DISORDERS
-            # بعض الملفات القديمة كانت تضيف لاحقة _DISORDERS
-            for cand in (expected + "_DISORDERS", expected):
-                if hasattr(mod, cand):
-                    data = getattr(mod, cand)
-                    # اشتق التصنيف من الاسم الأساسي
-                    category = expected.lower()
-                    if category.endswith("_disorders"):
-                        category = category[:-10]  # احذف _disorders من النهاية
-                    label = label or category
-                    break
-
-        if not isinstance(data, dict) and not isinstance(data, list):
-            raise AttributeError(f"({fn}) لا يحتوي بنية بيانات معروفة (DATA أو *_DISORDERS)")
-
-        # توحيد الشكل: إذا كانت قائمة قديمة، لفّها داخل dict بمفتاح 'items'
-        if isinstance(data, list):
-            data = {"items": data}
-
-        # تأكيد category/label
-        if not category:
-            category = _expected_name_from_filename(fn).lower().replace("_disorders", "")
-        if not label:
-            label = category
-
-        REGISTRY[category] = data
-        CATEGORIES_META[category] = {"label_ar": label, "file": fn}
-
-def categories():
-    return [(k, CATEGORIES_META[k]["label_ar"], len(REGISTRY[k])) for k in REGISTRY]
-
-def get_category(cat):
-    return REGISTRY.get(cat, {})
-
-def get_disorder(cat, key):
-    block = REGISTRY.get(cat, {})
-    # يدعم الصيغتين: dict بالمفاتيح أو dict فيه 'items' قائمة
-    if "items" in block and isinstance(block["items"], list):
-        for it in block["items"]:
-            if it.get("id") == key:
-                return it
-        return None
-    return block.get(key)
+def to_json(indent: int = 2) -> str:
+    return json.dumps(DATA, ensure_ascii=False, indent=indent)
