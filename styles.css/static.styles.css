@@ -1,0 +1,42 @@
+body {
+    font-family: 'Tahoma', sans-serif;
+    background: linear-gradient(to bottom, #87CEEB, #003366); /* سماوي → كحلي */
+    color: white;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar {
+    background-color: #003366; /* كحلي */
+    padding: 10px;
+    text-align: center;
+}
+
+.navbar a {
+    color: #fff;
+    margin: 0 10px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.navbar a:hover {
+    text-decoration: underline;
+}
+
+.footer {
+    background-color: #002244;
+    text-align: center;
+    padding: 15px;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.social-icons {
+    margin-top: 10px;
+}
+
+.social-icons a {
+    color: white;
+    margin: 0 10px;
+    font-size: 24px;
+}
