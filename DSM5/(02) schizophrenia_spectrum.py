@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DSM-5 Schizophrenia Spectrum Disorders (Arabic)
 ملف: DSM5/schizophrenia_spectrum.py
