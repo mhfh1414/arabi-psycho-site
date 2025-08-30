@@ -1,111 +1,0 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CBT (العلاج المعرفي السلوكي) - عربي سايكو</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body{background:#f8f9fa;font-family:'Tajawal',sans-serif}
-    .navbar{background:#198754}.navbar a{color:#fff!important;font-weight:bold}
-    .section{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 4px 10px rgba(0,0,0,.05)}
-    .badge-step{background:#198754}.btn-primary{background:#198754;border-color:#198754}
-  </style>
-</head>
-<body>
-<nav class="navbar navbar-expand-lg navbar-dark">
-  <div class="container">
-    <a class="navbar-brand" href="/">عربي سايكو</a>
-    <div class="collapse navbar-collapse">
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link" href="/">الرئيسية</a></li>
-        <li class="nav-item"><a class="nav-link" href="/dsm">DSM-5</a></li>
-        <li class="nav-item"><a class="nav-link active" href="/cbt">CBT</a></li>
-        <li class="nav-item"><a class="nav-link" href="/tests">الاختبارات</a></li>
-      </ul>
-    </div>
-  </div>
-</nav>
-
-<div class="container mt-4">
-  <h2 class="mb-3">CBT • العلاج المعرفي السلوكي</h2>
-  <p class="text-muted">أداة عملية لملاحظة الأفكار والمشاعر والسلوك ثم تعديلها بخطوات واضحة.</p>
-
-  <div class="section">
-    <h5><span class="badge badge-step">1</span> بطاقة ABC</h5>
-    <form method="post" action="/cbt">
-      <div class="row g-2">
-        <div class="col-md-4">
-          <label class="form-label">A: الحدث/الموقف</label>
-          <textarea class="form-control" name="a" rows="3" placeholder="ماذا حدث؟ أين؟ من كان موجوداً؟"></textarea>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">B: الأفكار التلقائية</label>
-          <textarea class="form-control" name="b" rows="3" placeholder="ما هي الأفكار التي خطرت ببالك؟"></textarea>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">C: النتائج</label>
-          <textarea class="form-control" name="c" rows="3" placeholder="مشاعر/سلوك/استجابات جسدية"></textarea>
-        </div>
-      </div>
-
-      <hr>
-
-      <h6 class="mt-2">تحدّي الأفكار (Cognitive Restructuring)</h6>
-      <div class="row g-2">
-        <div class="col-md-6">
-          <label class="form-label">الدليل مع/ضد الفكرة</label>
-          <textarea class="form-control" name="evidence" rows="3" placeholder="ما الأدلة التي تؤيد/تنفي الفكرة؟"></textarea>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">الفكرة البديلة المتوازنة</label>
-          <textarea class="form-control" name="balanced" rows="3" placeholder="صياغة بديلة أكثر توازناً وواقعية"></textarea>
-        </div>
-      </div>
-
-      <hr>
-
-      <h6 class="mt-2">خطة سلوكية (Behavioral Activation)</h6>
-      <div class="row g-2">
-        <div class="col-md-8">
-          <input class="form-control" name="activity" placeholder="نشاط بسيط ومحدد (مثال: مشي 10 دقائق)"/>
-        </div>
-        <div class="col-md-4">
-          <input class="form-control" name="when" placeholder="متى/أين/مع من؟"/>
-        </div>
-      </div>
-
-      <div class="text-end mt-3">
-        <button class="btn btn-primary">حفظ الجلسة (محلياً)</button>
-      </div>
-    </form>
-    <small class="text-muted d-block mt-2">*يتم الحفظ في المتصفح فقط (لا تُرسل بياناتك للسيرفر).</small>
-  </div>
-
-  <div class="section">
-    <h5>تشوهات معرفية شائعة</h5>
-    <ul class="mb-0">
-      <li>التعميم الزائد • التفكير بالأبيض والأسود • قراءة الأفكار • التنبؤ الكارثي • التقليل من الإيجابيات…</li>
-    </ul>
-  </div>
-</div>
-
-<footer class="container text-center mt-4 mb-4 text-muted">
-  © 2025 عربي سايكو
-</footer>
-
-<script>
-  // حفظ النموذج محلياً
-  const form = document.querySelector('form');
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const data = Object.fromEntries(new FormData(form).entries());
-    const history = JSON.parse(localStorage.getItem('cbt_history')||'[]');
-    history.unshift({ ...data, ts: new Date().toISOString() });
-    localStorage.setItem('cbt_history', JSON.stringify(history.slice(0,50)));
-    alert('تم الحفظ محلياً 👌');
-    form.reset();
-  });
-</script>
-</body>
-</html>

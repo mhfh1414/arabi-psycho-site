@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% set active = 'dsm' %}
+{% block content %}
+<a class="btn btn-link px-0 mb-3" href="{{ url_for('dsm_index') }}">&larr; الرجوع إلى الفئات</a>
+
+<div class="card card-soft">
+  <div class="card-body">
+    <h1 class="h5 mb-2">{{ data.name_ar if data else name }}</h1>
+    {% if data %}
+      {% if data.summary %}<p class="mb-2">{{ data.summary }}</p>{% endif %}
+      {% if data.criteria %}
+        <h2 class="h6 mt-3">المعايير التشخيصية</h2>
+        <ul class="mb-2">
+          {% for c in data.criteria %}<li>{{ c }}</li>{% endfor %}
+        </ul>
+      {% endif %}
+      {% if data.notes %}
+        <h2 class="h6 mt-3">ملاحظات</h2>
+        <ul class="mb-0">
+          {% for n in data.notes %}<li>{{ n }}</li>{% endfor %}
+        </ul>
+      {% endif %}
+    {% else %}
+      <div class="text-muted">لا توجد بيانات.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
