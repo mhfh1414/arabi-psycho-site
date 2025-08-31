@@ -1,29 +1,36 @@
 {% extends "base.html" %}
+{% block title %}DSM-5 علاج{% endblock %}
 {% block content %}
-<section class="hero">
-  <div class="container">
-    <h1>العلاج المعرفي السلوكي (CBT)</h1>
-    <p>بروتوكولات عملية قصيرة ومحددة الهدف — قابلة للتكييف بحسب الاضطراب وشدة الحالة.</p>
-  </div>
-</section>
-<div class="container">
-  <div class="grid cards">
-    <div class="card">
-      <h3>جلسة 1: التقييم والتثقيف النفسي</h3>
-      <ul><li>صياغة أولية للمشكلة</li><li>مقاييس خط أساس (GAD-7/PHQ-9)</li><li>واجب منزلي: مراقبة الأفكار</li></ul>
-    </div>
-    <div class="card">
-      <h3>جلسة 2-3: رصد الأفكار وتشخيصها</h3>
-      <ul><li>بطاقات الأفكار</li><li>تمييز التشوهات المعرفية</li></ul>
-    </div>
-    <div class="card">
-      <h3>جلسة 4-6: إعادة البناء المعرفي</h3>
-      <ul><li>أسئلة سقراطية</li><li>بدائل عقلانية</li></ul>
-    </div>
-    <div class="card">
-      <h3>جلسة 7+: تعريض/منع استجابة (للقلق/الوسواس)</h3>
-      <ul><li>سلم هرمي للمثيرات</li><li>تعريض تدريجي</li></ul>
-    </div>
-  </div>
-</div>
+<h2>DSM-5 — دليل الاضطرابات والعلاج</h2>
+
+<form class="search-large" action="{{ url_for('dsm') }}">
+  <input name="q" placeholder="ابحث باسم الاضطراب بالعربية أو الإنجليزية" value="{{ q or '' }}">
+  <button type="submit">بحث</button>
+</form>
+
+{% if q and hits is not none %}
+  <p class="muted">نتائج البحث عن: <b>{{ q }}</b> ({{ hits|length }})</p>
+  <ul class="list">
+  {% for h in hits %}
+    <li>
+      <a href="{{ url_for('dsm_detail', cat=h.category, item_id=h.item.id) }}">
+        {{ h.item.name_ar }} <span class="muted">({{ h.item.code or h.category }})</span>
+      </a>
+    </li>
+  {% endfor %}
+  </ul>
+{% elif categories %}
+  {% for cat_key, cat in categories.items() %}
+    <h3 class="cat-title">{{ cat.name_ar or cat_key }}</h3>
+    <ul class="list two-col">
+    {% for it in cat.items %}
+      <li>
+        <a href="{{ url_for('dsm_detail', cat=cat_key, item_id=it.id) }}">{{ it.name_ar }}</a>
+      </li>
+    {% endfor %}
+    </ul>
+  {% endfor %}
+{% else %}
+  <p class="muted">لا توجد بيانات لعرضها.</p>
+{% endif %}
 {% endblock %}
