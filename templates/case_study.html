@@ -1,54 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container mt-5">
-    <h2 class="text-center mb-4">📝 نموذج دراسة حالة</h2>
-    <form method="POST" action="/submit_case_study">
-        <div class="mb-3">
-            <label class="form-label">الاسم:</label>
-            <input type="text" class="form-control" name="name" required>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">العمر:</label>
-            <input type="number" class="form-control" name="age" required>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">الحالة الاجتماعية:</label>
-            <select class="form-control" name="marital_status">
-                <option>أعزب</option>
-                <option>متزوج</option>
-                <option>مطلق</option>
-                <option>أرمل</option>
-            </select>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">عدد أفراد الأسرة:</label>
-            <input type="number" class="form-control" name="family_members">
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">المستوى التعليمي:</label>
-            <input type="text" class="form-control" name="education">
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">الوضع الاجتماعي/الاقتصادي:</label>
-            <textarea class="form-control" name="social_status"></textarea>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">الحالة الصحية:</label>
-            <textarea class="form-control" name="health"></textarea>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">ملاحظات أخرى:</label>
-            <textarea class="form-control" name="notes"></textarea>
-        </div>
-
-        <button type="submit" class="btn btn-primary">إرسال</button>
-    </form>
+<div class="container">
+  <h1>نموذج دراسة حالة</h1>
+  {% if saved %}
+    <div class="card"><p>✅ تم حفظ البيانات مؤقتًا (تظهر في سجلات السيرفر). لاحقًا نربطها بقاعدة بيانات/تلغرام.</p></div>
+  {% endif %}
+  <form method="post" class="grid" style="grid-template-columns:1fr 1fr;">
+    <div class="card"><label>الاسم</label><input name="name" required></div>
+    <div class="card"><label>العمر</label><input name="age" type="number"></div>
+    <div class="card"><label>الحالة الاجتماعية</label><input name="status"></div>
+    <div class="card"><label>سبب الحضور</label><input name="reason"></div>
+    <div class="card" style="grid-column:1 / -1;">
+      <label>ملخص المشكلة</label><textarea name="summary" rows="5"></textarea>
+    </div>
+    <div class="card" style="grid-column:1 / -1;">
+      <label>فرضيات تشخيصية</label><textarea name="dx" rows="4"></textarea>
+    </div>
+    <div class="card" style="grid-column:1 / -1;">
+      <label>الخطة العلاجية (اختصار)</label><textarea name="plan" rows="4"></textarea>
+    </div>
+    <button class="btn btn-primary" type="submit">حفظ</button>
+  </form>
 </div>
 {% endblock %}
