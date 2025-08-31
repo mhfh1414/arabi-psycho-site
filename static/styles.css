@@ -1,61 +1,103 @@
-:root{
-  --c-primary:#0d47a1; --c-primary2:#153e6f; --c-accent:#00b4d7;
-  --bg:#f5f7fb; --card:#ffffff; --text:#0e1325; --muted:#6b7280;
-  --radius:16px; --shadow:0 10px 25px rgba(0,0,0,.07);
+/* 🎨 الأساس */
+:root {
+    --c-primary: #0d47a1;
+    --c-primary2: #1976d2;
+    --c-accent: #00bfa5;
+    --c-bg: #f5f7fa;
 }
 
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{font-family:"Tajawal","Tahoma",sans-serif;background:var(--bg);color:var(--text);}
+body {
+    font-family: 'Tajawal', Tahoma, sans-serif;
+    margin: 0;
+    background: var(--c-bg);
+    color: #333;
+}
 
-.container{max-width:1100px;margin:auto;padding:16px}
+.navbar {
+    background: var(--c-primary);
+    padding: 10px 20px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
-.navbar{position:sticky;top:0;z-index:999;background:linear-gradient(90deg,var(--c-primary2),var(--c-primary));box-shadow:var(--shadow)}
-.nav-inner{display:flex;align-items:center;gap:16px}
-.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;font-weight:800}
-.brand img{height:36px;border-radius:999px}
-.nav-links{list-style:none;display:flex;gap:12px;margin:0;padding:0}
-.nav-links a{color:#cfe3ff;text-decoration:none;padding:10px 12px;border-radius:10px}
-.nav-links a:hover{background:rgba(255,255,255,.12);color:#fff}
-.nav-search{margin-inline-start:auto;display:flex;gap:8px}
-.nav-search input{padding:10px 12px;border:1px solid #2e5aa8;background:#244a8e;color:#fff;border-radius:10px;outline:none}
-.nav-search button{padding:10px 14px;border-radius:10px;border:0;background:#00b4d7;color:#02223c;cursor:pointer;font-weight:700}
-.nav-search button:hover{opacity:.9}
+.navbar a {
+    color: white;
+    margin: 0 10px;
+    text-decoration: none;
+    font-weight: bold;
+}
 
-.hero{background:linear-gradient(135deg,#0b3d91 0%, #0d47a1 100%);color:#fff;padding:48px;border-radius:24px;box-shadow:var(--shadow);margin-top:16px;margin-bottom:24px}
-.hero.small{padding:24px}
-.hero h1{margin:0 0 12px 0}
-.hero-actions{display:flex;gap:12px;margin-top:16px}
+.hero {
+    text-align: center;
+    padding: 50px 20px;
+    background: linear-gradient(to right, var(--c-primary), var(--c-primary2));
+    color: white;
+}
 
-.btn{display:inline-block;padding:12px 18px;border-radius:12px;text-decoration:none;border:0;cursor:pointer;font-weight:700}
-.btn.primary{background:#00b4d7;color:#02223c}
-.btn.outline{background:transparent;color:#fff;border:2px solid #8fc9ff}
-.btn.small{padding:8px 12px}
-.btn.xs{padding:6px 10px;font-size:12px}
+footer {
+    text-align: center;
+    padding: 15px;
+    background: #222;
+    color: #aaa;
+    margin-top: 40px;
+}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
-.grid.two{grid-template-columns:repeat(2,1fr)}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
-.cards.four{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-.card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:16px}
-.card.link{text-decoration:none;color:inherit}
-.card h3,.card h4{margin-top:0}
+/* 📘 CBT */
+.cbt-plan {
+    background: #f5faff;
+    border: 1px solid var(--c-primary2);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+.cbt-plan h3 {
+    color: var(--c-primary);
+}
+.cbt-plan ul {
+    list-style-type: square;
+    padding-left: 20px;
+}
 
-.list{padding-inline-start:18px}
-.list.two-col{columns:2;column-gap:24px}
-.list.num{list-style:decimal;padding-inline-start:20px}
+/* 📝 الاختبارات */
+.test-card {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.2s;
+}
+.test-card:hover {
+    background: #f7f7f7;
+    transform: scale(1.01);
+}
+.test-question {
+    margin: 10px 0;
+    font-weight: bold;
+}
 
-.search-large{display:flex;gap:8px;margin:12px 0 16px}
-.search-large input{flex:1;padding:12px;border:1px solid #d1d5db;border-radius:12px;background:#fff}
-.search-large button{padding:12px 16px;border-radius:12px;border:0;background:#0d47a1;color:#fff;font-weight:700}
-
-.flash{margin:12px 0}
-.flash-item{background:#e6fff7;color:#02624b;border:1px solid #b6f3de;padding:10px 12px;border-radius:10px}
-
-.footer{margin-top:40px;background:#0c1f3a;color:#9fb3d8}
-.footer-inner{display:flex;align-items:center;justify-content:space-between}
-.footer .social a{font-size:20px;margin-inline-start:10px;text-decoration:none}
-.muted{color:var(--muted)}
-.timeline{padding-inline-start:18px}
-.form label{display:block;margin-bottom:12px}
-.form input,.form textarea,.form select{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:12px;background:#fff}
+/* 📋 دراسة الحالة */
+.case-form {
+    background: #fffbe7;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #ffc107;
+    max-width: 600px;
+    margin: auto;
+}
+.case-form h2 {
+    color: #e65100;
+}
+.case-form label {
+    font-weight: bold;
+}
+.case-form input, 
+.case-form textarea, 
+.case-form select {
+    width: 100%;
+    padding: 8px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
