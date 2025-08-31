@@ -1,75 +1,59 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{% block title %}عربي سايكو — منصة العلاج المعرفي السلوكي{% endblock %}</title>
+{% extends "base.html" %}
+{% block title %}عربي سايكو — الرئيسية{% endblock %}
 
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;800&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-  <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet">
-</head>
-<body>
-
-  <!-- رأس احترافي -->
-  <header class="site-header">
-    <div class="container row between center">
-      <div class="brand">
-        <i class="fa-solid fa-stethoscope"></i>
-        <span>عربي سايكو</span>
-      </div>
-      <nav class="nav">
-        <a href="/">الرئيسية</a>
-        <a href="/dsm">التقييم & التشخيص</a>
-        <a href="/cbt">الخطة العلاجية CBT</a>
-        <a href="/tests">اختبارات داعمة</a>
-      </nav>
+{% block content %}
+<section class="hero bg-gradient-primary text-white py-5">
+  <div class="container text-center">
+    <h1 class="display-5 fw-bold mb-3">صحةُك النفسية أولويتنا</h1>
+    <p class="lead mb-4">منصّة عربية: علاج معرفي سلوكي (CBT)، بروتوكولات DSM-5، اختبارات، ودراسة حالة إلكترونية.</p>
+    <div class="d-flex gap-3 justify-content-center flex-wrap">
+      <a href="/dsm" class="btn btn-light btn-lg"><i class="bi bi-journal-medical me-1"></i> ابدأ علاج DSM-5</a>
+      <a href="/cbt" class="btn btn-outline-light btn-lg"><i class="bi bi-lightbulb me-1"></i> برامج CBT</a>
     </div>
-  </header>
-
-  <!-- هيرو علاجي -->
-  {% block hero %}
-  <section class="hero hero-clinic">
-    <div class="container">
-      <div class="hero-kicker">منصة علاج معرفي سلوكي مبنية على DSM-5</div>
-      <h1>صحتك النفسية مسؤوليتنا</h1>
-      <p>ابدأ بتقييم مبدئي قصير يقود إلى تشخيص أولي وخطة علاجية مدروسة بتمارين CBT.</p>
-      <div class="hero-actions">
-        <a class="btn primary" href="/dsm?mode=triage"><i class="fa-solid fa-notes-medical"></i> ابدأ التقييم السريع</a>
-        <a class="btn outline" href="/cbt"><i class="fa-solid fa-list-check"></i> ابنِ خطة CBT</a>
-        <a class="btn ghost" href="/tests"><i class="fa-solid fa-vial"></i> اختبارات داعمة</a>
-      </div>
-
-      <ul class="trustbar">
-        <li><i class="fa-regular fa-shield"></i> خصوصية وأمان</li>
-        <li><i class="fa-regular fa-circle-check"></i> بروتوكولات سريرية مبسطة</li>
-        <li><i class="fa-regular fa-clock"></i> تقييم خلال دقائق</li>
-      </ul>
-    </div>
-  </section>
-  {% endblock %}
-
-  <main class="container">
-    {% block content %}{% endblock %}
-  </main>
-
-  <!-- تواصل عائم -->
-  <div class="floating">
-    <a class="whatsapp" href="https://wa.me/966530565696" target="_blank" aria-label="واتساب"><i class="fab fa-whatsapp"></i></a>
-    <a class="telegram" href="https://t.me/Mhfh1414" target="_blank" aria-label="تيليجرام"><i class="fab fa-telegram"></i></a>
   </div>
+</section>
 
-  <footer class="site-footer">
-    <div class="container row between center">
-      <p>© 2025 عربي سايكو — منصة علاج معرفي سلوكي</p>
-      <div class="mini-links">
-        <a href="/">الرئيسية</a>
-        <a href="/dsm">التقييم & التشخيص</a>
-        <a href="/cbt">الخطة العلاجية</a>
-        <a href="/tests">اختبارات</a>
+<section class="container py-5">
+  <div class="row g-4">
+    <div class="col-md-6 col-lg-3">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title"><i class="bi bi-journal-text me-1 text-primary"></i> DSM-5</h5>
+          <p class="card-text small text-muted">بحث سريع وخطط علاجية عملية لكل اضطراب.</p>
+          <a href="/dsm" class="btn btn-primary">تصفّح العلاجات</a>
+        </div>
       </div>
     </div>
-  </footer>
 
-</body>
-</html>
+    <div class="col-md-6 col-lg-3">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title"><i class="bi bi-braces-asterisk me-1 text-primary"></i> CBT</h5>
+          <p class="card-text small text-muted">جلسات وأوراق عمل وخطة علاج كاملة.</p>
+          <a href="/cbt" class="btn btn-primary">ابدأ برنامج CBT</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title"><i class="bi bi-clipboard2-pulse me-1 text-primary"></i> دراسة حالة</h5>
+          <p class="card-text small text-muted">نموذج إلكتروني كامل لحفظ الحالة وتتبّع الجلسات.</p>
+          <a href="/case" class="btn btn-primary">افتح النموذج</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title"><i class="bi bi-ui-checks-grid me-1 text-primary"></i> الاختبارات</h5>
+          <p class="card-text small text-muted">مجموعة مقاييس نفسية تفتح داخل الموقع.</p>
+          <a href="/tests" class="btn btn-primary">اذهب للاختبارات</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
