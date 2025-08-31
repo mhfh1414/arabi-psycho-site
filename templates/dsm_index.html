@@ -1,59 +1,13 @@
 {% extends "base.html" %}
-{% block title %}عربي سايكو — الرئيسية{% endblock %}
-
 {% block content %}
-<section class="hero bg-gradient-primary text-white py-5">
-  <div class="container text-center">
-    <h1 class="display-5 fw-bold mb-3">صحةُك النفسية أولويتنا</h1>
-    <p class="lead mb-4">منصّة عربية: علاج معرفي سلوكي (CBT)، بروتوكولات DSM-5، اختبارات، ودراسة حالة إلكترونية.</p>
-    <div class="d-flex gap-3 justify-content-center flex-wrap">
-      <a href="/dsm" class="btn btn-light btn-lg"><i class="bi bi-journal-medical me-1"></i> ابدأ علاج DSM-5</a>
-      <a href="/cbt" class="btn btn-outline-light btn-lg"><i class="bi bi-lightbulb me-1"></i> برامج CBT</a>
-    </div>
-  </div>
-</section>
-
-<section class="container py-5">
-  <div class="row g-4">
-    <div class="col-md-6 col-lg-3">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title"><i class="bi bi-journal-text me-1 text-primary"></i> DSM-5</h5>
-          <p class="card-text small text-muted">بحث سريع وخطط علاجية عملية لكل اضطراب.</p>
-          <a href="/dsm" class="btn btn-primary">تصفّح العلاجات</a>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-6 col-lg-3">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title"><i class="bi bi-braces-asterisk me-1 text-primary"></i> CBT</h5>
-          <p class="card-text small text-muted">جلسات وأوراق عمل وخطة علاج كاملة.</p>
-          <a href="/cbt" class="btn btn-primary">ابدأ برنامج CBT</a>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-6 col-lg-3">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title"><i class="bi bi-clipboard2-pulse me-1 text-primary"></i> دراسة حالة</h5>
-          <p class="card-text small text-muted">نموذج إلكتروني كامل لحفظ الحالة وتتبّع الجلسات.</p>
-          <a href="/case" class="btn btn-primary">افتح النموذج</a>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-6 col-lg-3">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title"><i class="bi bi-ui-checks-grid me-1 text-primary"></i> الاختبارات</h5>
-          <p class="card-text small text-muted">مجموعة مقاييس نفسية تفتح داخل الموقع.</p>
-          <a href="/tests" class="btn btn-primary">اذهب للاختبارات</a>
-        </div>
-      </div>
-    </div>
+<section class="hero">
+  <div class="container">
+    <h1>DSM-5 (علاج مبني على التشخيص)</h1>
+    <p>ابحث عن الاضطراب أو أدخل معايير لتظهر لك بطاقة مختصرة وروابط علاج CBT مناسبة.</p>
+    <form class="nav-search" action="{{ url_for('dsm_search') }}" method="get" style="margin-top:12px;">
+      <input name="q" type="search" placeholder="مثال: وسواس قهري، اكتئاب، رهاب اجتماعي">
+      <button type="submit">بحث</button>
+    </form>
   </div>
 </section>
 {% endblock %}
