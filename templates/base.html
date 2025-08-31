@@ -1,45 +1,51 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>عربي سايكو</title>
-  <!-- ربط ملف CSS -->
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{% block title %}عربي سايكو{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-
-  <!-- ================== NAVBAR ================== -->
   <nav class="navbar">
-    <a href="{{ url_for('index') }}" class="brand">🌿 عربي سايكو</a>
-    <div class="links">
-      <a href="{{ url_for('index') }}">الرئيسية</a>
-      <a href="{{ url_for('dsm') }}">DSM-5 علاج</a>
-      <a href="{{ url_for('cbt') }}">برنامج CBT</a>
-      <a href="{{ url_for('tests') }}">الاختبارات</a>
-      <a href="{{ url_for('case_study') }}">دراسة حالة</a>
+    <div class="container nav-inner">
+      <a class="brand" href="{{ url_for('index') }}">
+        <img src="https://i.imgur.com/tz2m0vA.png" alt="شعار" />
+        <span>عربي سايكو</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('index') }}">الرئيسية</a></li>
+        <li><a href="{{ url_for('dsm') }}">DSM-5 علاج</a></li>
+        <li><a href="{{ url_for('cbt') }}">برنامج CBT</a></li>
+        <li><a href="{{ url_for('tests') }}">الاختبارات</a></li>
+        <li><a href="{{ url_for('case_study') }}">دراسة حالة</a></li>
+      </ul>
+      <form class="nav-search" action="{{ url_for('dsm') }}">
+        <input name="q" placeholder="بحث في اضطرابات DSM-5" value="{{ request.args.get('q','') }}">
+        <button type="submit">بحث</button>
+      </form>
     </div>
   </nav>
 
-  <!-- ================== HERO ================== -->
-  <section class="hero">
-    <h1>صحتك النفسية أولويتنا</h1>
-    <p>منصة عربية متكاملة للعلاج النفسي باستخدام DSM-5 والـ CBT والاختبارات النفسية</p>
-    <div style="margin-top:20px;">
-      <a href="{{ url_for('dsm') }}" class="btn btn-primary">ابدأ علاج DSM-5</a>
-      <a href="{{ url_for('cbt') }}" class="btn btn-accent">برنامج CBT</a>
-    </div>
-  </section>
-
-  <!-- ================== CONTENT ================== -->
-  <main>
+  <main class="container">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash">
+          {% for m in messages %}<div class="flash-item">{{ m }}</div>{% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
     {% block content %}{% endblock %}
   </main>
 
-  <!-- ================== FOOTER ================== -->
   <footer class="footer">
-    <p>© 2025 عربي سايكو - جميع الحقوق محفوظة</p>
+    <div class="container footer-inner">
+      <span>© 2025 عربي سايكو — نسخة عربية علاجية</span>
+      <div class="social">
+        <a href="https://wa.me/" target="_blank" aria-label="واتساب">🟢</a>
+        <a href="https://t.me/" target="_blank" aria-label="تلجرام">🔵</a>
+      </div>
+    </div>
   </footer>
-
 </body>
 </html>
