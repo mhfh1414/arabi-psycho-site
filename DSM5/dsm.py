@@ -23,7 +23,34 @@ CATEGORIES: Dict[str, Dict[str, Any]] = {
     "anxiety_disorders": {
         "id": "01",
         "key": "anxiety_disorders",
-        "name_ar": "اضطرابات القلق",
+        "def get_categories():
+    return list(CATEGORIES.keys())
+
+
+def get_disorder_by_id(disorder_id: str):
+    for cat_key, v in CATEGORIES.items():
+        for it in v.get("items", []):
+            if it.get("id") == disorder_id:
+                return it
+    return None
+
+
+def search_disorders(text: str):
+    q = (text or "").strip().lower()
+    if not q:
+        return []
+    hits = []
+    for cat_key, v in CATEGORIES.items():
+        for it in v.get("items", []):
+            blob = f"{it.get('name_ar', '')} {it.get('name_en', '')}"
+            if q in blob.lower():
+                hits.append({
+                    "category": v["name_ar"],
+                    "id": it["id"],
+                    "name": it["name_ar"]
+                })
+    return hitsame_ar": "اضطرابات القلق",
+      v
         "items": [
             {
                 "code": "GAD",
