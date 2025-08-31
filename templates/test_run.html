@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}بدء الاختبار{% endblock %}
+{% block content %}
+<h2>{{ test['title'] }}</h2>
+<p class="muted">{{ test['desc'] }}</p>
+
+<form method="post" class="form">
+  {% for it in test['items'] %}
+    <div class="q">
+      <label>{{ loop.index }}) {{ it['text'] }}</label>
+      <div class="opts">
+        {% if test.get('scale') in ['0_3','0_4'] %}
+          {% set options = scale_options(test['scale']) %}
+        {% else %}
+          {% set options = test['scale'] %}
+        {% endif %}
+        {% for opt in options %}
+          <label class="radio">
+            <input type="radio" name="q{{ it['id'] }}" value="{{ opt['v'] }}" required>
+            <span>{{ opt['t'] }}</span>
+          </label>
+        {% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+  <button class="btn primary" type="submit">إنهاء الاختبار</button>
+</form>
+{% endblock %}
