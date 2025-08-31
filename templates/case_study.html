@@ -1,27 +1,41 @@
 {% extends "base.html" %}
+{% block title %}دراسة حالة إلكترونية{% endblock %}
 {% block content %}
-<h2>نموذج دراسة حالة</h2>
-<form method="post" action="#">
-    <label>الاسم:</label>
-    <input type="text" name="name" required>
+<h2>دراسة حالة</h2>
+<form method="post" class="form">
+  <div class="grid two">
+    <label>الاسم<input name="name" required></label>
+    <label>العمر<input name="age" type="number" min="3" max="100"></label>
+    <label>الجنس<select name="sex"><option>ذكر</option><option>أنثى</option></select></label>
+    <label>الحالة الاجتماعية<select name="marital"><option>أعزب/عزباء</option><option>متزوج/ـة</option><option>منفصل</option><option>أرمل/ـة</option></select></label>
+  </div>
 
-    <label>العمر:</label>
-    <input type="number" name="age">
+  <label>المشكلة الحالية (مختصر)
+    <textarea name="presenting_problem" rows="3" required></textarea>
+  </label>
 
-    <label>الحالة الاجتماعية:</label>
-    <select name="status">
-        <option>أعزب</option>
-        <option>متزوج</option>
-        <option>مطلق</option>
-        <option>أرمل</option>
-    </select>
+  <div class="grid two">
+    <label>بداية ونمط المشكلة<textarea name="onset_course" rows="3"></textarea></label>
+    <label>العوامل المحفّزة/المخففة<textarea name="triggers_modifiers" rows="3"></textarea></label>
+  </div>
 
-    <label>الأعراض الحالية:</label>
-    <textarea name="symptoms"></textarea>
+  <label>تاريخ نفسي/طبي سابق<textarea name="history" rows="3"></textarea></label>
 
-    <label>التاريخ الطبي:</label>
-    <textarea name="history"></textarea>
+  <div class="grid two">
+    <label>مقاييس أولية (مثال: PHQ-9/GAD-7) <input name="scales_baseline"></label>
+    <label>دعم اجتماعي/أسري<textarea name="support" rows="2"></textarea></label>
+  </div>
 
-    <button type="submit" class="btn">حفظ</button>
+  <label>تشخيص مبدئي DSM-5<input name="provisional_dx"></label>
+
+  <label>أهداف العلاج (SMART)
+    <textarea name="goals" rows="3" placeholder="مثال: خفض درجة GAD-7 من 14 إلى 6 خلال 6 أسابيع"></textarea>
+  </label>
+
+  <label>خطة العلاج
+    <textarea name="plan" rows="4" placeholder="جلسات CBT أسبوعية + واجبات منزلية + تعريض/تنشيط"></textarea>
+  </label>
+
+  <button class="btn primary" type="submit">حفظ</button>
 </form>
 {% endblock %}
