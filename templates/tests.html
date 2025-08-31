@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}الاختبارات النفسية والشخصية{% endblock %}
+{% block content %}
+<h2>الاختبارات</h2>
+<p class="muted">نتائج هذه الاختبارات مؤشرات أولية، وليست تشخيصًا.</p>
+
+<div class="cards four">
+  <a class="card link" href="?t=gad7"><h4>قلق (GAD-7)</h4><p>تقدير شدة القلق خلال أسبوعين.</p></a>
+  <a class="card link" href="?t=phq9"><h4>اكتئاب (PHQ-9)</h4><p>تقدير شدة الاكتئاب.</p></a>
+  <a class="card link" href="?t=oci"><h4>وسواس قهري (OCI-R)</h4><p>مؤشر أعراض وسواس.</p></a>
+  <a class="card link" href="?t=bfi"><h4>اختبار شخصية (Big-5)</h4><p>السمات الخمس الكبرى.</p></a>
+</div>
+
+<div class="card">
+  <h3>إضافة اختبارات أخرى</h3>
+  <p class="muted">أرسل لي أسماء المقاييس التي ترغب بها وسأضيف نماذجها مع التصحيح الآلي.</p>
+</div>
+{% endblock %}
