@@ -1,41 +1,30 @@
 {% extends "base.html" %}
-{% block title %}دراسة حالة إلكترونية{% endblock %}
+{% block title %}دراسة حالة{% endblock %}
 {% block content %}
-<h2>دراسة حالة</h2>
+<h2>نموذج دراسة حالة</h2>
 <form method="post" class="form">
   <div class="grid two">
     <label>الاسم<input name="name" required></label>
-    <label>العمر<input name="age" type="number" min="3" max="100"></label>
+    <label>العمر<input name="age" type="number" min="4" max="100"></label>
     <label>الجنس<select name="sex"><option>ذكر</option><option>أنثى</option></select></label>
-    <label>الحالة الاجتماعية<select name="marital"><option>أعزب/عزباء</option><option>متزوج/ـة</option><option>منفصل</option><option>أرمل/ـة</option></select></label>
+    <label>الحالة الاجتماعية<select name="marital">
+      <option>أعزب/عزباء</option><option>متزوج/ـة</option><option>منفصل</option><option>أرمل/ـة</option></select></label>
+    <label>وسيلة تواصل (اختياري)<input name="contact" placeholder="واتساب/تليجرام/إيميل"></label>
   </div>
 
-  <label>المشكلة الحالية (مختصر)
-    <textarea name="presenting_problem" rows="3" required></textarea>
+  <label>المشكلة الحالية (وصف مختصر)
+    <textarea name="presenting_problem" rows="3" placeholder="مثال: حزن مستمر، فقدان اهتمام، نوم متقطع..." required></textarea>
   </label>
 
-  <div class="grid two">
-    <label>بداية ونمط المشكلة<textarea name="onset_course" rows="3"></textarea></label>
-    <label>العوامل المحفّزة/المخففة<textarea name="triggers_modifiers" rows="3"></textarea></label>
-  </div>
-
-  <label>تاريخ نفسي/طبي سابق<textarea name="history" rows="3"></textarea></label>
-
-  <div class="grid two">
-    <label>مقاييس أولية (مثال: PHQ-9/GAD-7) <input name="scales_baseline"></label>
-    <label>دعم اجتماعي/أسري<textarea name="support" rows="2"></textarea></label>
-  </div>
-
-  <label>تشخيص مبدئي DSM-5<input name="provisional_dx"></label>
-
-  <label>أهداف العلاج (SMART)
-    <textarea name="goals" rows="3" placeholder="مثال: خفض درجة GAD-7 من 14 إلى 6 خلال 6 أسابيع"></textarea>
+  <label>الأعراض/الكلمات المفتاحية
+    <textarea name="symptoms" rows="3" placeholder="قلق، توتر، أرق، نوبات هلع، وساوس..."></textarea>
   </label>
 
-  <label>خطة العلاج
-    <textarea name="plan" rows="4" placeholder="جلسات CBT أسبوعية + واجبات منزلية + تعريض/تنشيط"></textarea>
-  </label>
-
-  <button class="btn primary" type="submit">حفظ</button>
+  <button class="btn primary" type="submit">حفظ والتوصية بالاختبارات</button>
 </form>
+
+<div class="card">
+  <h4>خصوصية</h4>
+  <p class="muted">تُحفظ دراسة الحالة محليًا لأغراض التقييم والمتابعة. ليست بديلاً عن التشخيص الطبي.</p>
+</div>
 {% endblock %}
