@@ -1,74 +1,59 @@
+/* ألوان وهوية */
 :root{
-  --deep:#0b2d57;   /* كحلي */
-  --mid:#155fa0;    /* بيني */
-  --sky:#48cae4;    /* سماوي */
+  --blue:#0d47a1;        /* كحلي */
+  --blue-2:#1565c0;      /* سماوي غامق */
+  --sky:#42a5f5;         /* سماوي */
+  --bg:#0b1c2b;          /* خلفية داكنة أنيقة */
 }
 
-*{ box-sizing: border-box; }
-body{
-  font-family:'Cairo',system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,sans-serif;
-  background:#f6f8fb;
-  color:#1a1a1a;
+body.app-body{background:#f7fbff;}
+.main-nav{
+  background:linear-gradient(90deg,var(--blue),var(--blue-2));
+}
+.logo{letter-spacing:.5px}
+
+/* HERO */
+.hero{
+  background:radial-gradient(1000px 400px at 50% -100px, var(--sky), var(--blue));
+  color:#fff; padding:64px 0 56px;
 }
 
-/* شريط علوي */
-.bg-deep{ background:var(--deep)!important; }
+/* بطاقات وقوائم */
+.section-title{font-weight:800;margin-bottom:16px;color:var(--blue)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.card{border:0;border-radius:14px;box-shadow:0 6px 20px rgba(13,71,161,.08);padding:14px;background:#fff;transition:.2s}
+.card:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(13,71,161,.14)}
+.card-title{font-weight:700}
+.card-sub{color:#637086;font-size:.9rem}
 
-/* البانر */
-.hero-section{
-  min-height: 78vh;
-  background:
-    linear-gradient(180deg, rgba(11,45,87,.85), rgba(21,95,160,.80)),
-    url("../banner.jpg") center/cover no-repeat;
-  display:flex;
-}
-.hero-section .btn-primary{
-  background:var(--sky);
-  border:0;
-  color:#053b5e;
-  font-weight:700;
-}
-.hero-section .btn-primary:hover{
-  background:#3db5cb;
-}
-.hero-section .btn-outline-light{
-  border-color:#fff;
-}
+/* عناوين */
+.cat-title{margin:18px 0 8px;font-weight:800;color:#16355e}
 
-/* بطاقات الميزات */
-.feature{ border:0; }
-.feature .card-body{ padding:1.25rem 1.25rem; }
-.feature .card-title{ color:var(--deep); }
+/* بحث */
+.search-input{min-width:220px}
+
+/* قوائم نقطية وخطوات */
+.bullets{padding-inline-start:20px}
+.steps{padding-inline-start:20px}
+.bullets li,.steps li{margin:.3rem 0}
 
 /* فوتر */
-footer{ border-top:1px solid rgba(255,255,255,.12); }
-
-/* أزرار طافية واتساب/تلغرام */
-.floating-btn{
-  position:fixed;
-  bottom:20px;
-  width:48px;height:48px;border-radius:50%;
-  box-shadow:0 6px 16px rgba(0,0,0,.2);
-  background-size:60% auto;background-repeat:no-repeat;background-position:center;
-  z-index:9999; transition:transform .15s ease;
+.app-footer{
+  background:#0e1e31;color:#c9d3e4;padding:14px 0;margin-top:32px
 }
-.floating-btn:hover{ transform:translateY(-2px); }
-.floating-btn.wa{ right:22px; background-color:#25D366; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M12 2a10 10 0 0 0-8.94 14.56L2 22l5.58-1.47A10 10 0 1 0 12 2zm5.21 14.24c-.22.62-1.29 1.18-1.78 1.21-.47.03-1.06.04-1.71-.11-.39-.09-.89-.29-1.54-.57-2.7-1.17-4.45-3.9-4.59-4.08-.13-.18-1.1-1.46-1.1-2.79s.7-1.98.95-2.26c.25-.28.55-.35.73-.35.18 0 .36 0 .52.01.17.01.39-.06.61.46.22.53.75 1.84.82 1.97.07.13.11.28.02.45-.09.18-.14.28-.28.43-.14.15-.29.34-.42.46-.14.12-.29.26-.12.54.18.28.8 1.31 1.72 2.13 1.19 1.06 2.18 1.39 2.49 1.54.31.15.5.13.68-.08.18-.21.79-.91 1-1.23.21-.32.43-.27.71-.16.28.12 1.75.83 2.06.98.31.15.52.23.6.36.08.13.08.75-.14 1.37z'/%3E%3C/svg%3E"); }
-.floating-btn.tg{ right:80px; background-color:#29a9e0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M9.03 16.57l-.4 3.76c.57 0 .81-.24 1.1-.52l2.64-2.5 4.87 3.56c.89.49 1.53.23 1.77-.83L22.9 4.28c.32-1.28-.46-1.78-1.32-1.47L2.55 9.83c-1.26.49-1.24 1.2-.22 1.52l4.95 1.55L18.9 6.32c.6-.4 1.15-.18.7.22'/%3E%3C/svg%3E"); }
 
-/* تحسينات صغيرة */
-.btn{ border-radius:12px; }
-.fw-extrabold{font-weight:800;}
-.btn-sky{background:var(--sky); border:0; color:#053b5e; font-weight:700;}
-.btn-sky:hover{background:#3db5cb;}
-.header-search{min-width:260px}
-
-.icon-btn{
-  display:inline-block;width:34px;height:34px;border-radius:50%;
-  background-size:60% auto;background-position:center;background-repeat:no-repeat;
-  box-shadow:0 4px 12px rgba(0,0,0,.15)
+/* أزرار عائمة */
+.fab{
+  position:fixed;bottom:18px;left:18px;
+  width:46px;height:46px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;color:#fff;text-decoration:none;
+  box-shadow:0 10px 25px rgba(0,0,0,.18);
 }
-.icon-btn.wa2{background-color:#25D366;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M12 2a10 10 0 0 0-8.94 14.56L2 22l5.58-1.47A10 10 0 1 0 12 2zm5.21 14.24c-.22.62-1.29 1.18-1.78 1.21-.47.03-1.06.04-1.71-.11-.39-.09-.89-.29-1.54-.57-2.7-1.17-4.45-3.9-4.59-4.08-.13-.18-1.1-1.46-1.1-2.79s.7-1.98.95-2.26c.25-.28.55-.35.73-.35.18 0 .36 0 .52.01.17.01.39-.06.61.46.22.53.75 1.84.82 1.97.07.13.11.28.02.45-.09.18-.14.28-.28.43-.14.15-.29.34-.42.46-.14.12-.29.26-.12.54.18.28.8 1.31 1.72 2.13 1.19 1.06 2.18 1.39 2.49 1.54.31.15.5.13.68-.08.18-.21.79-.91 1-1.23.21-.32.43-.27.71-.16.28.12 1.75.83 2.06.98.31.15.52.23.6.36.08.13.08.75-.14 1.37z'/%3E%3C/svg%3E")}
-.icon-btn.tg2{background-color:#29a9e0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M9.03 16.57l-.4 3.76c.57 0 .81-.24 1.1-.52l2.64-2.5 4.87 3.56c.89.49 1.53.23 1.77-.83L22.9 4.28c.32-1.28-.46-1.78-1.32-1.47L2.55 9.83c-1.26.49-1.24 1.2-.22 1.52l4.95 1.55L18.9 6.32c.6-.4 1.15-.18.7.22'/%3E%3C/svg%3E")}
-.hover-up{transition:transform .15s ease, box-shadow .15s ease}
-.hover-up:hover{transform:translateY(-3px); box-shadow:0 10px 22px rgba(0,0,0,.08)}
+.fab-whatsapp{background:#25d366;left:74px}
+.fab-telegram{background:#1da1f2}
+
+/* تحسين RTL على الشاشات الصغيرة */
+@media (max-width: 576px){
+  .search-input{min-width:140px}
+}
