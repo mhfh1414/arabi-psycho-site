@@ -1,28 +1,51 @@
 {% extends "base.html" %}
-{% set active = 'dsm' %}
+{% block title %}{{ item.name_ar or item.name }}{% endblock %}
 {% block content %}
-<a class="btn btn-link px-0 mb-3" href="{{ url_for('dsm_index') }}">&larr; الرجوع إلى الفئات</a>
+<nav class="mb-3">
+  <a href="{{ url_for('dsm_list') }}" class="text-decoration-none"><i class="bi bi-arrow-right-short"></i> العودة إلى DSM-5</a>
+</nav>
 
-<div class="card card-soft">
-  <div class="card-body">
-    <h1 class="h5 mb-2">{{ data.name_ar if data else name }}</h1>
-    {% if data %}
-      {% if data.summary %}<p class="mb-2">{{ data.summary }}</p>{% endif %}
-      {% if data.criteria %}
-        <h2 class="h6 mt-3">المعايير التشخيصية</h2>
-        <ul class="mb-2">
-          {% for c in data.criteria %}<li>{{ c }}</li>{% endfor %}
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-body">
+        <h3 class="mb-3">{{ item.name_ar or item.name }}</h3>
+
+        {% if item.criteria %}
+          <h5 class="mb-2">المعايير/الأعراض</h5>
+          <ul class="bullets">
+            {% for c in item.criteria %}<li>{{ c }}</li>{% endfor %}
+          </ul>
+          <hr>
+        {% endif %}
+
+        {% if item.treatment %}
+          <h5 class="mb-2">الخطة العلاجية (CBT/إرشادية)</h5>
+          <ol class="steps">
+            {% for s in item.treatment %}<li>{{ s }}</li>{% endfor %}
+          </ol>
+        {% endif %}
+
+        {% if item.notes %}
+          <hr>
+          <div class="text-muted">{{ item.notes }}</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-body">
+        <div class="fw-bold mb-2">معلومات سريعة</div>
+        <ul class="list-unstyled small">
+          {% if category %}<li>الفئة: {{ category.name_ar or category.name }}</li>{% endif %}
+          {% if item.code %}<li>الرمز/الكود: {{ item.code }}</li>{% endif %}
+          {% if item.duration %}<li>المدة: {{ item.duration }}</li>{% endif %}
+          {% if item.severity %}<li>الحدة: {{ item.severity }}</li>{% endif %}
         </ul>
-      {% endif %}
-      {% if data.notes %}
-        <h2 class="h6 mt-3">ملاحظات</h2>
-        <ul class="mb-0">
-          {% for n in data.notes %}<li>{{ n }}</li>{% endfor %}
-        </ul>
-      {% endif %}
-    {% else %}
-      <div class="text-muted">لا توجد بيانات.</div>
-    {% endif %}
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}
