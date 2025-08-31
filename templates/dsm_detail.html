@@ -1,19 +1,36 @@
 {% extends "base.html" %}
+{% block title %}DSM-5 علاج{% endblock %}
 {% block content %}
-<div class="container">
-  <div class="card">
-    <h1>{{ item.name_ar or item.name }}</h1>
-    {% if item.desc %}<p>{{ item.desc }}</p>{% endif %}
-    {% if item.criteria %}<h3>المعايير التشخيصية</h3><p>{{ item.criteria }}</p>{% endif %}
-    <h3>خطة علاج مقترحة (CBT)</h3>
-    <ul>
-      <li>تثقيف نفسي عن الاضطراب</li>
-      <li>تحديد الأفكار التلقائية والمعتقدات الجوهرية</li>
-      <li>تقنيات إعادة البناء المعرفي</li>
-      <li>تعريض تدريجي/منع استجابة (عند الحاجة)</li>
-      <li>واجبات منزلية ومراقبة الأعراض</li>
+<h2>DSM-5 — دليل الاضطرابات والعلاج</h2>
+
+<form class="search-large" action="{{ url_for('dsm') }}">
+  <input name="q" placeholder="ابحث باسم الاضطراب بالعربية أو الإنجليزية" value="{{ q or '' }}">
+  <button type="submit">بحث</button>
+</form>
+
+{% if q and hits is not none %}
+  <p class="muted">نتائج البحث عن: <b>{{ q }}</b> ({{ hits|length }})</p>
+  <ul class="list">
+  {% for h in hits %}
+    <li>
+      <a href="{{ url_for('dsm_detail', cat=h.category, item_id=h.item.id) }}">
+        {{ h.item.name_ar }} <span class="muted">({{ h.item.code or h.category }})</span>
+      </a>
+    </li>
+  {% endfor %}
+  </ul>
+{% elif categories %}
+  {% for cat_key, cat in categories.items() %}
+    <h3 class="cat-title">{{ cat.name_ar or cat_key }}</h3>
+    <ul class="list two-col">
+    {% for it in cat.items %}
+      <li>
+        <a href="{{ url_for('dsm_detail', cat=cat_key, item_id=it.id) }}">{{ it.name_ar }}</a>
+      </li>
+    {% endfor %}
     </ul>
-    <a class="btn btn-primary" href="{{ url_for('cbt_home') }}">اذهب إلى برامج CBT</a>
-  </div>
-</div>
+  {% endfor %}
+{% else %}
+  <p class="muted">لا توجد بيانات لعرضها.</p>
+{% endif %}
 {% endblock %}
