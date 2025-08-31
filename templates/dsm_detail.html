@@ -1,51 +1,19 @@
 {% extends "base.html" %}
-{% block title %}{{ item.name_ar or item.name }}{% endblock %}
 {% block content %}
-<nav class="mb-3">
-  <a href="{{ url_for('dsm_list') }}" class="text-decoration-none"><i class="bi bi-arrow-right-short"></i> العودة إلى DSM-5</a>
-</nav>
-
-<div class="row g-3">
-  <div class="col-lg-8">
-    <div class="card">
-      <div class="card-body">
-        <h3 class="mb-3">{{ item.name_ar or item.name }}</h3>
-
-        {% if item.criteria %}
-          <h5 class="mb-2">المعايير/الأعراض</h5>
-          <ul class="bullets">
-            {% for c in item.criteria %}<li>{{ c }}</li>{% endfor %}
-          </ul>
-          <hr>
-        {% endif %}
-
-        {% if item.treatment %}
-          <h5 class="mb-2">الخطة العلاجية (CBT/إرشادية)</h5>
-          <ol class="steps">
-            {% for s in item.treatment %}<li>{{ s }}</li>{% endfor %}
-          </ol>
-        {% endif %}
-
-        {% if item.notes %}
-          <hr>
-          <div class="text-muted">{{ item.notes }}</div>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-
-  <div class="col-lg-4">
-    <div class="card">
-      <div class="card-body">
-        <div class="fw-bold mb-2">معلومات سريعة</div>
-        <ul class="list-unstyled small">
-          {% if category %}<li>الفئة: {{ category.name_ar or category.name }}</li>{% endif %}
-          {% if item.code %}<li>الرمز/الكود: {{ item.code }}</li>{% endif %}
-          {% if item.duration %}<li>المدة: {{ item.duration }}</li>{% endif %}
-          {% if item.severity %}<li>الحدة: {{ item.severity }}</li>{% endif %}
-        </ul>
-      </div>
-    </div>
+<div class="container">
+  <div class="card">
+    <h1>{{ item.name_ar or item.name }}</h1>
+    {% if item.desc %}<p>{{ item.desc }}</p>{% endif %}
+    {% if item.criteria %}<h3>المعايير التشخيصية</h3><p>{{ item.criteria }}</p>{% endif %}
+    <h3>خطة علاج مقترحة (CBT)</h3>
+    <ul>
+      <li>تثقيف نفسي عن الاضطراب</li>
+      <li>تحديد الأفكار التلقائية والمعتقدات الجوهرية</li>
+      <li>تقنيات إعادة البناء المعرفي</li>
+      <li>تعريض تدريجي/منع استجابة (عند الحاجة)</li>
+      <li>واجبات منزلية ومراقبة الأعراض</li>
+    </ul>
+    <a class="btn btn-primary" href="{{ url_for('cbt_home') }}">اذهب إلى برامج CBT</a>
   </div>
 </div>
 {% endblock %}
