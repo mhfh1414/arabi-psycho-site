@@ -5,7 +5,13 @@
 كل اختبار: { key, name, about, scale, items: [{id, text}], interpret(total)->str }
 تقويم الدرجات: score_test(test_key, answers)
 """
-
+def get_scale_options(test_key: str):
+    """
+    ترجع خيارات الاستجابة للاختبارات النفسية.
+    ممكن تطورها لاحقاً بحيث كل اختبار له خيارات خاصة.
+    الآن افتراضياً: 0=أبداً ... 3=دائماً.
+    """
+    return [0, 1, 2, 3]
 from __future__ import annotations
 from typing import Dict, Any, List
 
