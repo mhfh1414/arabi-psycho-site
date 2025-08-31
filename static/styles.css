@@ -1,59 +1,36 @@
-/* ألوان وهوية */
 :root{
-  --blue:#0d47a1;        /* كحلي */
-  --blue-2:#1565c0;      /* سماوي غامق */
-  --sky:#42a5f5;         /* سماوي */
-  --bg:#0b1c2b;          /* خلفية داكنة أنيقة */
+  --primary:#0d47a1;    /* كحلي */
+  --primary-2:#1565c0;  /* سماوي غامق */
+  --accent:#26c6da;     /* سماوي فاتح */
 }
 
-body.app-body{background:#f7fbff;}
-.main-nav{
-  background:linear-gradient(90deg,var(--blue),var(--blue-2));
-}
-.logo{letter-spacing:.5px}
+.bg-primary{ background-color: var(--primary) !important; }
 
-/* HERO */
 .hero{
-  background:radial-gradient(1000px 400px at 50% -100px, var(--sky), var(--blue));
-  color:#fff; padding:64px 0 56px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
 }
 
-/* بطاقات وقوائم */
-.section-title{font-weight:800;margin-bottom:16px;color:var(--blue)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
-.card{border:0;border-radius:14px;box-shadow:0 6px 20px rgba(13,71,161,.08);padding:14px;background:#fff;transition:.2s}
-.card:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(13,71,161,.14)}
-.card-title{font-weight:700}
-.card-sub{color:#637086;font-size:.9rem}
-
-/* عناوين */
-.cat-title{margin:18px 0 8px;font-weight:800;color:#16355e}
-
-/* بحث */
-.search-input{min-width:220px}
-
-/* قوائم نقطية وخطوات */
-.bullets{padding-inline-start:20px}
-.steps{padding-inline-start:20px}
-.bullets li,.steps li{margin:.3rem 0}
-
-/* فوتر */
-.app-footer{
-  background:#0e1e31;color:#c9d3e4;padding:14px 0;margin-top:32px
+.floating-btn{
+  position: fixed;
+  bottom: 18px;
+  left: 18px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  text-decoration: none;
+  z-index: 1050;
+  box-shadow: 0 8px 24px rgba(0,0,0,.2);
 }
+.floating-btn.telegram{ left: 74px; background:#229ED9; }
+.floating-btn.whatsapp{ background:#25D366; }
 
-/* أزرار عائمة */
-.fab{
-  position:fixed;bottom:18px;left:18px;
-  width:46px;height:46px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-size:22px;color:#fff;text-decoration:none;
-  box-shadow:0 10px 25px rgba(0,0,0,.18);
+.btn-primary{
+  background-color: var(--primary);
+  border-color: var(--primary);
 }
-.fab-whatsapp{background:#25d366;left:74px}
-.fab-telegram{background:#1da1f2}
+.btn-primary:hover{ background-color: var(--primary-2); border-color: var(--primary-2); }
 
-/* تحسين RTL على الشاشات الصغيرة */
-@media (max-width: 576px){
-  .search-input{min-width:140px}
-}
+.navbar .form-control{ min-width: 240px; }
