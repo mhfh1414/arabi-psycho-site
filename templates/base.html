@@ -1,30 +1,78 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-deep sticky-top shadow-sm">
-  <div class="container">
-    <!-- الشعار يمين -->
-    <a class="navbar-brand fw-extrabold" href="/">🌿 عربي سايكو</a>
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}عربي سايكو{% endblock %}</title>
 
-    <!-- زر فتح القائمة في الجوال -->
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+  <!-- Bootstrap RTL -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- Custom -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="app-body">
+  <!-- NAV -->
+  <nav class="navbar navbar-expand-lg navbar-dark shadow-sm main-nav">
+    <div class="container">
+      <a class="navbar-brand fw-bold logo" href="{{ url_for('index') }}">🌿 عربي سايكو</a>
 
-    <div id="navMenu" class="collapse navbar-collapse">
-      <!-- الروابط وسط -->
-      <ul class="navbar-nav mx-auto gap-lg-2 my-2 my-lg-0">
-        <li class="nav-item"><a class="nav-link" href="/">الرئيسية</a></li>
-        <li class="nav-item"><a class="nav-link" href="/cbt">CBT</a></li>
-        <li class="nav-item"><a class="nav-link" href="/dsm">DSM-5</a></li>
-        <li class="nav-item"><a class="nav-link" href="/tests">الاختبارات</a></li>
-        <li class="nav-item"><a class="nav-link" href="/case_study">دراسة حالة</a></li>
-      </ul>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-      <!-- البحث أقصى اليسار مع أيقونات واضحة -->
-      <form class="d-flex align-items-center gap-2 ms-lg-3" role="search" action="/search" method="get">
-        <input class="form-control form-control-sm header-search" name="q" type="search" placeholder="ابحث في DSM-5 / CBT …" aria-label="Search">
-        <button class="btn btn-sky btn-sm px-3" type="submit">بحث</button>
-        <a class="icon-btn wa2" href="https://wa.me/966500000000" target="_blank" title="WhatsApp" aria-label="WhatsApp"></a>
-        <a class="icon-btn tg2" href="https://t.me/your_telegram" target="_blank" title="Telegram" aria-label="Telegram"></a>
-      </form>
+      <div class="collapse navbar-collapse" id="mainNav">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">الرئيسية</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('dsm_list') }}">DSM-5 (علاجي)</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('cbt') }}">CBT</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('case_study') }}">دراسة حالة</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('tests') }}">الاختبارات</a></li>
+        </ul>
+
+        <!-- Search (يسار) -->
+        <form class="d-flex" role="search" action="{{ url_for('dsm_list') }}" method="get">
+          <input class="form-control form-control-sm search-input" name="q" type="search" placeholder="ابحث في DSM…">
+          <button class="btn btn-sm btn-outline-light ms-2"><i class="bi bi-search"></i></button>
+        </form>
+      </div>
     </div>
-  </div>
-</nav>
+  </nav>
+
+  <!-- HERO مختصر في الصفحة الرئيسية فقط -->
+  {% if request.endpoint == 'index' %}
+  <header class="hero">
+    <div class="container text-center">
+      <h1 class="display-6 fw-bold mb-3">صحتك النفسية أولويتنا</h1>
+      <p class="lead mb-4">منصة علاجية مبسّطة تعتمد DSM-5 و تقنيات CBT، بالعربية.</p>
+      <div class="d-flex gap-2 justify-content-center">
+        <a class="btn btn-light btn-lg" href="{{ url_for('dsm_list') }}"><i class="bi bi-journal-medical me-1"></i> ابدأ علاج DSM-5</a>
+        <a class="btn btn-outline-light btn-lg" href="{{ url_for('cbt') }}"><i class="bi bi-brightness-high me-1"></i> بروتوكول CBT</a>
+      </div>
+    </div>
+  </header>
+  {% endif %}
+
+  <main class="container py-4">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="app-footer">
+    <div class="container d-flex justify-content-between small">
+      <span>© 2025 عربي سايكو — جميع الحقوق محفوظة</span>
+      <span class="text-muted">نسخة تعليمية مخصصة لعلاجية DSM/CBT</span>
+    </div>
+  </footer>
+
+  <!-- واتساب / تيليجرام عائمة -->
+  <a class="fab fab-whatsapp" href="https://wa.me/000000000000" target="_blank" aria-label="واتساب">
+    <i class="bi bi-whatsapp"></i>
+  </a>
+  <a class="fab fab-telegram" href="https://t.me/your_username" target="_blank" aria-label="تيليجرام">
+    <i class="bi bi-telegram"></i>
+  </a>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
