@@ -2,17 +2,38 @@
 {% block title %}الاختبارات النفسية والشخصية{% endblock %}
 {% block content %}
 <h2>الاختبارات</h2>
-<p class="muted">نتائج هذه الاختبارات مؤشرات أولية، وليست تشخيصًا.</p>
 
-<div class="cards four">
-  <a class="card link" href="?t=gad7"><h4>قلق (GAD-7)</h4><p>تقدير شدة القلق خلال أسبوعين.</p></a>
-  <a class="card link" href="?t=phq9"><h4>اكتئاب (PHQ-9)</h4><p>تقدير شدة الاكتئاب.</p></a>
-  <a class="card link" href="?t=oci"><h4>وسواس قهري (OCI-R)</h4><p>مؤشر أعراض وسواس.</p></a>
-  <a class="card link" href="?t=bfi"><h4>اختبار شخصية (Big-5)</h4><p>السمات الخمس الكبرى.</p></a>
+{% if recommended %}
+  <div class="card">
+    <h3>اختبارات مقترحة لحالتك</h3>
+    <div class="chips">
+      {% for key in recommended %}
+        {% set t = psych_tests.get(key) or pers_tests.get(key) %}
+        <a class="chip" href="{{ url_for('test_start', test_key=key, case_id=case_id) }}">{{ t['title'] }}</a>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+<h3>اختبارات نفسية</h3>
+<div class="grid">
+  {% for key, t in psych_tests.items() %}
+    <div class="card">
+      <h4>{{ t['title'] }}</h4>
+      <p class="muted">{{ t['desc'] }}</p>
+      <a class="btn small" href="{{ url_for('test_start', test_key=key, case_id=case_id) }}">ابدأ</a>
+    </div>
+  {% endfor %}
 </div>
 
-<div class="card">
-  <h3>إضافة اختبارات أخرى</h3>
-  <p class="muted">أرسل لي أسماء المقاييس التي ترغب بها وسأضيف نماذجها مع التصحيح الآلي.</p>
+<h3>اختبارات شخصية</h3>
+<div class="grid">
+  {% for key, t in pers_tests.items() %}
+    <div class="card">
+      <h4>{{ t['title'] }}</h4>
+      <p class="muted">{{ t['desc'] }}</p>
+      <a class="btn small" href="{{ url_for('test_start', test_key=key, case_id=case_id) }}">ابدأ</a>
+    </div>
+  {% endfor %}
 </div>
 {% endblock %}
