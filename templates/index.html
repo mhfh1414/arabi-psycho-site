@@ -1,34 +1,35 @@
 {% extends "base.html" %}
+{% block title %}الرئيسية — عربي سايكو{% endblock %}
 {% block content %}
-
-<section class="grid">
-  <!-- DSM -->
-  <div class="card">
-    <h2>DSM-5 علاج</h2>
-    <p>اكتشف قائمة الأمراض النفسية مع خطط علاجية متكاملة.</p>
-    <a href="{{ url_for('dsm') }}" class="btn btn-primary">ابدأ العلاج</a>
-  </div>
-
-  <!-- CBT -->
-  <div class="card">
-    <h2>العلاج السلوكي المعرفي CBT</h2>
-    <p>برنامج علاجي شامل مع نماذج وخطط علاجية جاهزة.</p>
-    <a href="{{ url_for('cbt') }}" class="btn btn-accent">ابدأ البرنامج</a>
-  </div>
-
-  <!-- Tests -->
-  <div class="card">
-    <h2>الاختبارات النفسية</h2>
-    <p>مجموعة واسعة من الاختبارات النفسية والشخصية.</p>
-    <a href="{{ url_for('tests') }}" class="btn btn-primary">اختر اختبارك</a>
-  </div>
-
-  <!-- Case Study -->
-  <div class="card">
-    <h2>دراسة حالة</h2>
-    <p>نموذج دراسة حالة إلكترونية لتقييم وتشخيص العميل.</p>
-    <a href="{{ url_for('case_study') }}" class="btn btn-accent">ابدأ النموذج</a>
+<section class="hero">
+  <h1>صحتك النفسية أولويتنا</h1>
+  <p>منصة عربية لعلاج معرفي سلوكي (CBT) وخطط علاج وفق DSM-5، مع اختبارات نفسية وشخصية.</p>
+  <div class="hero-actions">
+    <a class="btn primary" href="{{ url_for('dsm') }}">ابدأ علاج DSM-5</a>
+    <a class="btn outline" href="{{ url_for('cbt') }}">برنامج CBT</a>
   </div>
 </section>
 
+<section class="grid">
+  <article class="card">
+    <h3>DSM-5</h3>
+    <p>بحث سريع وخطط علاج مختصرة لكل اضطراب.</p>
+    <a class="btn small" href="{{ url_for('dsm') }}">افتح DSM-5</a>
+  </article>
+  <article class="card">
+    <h3>CBT</h3>
+    <p>برنامج 12 جلسة بخطوات عملية وتمارين منزلية.</p>
+    <a class="btn small" href="{{ url_for('cbt') }}">ابدأ البرنامج</a>
+  </article>
+  <article class="card">
+    <h3>الاختبارات</h3>
+    <p>قلق، اكتئاب، وسواس، وشخصية — أضفنا الأساس وجاهز للتوسّع.</p>
+    <a class="btn small" href="{{ url_for('tests') }}">تصفّح الاختبارات</a>
+  </article>
+  <article class="card">
+    <h3>دراسة حالة</h3>
+    <p>نموذج إلكتروني شامل لتوثيق الحالة وخطة العلاج.</p>
+    <a class="btn small" href="{{ url_for('case_study') }}">افتح النموذج</a>
+  </article>
+</section>
 {% endblock %}
