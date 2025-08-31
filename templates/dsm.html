@@ -1,32 +1,43 @@
 {% extends "base.html" %}
-{% block title %}DSM-5 — عربي سايكو{% endblock %}
+{% block title %}DSM-5 (علاجي){% endblock %}
 {% block content %}
-<section class="container py-5">
-  <div class="d-flex align-items-center justify-content-between mb-4">
-    <h2 class="fw-bold mb-0 text-primary">DSM-5</h2>
-    <form class="d-flex" action="/search" method="get">
-      <input type="hidden" name="scope" value="dsm">
-      <input class="form-control me-2" type="search" name="q" placeholder="ابحث داخل DSM-5…">
-      <button class="btn btn-sky">بحث</button>
-    </form>
-  </div>
+<h2 class="section-title">دليل DSM-5 العلاجي</h2>
 
-  {% if categories %}
-    <div class="row g-3">
-      {% for cat in categories %}
-        <div class="col-md-6 col-lg-4">
-          <a class="card h-100 text-decoration-none shadow-sm hover-up" href="/dsm/{{ cat.key }}">
-            <div class="card-body">
-              <div class="small text-muted mb-1">{{ cat.key }}</div>
-              <h5 class="card-title fw-bold text-dark">{{ cat.title }}</h5>
-              <p class="card-text text-secondary mb-0">{{ cat.summary or '...' }}</p>
-            </div>
-          </a>
-        </div>
+<form class="row gy-2 align-items-center mb-3" method="get" action="{{ url_for('dsm_list') }}">
+  <div class="col-auto">
+    <input class="form-control" name="q" placeholder="ابحث باسم الاضطراب أو كلمة مفتاحية…" value="{{ q or '' }}">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-primary"><i class="bi bi-search"></i> بحث</button>
+  </div>
+</form>
+
+{% if q %}
+  <p class="text-muted">نتائج البحث عن: <strong>{{ q }}</strong></p>
+  {% if results and results|length %}
+    <div class="grid">
+      {% for hit in results %}
+        <a class="card" href="{{ url_for('dsm_detail', cat_key=hit.category, item_key=hit.item.id) }}">
+          <div class="card-title">{{ hit.item.name_ar or hit.item.name }}</div>
+          {% if hit.item.short %}<div class="card-sub">{{ hit.item.short }}</div>{% endif %}
+        </a>
       {% endfor %}
     </div>
   {% else %}
-    <div class="alert alert-info">لا توجد بيانات DSM-5 محمّلة حاليًا.</div>
+    <div class="alert alert-warning">لا توجد نتائج مطابقة.</div>
   {% endif %}
-</section>
+{% else %}
+  {% for key, cat in categories.items() %}
+    <h5 class="cat-title">{{ cat.name_ar or cat.name }}</h5>
+    <div class="grid">
+      {% for it in cat.get("items", []) %}
+        <a class="card" href="{{ url_for('dsm_detail', cat_key=key, item_key=it.id) }}">
+          <div class="card-title">{{ it.name_ar or it.name }}</div>
+          {% if it.short %}<div class="card-sub">{{ it.short }}</div>{% endif %}
+        </a>
+      {% endfor %}
+    </div>
+    <hr class="my-3">
+  {% endfor %}
+{% endif %}
 {% endblock %}
