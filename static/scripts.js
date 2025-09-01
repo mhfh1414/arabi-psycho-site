@@ -1,33 +1,30 @@
-// scripts.js - عربي سايكو
+// scripts.js
+// أكواد بسيطة لدعم الواجهة والتعامل مع الفورمات
 
-document.addEventListener("DOMContentLoaded", function () {
-    console.log("✅ موقع عربي سايكو شغال بنجاح");
-
-    // 📋 تأكيد قبل إرسال دراسة الحالة
-    const caseForm = document.querySelector("#case-form");
-    if (caseForm) {
-        caseForm.addEventListener("submit", function (e) {
-            if (!confirm("هل أنت متأكد من حفظ دراسة الحالة؟")) {
-                e.preventDefault();
-            }
-        });
-    }
-
-    // 🔔 إخفاء رسائل التنبيه (Flash messages) بعد 5 ثوانٍ
-    const flashMessages = document.querySelectorAll(".flash-message");
-    flashMessages.forEach(msg => {
-        setTimeout(() => {
-            msg.style.opacity = "0";
-            setTimeout(() => msg.remove(), 600);
-        }, 5000);
+// تأكيد قبل إرسال دراسة الحالة
+document.addEventListener("DOMContentLoaded", () => {
+  const caseForm = document.querySelector("form#caseForm");
+  if (caseForm) {
+    caseForm.addEventListener("submit", (e) => {
+      const confirmSend = confirm("هل أنت متأكد من إرسال دراسة الحالة؟");
+      if (!confirmSend) {
+        e.preventDefault();
+      }
     });
+  }
 
-    // 📝 تمييز السؤال الحالي في صفحة الاختبار
-    const questions = document.querySelectorAll(".test-question");
-    questions.forEach(q => {
-        q.addEventListener("click", () => {
-            questions.forEach(el => el.classList.remove("active"));
-            q.classList.add("active");
-        });
+  // تحسين تجربة أزرار الاختبارات
+  const testForms = document.querySelectorAll("form.testForm");
+  testForms.forEach((form) => {
+    form.addEventListener("submit", (e) => {
+      const unanswered = form.querySelectorAll("input[type='radio']:not(:checked)");
+      if (unanswered.length > 0) {
+        const ok = confirm("بعض الأسئلة لم تُجب عليها، هل تريد المتابعة؟");
+        if (!ok) e.preventDefault();
+      }
     });
+  });
+
+  // إشعار بسيط عند تحميل الصفحة
+  console.log("✅ تم تحميل الواجهة - عربي سايكو يعمل الآن");
 });
