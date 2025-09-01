@@ -1,8 +1,4 @@
 Flask==2.3.3
 Flask-SQLAlchemy==3.0.5
+SQLAlchemy>=2.0,<3.0
 gunicorn==21.2.0
-
-# لو حاب تضيف مميزات إضافية لاحقًا
-# email-validator
-# python-dotenv
-# requests
