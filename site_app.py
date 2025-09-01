@@ -1,166 +1,46 @@
-# -*- coding: utf-8 -*-
-"""
-الموقع الرئيسي: عربي سايكو
-يدمج DSM + CBT + اختبارات نفسية وشخصية + دراسة حالة
-"""
+from flask import Flask, render_template, request, redirect, url_for
+from modules import PSYCH_TESTS, score_psych, PERS_TESTS, score_personality, recommend_tests_from_case
 
-from flask import Flask, render_template, request, redirect, url_for, flash, session
-from datetime import datetime
-import os
-
-# ------------------ قاعدة البيانات ------------------
-from models import db, PatientCase, TestResult
-
-# ------------------ الوحدات (داخل modules) ------------------
-from modules.tests_psych import PSYCH_TESTS, score_test as score_psych
-from modules.tests_personality import PERS_TESTS, score_personality
-from modules.recommend import recommend_tests_from_case
-
-# ------------------ DSM ------------------
-try:
-    from DSM5.dsm import get_all_disorders as dsm_all, get_disorder_by_key, get_disorder_by_id
-except Exception:
-    dsm_all = lambda: []
-    def get_disorder_by_key(_): return {}
-    def get_disorder_by_id(_): return {}
-
-# ================== إعداد التطبيق ==================
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "arabi-psycho-secret"
 
-# قاعدة البيانات SQLite
-os.makedirs("data", exist_ok=True)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data/psycho.db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-db.init_app(app)
-
-with app.app_context():
-    db.create_all()
-
-# ================== صفحات عامة ==================
-@app.route("/")
+@app.route('/')
 def index():
-    return render_template("index.html")
+    return render_template('index.html')
 
-@app.route("/cbt")
-def cbt():
-    return render_template("cbt.html")
-
-@app.route("/dsm")
+@app.route('/dsm')
 def dsm():
-    disorders = dsm_all()
-    return render_template("dsm.html", disorders=disorders)
+    return render_template('dsm.html')
 
-@app.route("/dsm/<key>")
-def dsm_detail(key):
-    item = get_disorder_by_key(key) or {}
-    if not item and key.isdigit():
-        item = get_disorder_by_id(int(key)) or {}
-    if not item:
-        flash("الاضطراب المطلوب غير موجود.")
-        return redirect(url_for("dsm"))
-    return render_template("dsm_detail.html", item=item)
+@app.route('/dsm/<string:diagnosis>')
+def dsm_detail(diagnosis):
+    return render_template('dsm_detail.html', diagnosis=diagnosis)
 
-# ================== الاختبارات ==================
-@app.route("/tests")
+@app.route('/tests')
 def tests():
-    case_id = request.args.get("case_id", type=int)
-    recommended = []
-    if case_id:
-        case = PatientCase.query.get(case_id)
-        if case:
-            recommended = recommend_tests_from_case(
-                case.presenting_problem or "", case.symptoms_text or ""
-            )
-    return render_template(
-        "tests.html",
-        psych_tests=PSYCH_TESTS,
-        pers_tests=PERS_TESTS,
-        recommended=recommended,
-        case_id=case_id,
-    )
+    return render_template('tests.html', 
+                           psych_tests=PSYCH_TESTS, 
+                           pers_tests=PERS_TESTS)
 
-@app.route("/tests/start/<test_key>", methods=["GET", "POST"])
-def test_start(test_key):
-    case_id = request.args.get("case_id", type=int)
-    test = PSYCH_TESTS.get(test_key) or PERS_TESTS.get(test_key)
-    if not test:
-        flash("الاختبار غير موجود.")
-        return redirect(url_for("tests"))
-
-    if request.method == "POST":
-        # جمع الإجابات
-        answers = {}
-        for idx, _ in enumerate(test.get("questions", []), start=1):
-            field = f"q{idx}"
-            if field not in request.form:
-                flash("الرجاء الإجابة على جميع البنود.")
-                return render_template("test_run.html", test=test, case_id=case_id)
-            try:
-                answers[idx] = int(request.form[field])
-            except ValueError:
-                answers[idx] = 0
-
-        # التصحيح
-        if test_key in PSYCH_TESTS:
-            result = score_psych(test_key, list(answers.values()))
+@app.route('/tests/run/<string:test_type>/<string:test_name>', methods=['GET', 'POST'])
+def test_run(test_type, test_name):
+    if request.method == 'POST':
+        answers = request.form.to_dict()
+        if test_type == 'psych':
+            score = score_psych(test_name, answers)
         else:
-            result = score_personality(test_key, list(answers.values()))
+            score = score_personality(test_name, answers)
+        return render_template('test_result.html', score=score, test_name=test_name)
 
-        # حفظ النتيجة
-        tr = TestResult(
-            case_id=case_id,
-            test_key=test_key,
-            score_total=result.get("total", 0),
-            score_json=result,
-            created_at=datetime.utcnow(),
-        )
-        db.session.add(tr)
-        db.session.commit()
-        return redirect(url_for("test_result", result_id=tr.id))
+    return render_template('test_run.html', test_type=test_type, test_name=test_name)
 
-    return render_template("test_run.html", test=test, case_id=case_id)
-
-@app.route("/tests/result/<int:result_id>")
-def test_result(result_id):
-    tr = TestResult.query.get_or_404(result_id)
-    test = PSYCH_TESTS.get(tr.test_key) or PERS_TESTS.get(tr.test_key) or {}
-    return render_template("test_result.html", result=tr, test=test)
-
-# ================== دراسة الحالة ==================
-@app.route("/case-study", methods=["GET", "POST"])
+@app.route('/case-study', methods=['GET', 'POST'])
 def case_study():
-    if request.method == "POST":
-        data = request.form
-        pc = PatientCase(
-            name=data.get("name"),
-            age=data.get("age", type=int),
-            sex=data.get("sex"),
-            marital=data.get("marital"),
-            presenting_problem=data.get("presenting_problem"),
-            symptoms_text=data.get("symptoms"),
-            contact=data.get("contact"),
-            created_at=datetime.utcnow(),
-        )
-        db.session.add(pc)
-        db.session.commit()
+    if request.method == 'POST':
+        case_data = request.form.to_dict()
+        recommendations = recommend_tests_from_case(case_data)
+        return render_template('case_study.html', recommendations=recommendations)
+    return render_template('case_study.html')
 
-        # توصية بالاختبارات
-        rec = recommend_tests_from_case(pc.presenting_problem or "", pc.symptoms_text or "")
-        session["recommended_tests"] = rec
-        flash("تم حفظ دراسة الحالة. جهّزنا لك اختبارات مناسبة.")
-        return redirect(url_for("tests", case_id=pc.id))
-    return render_template("case_study.html")
-
-# ================== صفحات أخطاء ==================
-@app.errorhandler(404)
-def not_found(_e):
-    return render_template("404.html"), 404
-
-@app.errorhandler(500)
-def server_error(_e):
-    return render_template("500.html"), 500
-
-# ================== تشغيل محلي ==================
+# تشغيل التطبيق
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000)
