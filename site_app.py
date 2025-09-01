@@ -1,42 +1,33 @@
-# -*- coding: utf-8 -*-
-import os, sys
-from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, session
+from datetime import datetime
+import os
 
-# =========[ تأمين مسار المشروع ]=========
-# نضيف مجلد المشروع (الذي يحتوي modules و DSM5) إلى sys.path
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-if BASE_DIR not in sys.path:
-    sys.path.insert(0, BASE_DIR)
-
-# =========[ الاستيرادات الداخلية ]=========
+# قاعدة البيانات والنماذج
 from models import db, PatientCase, TestResult
+# الاختبارات
+from tests_psych import PSYCH_TESTS, score_test as score_psych
+from tests_personality import PERS_TESTS, score_personality
+# التوصية بالاختبارات بعد دراسة الحالة
+from recommend import recommend_tests_from_case
 
-# اختبارات نفسية + شخصية
-from modules.tests_psych import PSYCH_TESTS, score_test as score_psych
-from modules.tests_personality import PERS_TESTS, score_personality
-from modules.recommend import recommend_tests_from_case
-
-# DSM (اختياري: إن تعطل الاستيراد نرجّع قائمة فاضية حتى يعمل الموقع)
+# DSM (اختياري للعرض/التكامل لاحقاً)
 try:
     from DSM5.dsm import get_all_disorders as dsm_all
 except Exception:
     dsm_all = lambda: []
 
-# =========[ تهيئة التطبيق ]=========
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "arabi-psycho-secret"
-
-# قاعدة البيانات (SQLite داخل مجلد data)
-os.makedirs(os.path.join(BASE_DIR, "data"), exist_ok=True)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(BASE_DIR, "data", "psycho.db")
+os.makedirs("data", exist_ok=True)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data/psycho.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 
 with app.app_context():
     db.create_all()
 
-# =========[ صفحات عامة ]=========
+# ------------------ صفحات عامة ------------------
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -50,7 +41,8 @@ def dsm():
     disorders = dsm_all()  # إن لم تكن متاحة تعود قائمة فاضية
     return render_template("dsm.html", disorders=disorders)
 
-# =========[ الاختبارات ]=========
+# ------------------ الاختبارات ------------------
+
 @app.route("/tests")
 def tests():
     case_id = request.args.get("case_id", type=int)
@@ -111,7 +103,8 @@ def test_result(result_id):
     test = PSYCH_TESTS.get(tr.test_key) or PERS_TESTS.get(tr.test_key)
     return render_template("test_result.html", result=tr, test=test)
 
-# =========[ دراسة الحالة ]=========
+# ------------------ دراسة الحالة ------------------
+
 @app.route("/case-study", methods=["GET", "POST"])
 def case_study():
     if request.method == "POST":
@@ -131,21 +124,14 @@ def case_study():
 
         # توصية بالاختبارات
         rec = recommend_tests_from_case(pc.presenting_problem or "", pc.symptoms_text or "")
+        # نحفظها في السيشن مؤقتًا للعرض
         session["recommended_tests"] = rec
         flash("تم حفظ دراسة الحالة. جهّزنا لك اختبارات مناسبة.")
         return redirect(url_for("tests", case_id=pc.id))
 
     return render_template("case_study.html")
 
-# =========[ هاندلر أخطاء بسيطة ]=========
-@app.errorhandler(404)
-def not_found(e):
-    return render_template("404.html"), 404
+# ------------------ تشغيل محلي ------------------
 
-@app.errorhandler(500)
-def server_err(e):
-    return render_template("500.html"), 500
-
-# =========[ تشغيل محلي ]=========
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
