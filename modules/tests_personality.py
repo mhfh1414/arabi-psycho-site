@@ -1,24 +1,63 @@
-from __future__ import annotations
+# -*- coding: utf-8 -*-
+"""
+اختبارات الشخصية (Personality Tests)
+هذا الملف يحتوي على مقاييس بسيطة للشخصية.
+"""
 
-# اختبارات شخصية (مثال مبسّط Big Five قصير)
-PERS_TESTS = {
-    "bfi10": {
-        "title": "BFI-10 (العوامل الخمسة المختصر)",
-        "scale": {1:"لا أوافق إطلاقًا",2:"لا أوافق",3:"محايد",4:"أوافق",5:"أوافق جدًا"},
-        "items": [{"id": i+1, "text": f"عبارة شخصية {i+1}"} for i in range(10)],
-        "domains": ["الانبساط", "القبول", "الضمير", "العصابية", "الانفتاح"]
+from typing import Dict, Any, List
+
+# =====================================================
+# قاعدة بيانات مبسطة لاختبارات الشخصية
+# =====================================================
+
+PERS_TESTS: Dict[str, Dict[str, Any]] = {
+    "big5": {
+        "name": "اختبار العوامل الخمسة الكبرى (Big Five)",
+        "traits": ["الانفتاح", "الضمير الحي", "الانبساط", "التوافق", "العصابية"],
+        "questions": [
+            "أستمتع بتجربة أشياء جديدة",
+            "أحافظ على الترتيب في حياتي اليومية",
+            "أستمتع بالتفاعل مع الآخرين",
+            "أساعد الآخرين عند الحاجة",
+            "أشعر بالقلق بسهولة"
+        ],
+        "scale": [1, 2, 3, 4, 5],
+        "interpretation": "كل بعد يُحسب متوسط درجته بشكل مستقل"
+    },
+    "mbti": {
+        "name": "مؤشر مايرز بريغز للأنماط (MBTI)",
+        "dimensions": ["E/I", "S/N", "T/F", "J/P"],
+        "questions": [
+            "أفضل قضاء الوقت مع مجموعة كبيرة من الناس",
+            "أركز على الحقائق أكثر من الأفكار المجردة",
+            "أتخذ قراراتي بناءً على المنطق أكثر من المشاعر",
+            "أفضل التخطيط المسبق بدلًا من العفوية"
+        ],
+        "scale": [0, 1],  # 0 = الخيار الأول, 1 = الخيار الثاني
+        "interpretation": "يتم تحديد النمط من خلال جمع الأبعاد الأربعة"
     }
 }
 
-def score_personality(test_key: str, answers: dict) -> dict:
+# =====================================================
+# دوال مساعدة
+# =====================================================
+
+def list_tests() -> List[str]:
+    """إرجاع قائمة اختبارات الشخصية المتاحة"""
+    return list(PERS_TESTS.keys())
+
+def get_test(test_key: str) -> Dict[str, Any]:
+    """إرجاع بيانات اختبار الشخصية"""
+    return PERS_TESTS.get(test_key, {})
+
+def score_personality(test_key: str, answers: List[int]) -> Dict[str, Any]:
+    """
+    حساب النتيجة لاختبار شخصية محدد.
+    - test_key: مفتاح الاختبار (big5, mbti)
+    - answers: قائمة الدرجات
+    """
     test = PERS_TESTS.get(test_key)
     if not test:
-        return {"total": 0, "profile": {}}
-    total = sum(int(answers.get(i["id"], 0)) for i in test["items"])
-    # توزيع صوري: كل مجال = مجموع بندين
-    profile = {}
-    for idx, dom in enumerate(test["domains"]):
-        a = int(answers.get(idx*2+1, 0))
-        b = int(answers.get(idx*2+2, 0))
-        profile[dom] = a + b
-    return {"total": total, "profile": profile}
+        return {"error": "اختبار غير موجود"}
+
+    result = {"test": test["name"]}
