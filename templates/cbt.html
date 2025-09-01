@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+{% block title %}برنامج CBT{% endblock %}
+{% block content %}
+<div class="container" dir="rtl">
+
+  <!-- Hero -->
+  <section class="hero card mb-4">
+    <h1 class="mb-2">برنامج العلاج المعرفي-السلوكي (CBT)</h1>
+    <p class="muted">
+      صفحة عملية تتضمن نماذج جاهزة للحفظ والطباعة، وخطة جلسات مختصرة، ومقاييس متابعة التقدم. كل نموذج يحفظ محلياً على جهازك (LocalStorage).
+    </p>
+    <div class="row gap-2 mt-3">
+      <a class="btn" href="{{ url_for('case_study') }}">العودة لدراسة الحالة</a>
+      <a class="btn" href="{{ url_for('tests') }}">الانتقال للاختبارات</a>
+    </div>
+  </section>
+
+  <!-- Psychoeducation -->
+  <section class="card mb-4" id="sec-psycho">
+    <div class="card-header">
+      <h2>١) التثقيف النفسي</h2>
+      <span class="muted">نموذج (مثير → فكرة → انفعال → سلوك) + دوائر الصيانة</span>
+    </div>
+    <div class="card-body">
+      <label class="label">الفكرة العامة للمشكلة</label>
+      <textarea id="psycho_overview" rows="3" placeholder="وصف مختصر للمشكلة كما يفهمها المريض"></textarea>
+
+      <div class="grid-2 mt-3">
+        <div>
+          <label class="label">المثيرات</label>
+          <textarea id="psycho_triggers" rows="5" placeholder="أماكن، أوقات، أشخاص، ذكريات..."></textarea>
+        </div>
+        <div>
+          <label class="label">سلوكيات الصيانة/الأمان</label>
+          <textarea id="psycho_safety" rows="5" placeholder="تجنب، طلب طمأنة، تفحص جسدي، عادات نوم..."></textarea>
+        </div>
+      </div>
+
+      <div class="row gap-2 mt-3">
+        <button class="btn" data-save="cbt_psycho">حفظ</button>
+        <button class="btn secondary" data-print="sec-psycho">طباعة</button>
+        <button class="btn ghost" data-export="cbt_psycho">تنزيل JSON</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Thought Record -->
+  <section class="card mb-4" id="sec-thought">
+    <div class="card-header">
+      <h2>٢) سجل الأفكار (إعادة البناء المعرفي)</h2>
+      <span class="muted">اتبع الخطوات: موقف → فكر تلقائي → انفعال (0-10) → دليل مع/ضد → فكرة بديلة → سلوك</span>
+    </div>
+    <div class="card-body">
+      <div class="grid-2">
+        <div>
+          <label class="label">الموقف</label>
+          <textarea id="th_situation" rows="3"></textarea>
+        </div>
+        <div>
+          <label class="label">الفكر التلقائي</label>
+          <textarea id="th_automatic" rows="3"></textarea>
+        </div>
+      </div>
+
+      <div class="grid-3 mt-3">
+        <div>
+          <label class="label">الانفعال</label>
+          <input id="th_emotion" type="text" placeholder="قلق/حزن/غضب..." />
+        </div>
+        <div>
+          <label class="label">الشدة (0-10)</label>
+          <input id="th_sud" type="number" min="0" max="10" value="6" />
+        </div>
+        <div>
+          <label class="label">السلوك</label>
+          <input id="th_behavior" type="text" placeholder="ما الذي فعلته؟" />
+        </div>
+      </div>
+
+      <div class="grid-2 mt-3">
+        <div>
+          <label class="label">دليل يدعم الفكرة</label>
+          <textarea id="th_evidence_for" rows="4"></textarea>
+        </div>
+        <div>
+          <label class="label">دليل يناقضها</label>
+          <textarea id="th_evidence_against" rows="4"></textarea>
+        </div>
+      </div>
+
+      <label class="label mt-3">فكرة بديلة/متوازنة</label>
+      <textarea id="th_alternative" rows="3"></textarea>
+
+      <div class="row gap-2 mt-3">
+        <button class="btn" data-save="cbt_thought">حفظ</button>
+        <button class="btn secondary" data-print="sec-thought">طباعة</button>
+        <button class="btn ghost" data-export="cbt_thought">تنزيل JSON</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Behavioral Activation -->
+  <section class="card mb-4" id="sec-ba">
+    <div class="card-header">
+      <h2>٣) التفعيل السلوكي</h2>
+      <span class="muted">جدول أسبوعي لأنشطة ممتعة وذات قيمة (صغيرة ومتدرجة)</span>
+    </div>
+    <div class="card-body">
+      <label class="label">قائمة أنشطة</label>
+      <textarea id="ba_list" rows="4" placeholder="أمثلة: 10 دقائق مشي، اتصال بصديق، قراءة 5 صفحات..."></textarea>
+
+      <label class="label mt-3">الجدولة لهذا الأسبوع</label>
+      <textarea id="ba_schedule" rows="5" placeholder="س: …، م: …، خ: …"></textarea>
+
+      <div class="row gap-2 mt-3">
+        <button class="btn" data-save="cbt_ba">حفظ</button>
+        <button class="btn secondary" data-print="sec-ba">طباعة</button>
+        <button class="btn ghost" data-export="cbt_ba">تنزيل JSON</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Exposure Plan -->
+  <section class="card mb-4" id="sec-expo">
+    <div class="card-header">
+      <h2>٤) خطة التعرّض</h2>
+      <span class="muted">سلم تدرّج للمواقف/الإحساسات مع منع سلوكيات الأمان</span>
+    </div>
+    <div class="card-body">
+      <div class="grid-3">
+        <div>
+          <label class="label">الموقف/الإحساس</label>
+          <textarea id="ex_hier" rows="6" placeholder="1) الأسهل … 10) الأصعب …"></textarea>
+        </div>
+        <div>
+          <label class="label">منع الأمان/الطقوس</label>
+          <textarea id="ex_safety" rows="6" placeholder="منع الطمأنة، إيقاف التحقق، بقاء في الموقف حتى يهبط القلق…"></textarea>
+        </div>
+        <div>
+          <label class="label">ملاحظات SUDS</label>
+          <textarea id="ex_notes" rows="6" placeholder="قبل/أثناء/بعد (0-10)"></textarea>
+        </div>
+      </div>
+
+      <div class="row gap-2 mt-3">
+        <button class="btn" data-save="cbt_expo">حفظ</button>
+        <button class="btn secondary" data-print="sec-expo">طباعة</button>
+        <button class="btn ghost" data-export="cbt_expo">تنزيل JSON</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sleep (CBT-I) -->
+  <section class="card mb-4" id="sec-sleep">
+    <div class="card-header">
+      <h2>٥) نوم صحي (CBT-I مختصر)</h2>
+      <span class="muted">تقييد النوم، ضبط المنبّه، تحسين بيئة النوم</span>
+    </div>
+    <div class="card-body">
+      <div class="grid-3">
+        <div>
+          <label class="label">متوسط نوم فعلي (ساعة)</label>
+          <input id="sl_eff" type="number" step="0.25" placeholder="مثلاً 5.5" />
+        </div>
+        <div>
+          <label class="label">وقت في السرير المقترح</label>
+          <input id="sl_tis" type="text" placeholder="النوم الفعلي + 30-45 دقيقة" />
+        </div>
+        <div>
+          <label class="label">وقت استيقاظ ثابت</label>
+          <input id="sl_wake" type="time" />
+        </div>
+      </div>
+
+      <label class="label mt-3">تعليمات إضافية</label>
+      <textarea id="sl_hyg" rows="4" placeholder="كافيين مبكر، إضاءة، حرارة الغرفة، الشاشات…"></textarea>
+
+      <div class="row gap-2 mt-3">
+        <button class="btn" data-save="cbt_sleep">حفظ</button>
+        <button class="btn secondary" data-print="sec-sleep">طباعة</button>
+        <button class="btn ghost" data-export="cbt_sleep">تنزيل JSON</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Plan & Homework -->
+  <section class="card mb-6" id="sec-plan">
+    <div class="card-header">
+      <h2>٦) خطة الجلسات والواجب المنزلي</h2>
+    </div>
+    <div class="card-body">
+      <div class="grid-2">
+        <div>
+          <label class="label">هدف الجلسة القادمة</label>
+          <textarea id="pl_goal" rows="3"></textarea>
+        </div>
+        <div>
+          <label class="label">الواجب المنزلي</label>
+          <textarea id="pl_homework" rows="3" placeholder="عدد مرات التعرّض/التنفس/سجل الأفكار…"></textarea>
+        </div>
+      </div>
+
+      <div class="grid-2 mt-3">
+        <div>
+          <label class="label">المقاييس</label>
+          <textarea id="pl_measures" rows="3" placeholder="PHQ-9, GAD-7, ISI… (كل 2-3 جلسات)"></textarea>
+        </div>
+        <div>
+          <label class="label">ملاحظات المعالج</label>
+          <textarea id="pl_notes" rows="3"></textarea>
+        </div>
+      </div>
+
+      <div class="row gap-2 mt-3">
+        <button class="btn" data-save="cbt_plan">حفظ</button>
+        <button class="btn secondary" data-print="sec-plan">طباعة</button>
+        <button class="btn ghost" data-export="cbt_plan">تنزيل JSON</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ربط أزرار الحفظ/الطباعة/التنزيل -->
+<script>
+(function () {
+  const qs = (s, r=document) => r.querySelector(s);
+  const qsa = (s, r=document) => Array.from(r.querySelectorAll(s));
+
+  function collect(sectionId) {
+    const box = qs('#' + sectionId);
+    const inputs = qsa('input, textarea', box);
+    const data = {};
+    inputs.forEach(el => data[el.id || el.name] = el.value);
+    return data;
+  }
+
+  function fill(sectionId, data) {
+    if (!data) return;
+    const box = qs('#' + sectionId);
+    Object.entries(data).forEach(([k,v]) => {
+      const el = box.querySelector('#' + k);
+      if (el) el.value = v;
+    });
+  }
+
+  function saveKey(btn) {
+    const key = btn.getAttribute('data-save');
+    const sectionId = btn.closest('section').id;
+    const payload = collect(sectionId);
+    localStorage.setItem(key, JSON.stringify(payload));
+    btn.classList.add('pulse');
+    setTimeout(() => btn.classList.remove('pulse'), 500);
+  }
+
+  function exportKey(btn) {
+    const key = btn.getAttribute('data-export');
+    const raw = localStorage.getItem(key) || "{}";
+    const blob = new Blob([raw], {type: "application/json;charset=utf-8"});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = key + ".json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function printSection(btn) {
+    const id = btn.getAttribute('data-print');
+    const node = qs('#' + id);
+    if (!node) return window.print();
+    const w = window.open('', '_blank');
+    w.document.write('<html dir="rtl"><head><title>طباعة</title><link rel="stylesheet" href="{{ url_for("static", filename="styles.css") }}"></head><body>' + node.outerHTML + '</body></html>');
+    w.document.close();
+    w.focus();
+    w.print();
+    w.close();
+  }
+
+  // تفعيل الأزرار
+  qsa('button[data-save]').forEach(b => b.addEventListener('click', () => saveKey(b)));
+  qsa('button[data-export]').forEach(b => b.addEventListener('click', () => exportKey(b)));
+  qsa('button[data-print]').forEach(b => b.addEventListener('click', () => printSection(b)));
+
+  // تحميل محفوظات إن وُجدت
+  const map = {
+    "cbt_psycho": "sec-psycho",
+    "cbt_thought": "sec-thought",
+    "cbt_ba": "sec-ba",
+    "cbt_expo": "sec-expo",
+    "cbt_sleep": "sec-sleep",
+    "cbt_plan": "sec-plan"
+  };
+  Object.entries(map).forEach(([key, sec]) => {
+    try { fill(sec, JSON.parse(localStorage.getItem(key) || '{}')); } catch (_) {}
+  });
+})();
+</script>
+{% endblock %}
