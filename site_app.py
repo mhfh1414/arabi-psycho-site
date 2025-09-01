@@ -1,23 +1,25 @@
 # -*- coding: utf-8 -*-
-# تطبيق الموقع الرئيسي
+"""
+الموقع الرئيسي: عربي سايكو
+يدمج DSM + CBT + اختبارات نفسية وشخصية + دراسة حالة
+"""
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from datetime import datetime
 import os
 
-# ------------------ قاعدة البيانات والنماذج ------------------
+# ------------------ قاعدة البيانات ------------------
 from models import db, PatientCase, TestResult
 
-# ------------------ الوحدات (من مجلد modules) ------------------
+# ------------------ الوحدات (داخل modules) ------------------
 from modules.tests_psych import PSYCH_TESTS, score_test as score_psych
 from modules.tests_personality import PERS_TESTS, score_personality
 from modules.recommend import recommend_tests_from_case
 
-# ------------------ DSM-5 (اختياري) ------------------
+# ------------------ DSM ------------------
 try:
     from DSM5.dsm import get_all_disorders as dsm_all, get_disorder_by_key, get_disorder_by_id
 except Exception:
-    # في حال عدم توفر الملف لأي سبب
     dsm_all = lambda: []
     def get_disorder_by_key(_): return {}
     def get_disorder_by_id(_): return {}
@@ -26,12 +28,12 @@ except Exception:
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "arabi-psycho-secret"
 
-# مجلد قاعدة البيانات
+# قاعدة البيانات SQLite
 os.makedirs("data", exist_ok=True)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data/psycho.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
 db.init_app(app)
+
 with app.app_context():
     db.create_all()
 
@@ -42,12 +44,11 @@ def index():
 
 @app.route("/cbt")
 def cbt():
-    # صفحة عرض عامة لشرح CBT (القالب موجود في base + يمكن لاحقًا عمل صفحة مستقلة)
-    return render_template("index.html")
+    return render_template("cbt.html")
 
 @app.route("/dsm")
 def dsm():
-    disorders = dsm_all()  # قائمة اضطرابات (قد تكون فارغة إن لم يتوفر الملف)
+    disorders = dsm_all()
     return render_template("dsm.html", disorders=disorders)
 
 @app.route("/dsm/<key>")
@@ -63,7 +64,6 @@ def dsm_detail(key):
 # ================== الاختبارات ==================
 @app.route("/tests")
 def tests():
-    """قائمة الاختبارات + توصيات بناءً على دراسة حالة مرتبطة"""
     case_id = request.args.get("case_id", type=int)
     recommended = []
     if case_id:
@@ -82,7 +82,6 @@ def tests():
 
 @app.route("/tests/start/<test_key>", methods=["GET", "POST"])
 def test_start(test_key):
-    """بدء اختبار (نفسي أو شخصية)"""
     case_id = request.args.get("case_id", type=int)
     test = PSYCH_TESTS.get(test_key) or PERS_TESTS.get(test_key)
     if not test:
@@ -90,24 +89,23 @@ def test_start(test_key):
         return redirect(url_for("tests"))
 
     if request.method == "POST":
-        # جمع الإجابات مع التحقق
+        # جمع الإجابات
         answers = {}
-        for item in test["items"]:
-            field = f"q{item['id']}"
+        for idx, _ in enumerate(test.get("questions", []), start=1):
+            field = f"q{idx}"
             if field not in request.form:
                 flash("الرجاء الإجابة على جميع البنود.")
                 return render_template("test_run.html", test=test, case_id=case_id)
             try:
-                answers[item["id"]] = int(request.form[field])
+                answers[idx] = int(request.form[field])
             except ValueError:
-                flash("قيمة إجابة غير صالحة.")
-                return render_template("test_run.html", test=test, case_id=case_id)
+                answers[idx] = 0
 
         # التصحيح
         if test_key in PSYCH_TESTS:
-            result = score_psych(test_key, answers)
+            result = score_psych(test_key, list(answers.values()))
         else:
-            result = score_personality(test_key, answers)
+            result = score_personality(test_key, list(answers.values()))
 
         # حفظ النتيجة
         tr = TestResult(
@@ -154,17 +152,15 @@ def case_study():
         return redirect(url_for("tests", case_id=pc.id))
     return render_template("case_study.html")
 
-# ================== صفحات أخطاء مخصصة ==================
+# ================== صفحات أخطاء ==================
 @app.errorhandler(404)
 def not_found(_e):
     return render_template("404.html"), 404
 
 @app.errorhandler(500)
 def server_error(_e):
-    # من الأفضل تسجيل الخطأ فعلياً في لوج حقيقي
     return render_template("500.html"), 500
 
 # ================== تشغيل محلي ==================
 if __name__ == "__main__":
-    # تشغيل محلي للتجربة
     app.run(host="0.0.0.0", port=5000, debug=True)
