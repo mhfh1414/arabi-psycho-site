@@ -1,49 +1,24 @@
-# -*- coding: utf-8 -*-
-"""
-توصية بالاختبارات بناءً على دراسة الحالة
-يربط بين الأعراض/المشكلات المذكورة وبين الاختبارات النفسية أو الشخصية
-"""
+from __future__ import annotations
 
-from typing import List
-
-# قائمة كلمات مفتاحية → اختبارات مقترحة
-# يمكن توسعتها بسهولة
-RULES = {
-    "قلق": ["gad7", "tipi", "bfi20"],
-    "توتر": ["gad7", "phq9"],
-    "اكتئاب": ["phq9", "bdi", "bfi20"],
-    "حزن": ["phq9"],
-    "وسواس": ["y_bocs", "tipi"],
-    "نوم": ["insomnia", "psqi"],
-    "إدمان": ["assist", "audit"],
-    "شخصية": ["tipi", "bfi20"],
-    "صدمة": ["pcl5", "tipi"],
-    "رهاب": ["spinh", "lsas"],
-    "ثقة": ["rosenberg", "tipi"],
+# اختبارات شخصية (مثال مبسّط Big Five قصير)
+PERS_TESTS = {
+    "bfi10": {
+        "title": "BFI-10 (العوامل الخمسة المختصر)",
+        "scale": {1:"لا أوافق إطلاقًا",2:"لا أوافق",3:"محايد",4:"أوافق",5:"أوافق جدًا"},
+        "items": [{"id": i+1, "text": f"عبارة شخصية {i+1}"} for i in range(10)],
+        "domains": ["الانبساط", "القبول", "الضمير", "العصابية", "الانفتاح"]
+    }
 }
 
-def recommend_tests_from_case(problem: str, symptoms: str) -> List[str]:
-    """
-    يستقبل وصف المشكلة والأعراض (نصوص)
-    يعيد قائمة مفاتيح الاختبارات المقترحة
-    """
-    text = f"{problem} {symptoms}".lower()
-    recommended: List[str] = []
-
-    for keyword, tests in RULES.items():
-        if keyword in text:
-            for t in tests:
-                if t not in recommended:
-                    recommended.append(t)
-
-    # fallback: لو ما انطبق شيء
-    if not recommended:
-        recommended = ["tipi", "bfi20"]  # اختبارات شخصية عامة
-
-    return recommended
-
-# تجربة سريعة
-if __name__ == "__main__":
-    case = "المريض يشتكي من القلق والأرق"
-    rec = recommend_tests_from_case(case, "")
-    print("توصية:", rec)
+def score_personality(test_key: str, answers: dict) -> dict:
+    test = PERS_TESTS.get(test_key)
+    if not test:
+        return {"total": 0, "profile": {}}
+    total = sum(int(answers.get(i["id"], 0)) for i in test["items"])
+    # توزيع صوري: كل مجال = مجموع بندين
+    profile = {}
+    for idx, dom in enumerate(test["domains"]):
+        a = int(answers.get(idx*2+1, 0))
+        b = int(answers.get(idx*2+2, 0))
+        profile[dom] = a + b
+    return {"total": total, "profile": profile}
