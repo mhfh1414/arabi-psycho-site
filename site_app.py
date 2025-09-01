@@ -1,46 +1,67 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request
 from modules import PSYCH_TESTS, score_psych, PERS_TESTS, score_personality, recommend_tests_from_case
 
 app = Flask(__name__)
 
-@app.route('/')
+# الصفحة الرئيسية
+@app.route("/")
 def index():
-    return render_template('index.html')
+    return render_template("index.html")
 
-@app.route('/dsm')
+# صفحة DSM
+@app.route("/dsm")
 def dsm():
-    return render_template('dsm.html')
+    return render_template("dsm.html")
 
-@app.route('/dsm/<string:diagnosis>')
-def dsm_detail(diagnosis):
-    return render_template('dsm_detail.html', diagnosis=diagnosis)
-
-@app.route('/tests')
+# صفحة الاختبارات
+@app.route("/tests")
 def tests():
-    return render_template('tests.html', 
-                           psych_tests=PSYCH_TESTS, 
-                           pers_tests=PERS_TESTS)
+    return render_template("tests.html", psych_tests=PSYCH_TESTS, pers_tests=PERS_TESTS)
 
-@app.route('/tests/run/<string:test_type>/<string:test_name>', methods=['GET', 'POST'])
-def test_run(test_type, test_name):
-    if request.method == 'POST':
-        answers = request.form.to_dict()
-        if test_type == 'psych':
-            score = score_psych(test_name, answers)
-        else:
-            score = score_personality(test_name, answers)
-        return render_template('test_result.html', score=score, test_name=test_name)
+# تشغيل اختبار نفسي
+@app.route("/tests/psych/<test_id>", methods=["GET", "POST"])
+def run_psych_test(test_id):
+    test = next((t for t in PSYCH_TESTS if t["id"] == test_id), None)
+    if not test:
+        return render_template("404.html"), 404
 
-    return render_template('test_run.html', test_type=test_type, test_name=test_name)
+    if request.method == "POST":
+        answers = [int(x) for x in request.form.getlist("answer")]
+        result = score_psych(test_id, answers)
+        return render_template("test_result.html", result=result)
 
-@app.route('/case-study', methods=['GET', 'POST'])
-def case_study():
-    if request.method == 'POST':
-        case_data = request.form.to_dict()
-        recommendations = recommend_tests_from_case(case_data)
-        return render_template('case_study.html', recommendations=recommendations)
-    return render_template('case_study.html')
+    return render_template("test_run.html", test=test)
 
-# تشغيل التطبيق
+# تشغيل اختبار شخصية
+@app.route("/tests/personality/<test_id>", methods=["GET", "POST"])
+def run_personality_test(test_id):
+    test = next((t for t in PERS_TESTS if t["id"] == test_id), None)
+    if not test:
+        return render_template("404.html"), 404
+
+    if request.method == "POST":
+        answers = [int(x) for x in request.form.getlist("answer")]
+        result = score_personality(test_id, answers)
+        return render_template("test_result.html", result=result)
+
+    return render_template("test_run.html", test=test)
+
+# توصيات بناءً على حالة
+@app.route("/recommend", methods=["POST"])
+def recommend():
+    case = request.form.get("case", "")
+    recommendations = recommend_tests_from_case(case)
+    return render_template("recommend.html", case=case, recommendations=recommendations)
+
+# خطأ 404
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template("404.html"), 404
+
+# خطأ 500
+@app.errorhandler(500)
+def server_error(e):
+    return render_template("500.html"), 500
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
