@@ -5,7 +5,7 @@ import os
 # قاعدة البيانات والنماذج
 from models import db, PatientCase, TestResult
 
-# الاختبارات النفسية
+# استيراد كل شي من الحزمة modules بشكل مرتب
 from modules.tests_psych import PSYCH_TESTS, score_test as score_psych
 from modules.tests_personality import PERS_TESTS, score_personality
 from modules.recommend import recommend_tests_from_case
@@ -83,7 +83,7 @@ def test_start(test_key):
         else:
             result = score_personality(test_key, answers)
 
-        # حفظ النتيجة
+        # حفظ
         tr = TestResult(
             case_id=case_id,
             test_key=test_key,
@@ -124,6 +124,7 @@ def case_study():
 
         # توصية بالاختبارات
         rec = recommend_tests_from_case(pc.presenting_problem or "", pc.symptoms_text or "")
+        # نحفظها في السيشن مؤقتًا للعرض
         session["recommended_tests"] = rec
         flash("تم حفظ دراسة الحالة. جهّزنا لك اختبارات مناسبة.")
         return redirect(url_for("tests", case_id=pc.id))
