@@ -1,54 +1,62 @@
 # site_app.py
 from flask import Flask, render_template, abort
+from jinja2 import TemplateNotFound, TemplateSyntaxError
 from pathlib import Path
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 
-# ✅ صفحتك الرئيسية
 @app.route("/", endpoint="home")
 def home():
     return render_template("index.html")
 
-# ✅ هنا تعرّف الصفحات الأساسية مرة واحدة فقط
+# طابق الأسماء الموجودة عندك بالصورة
 PAGES = {
-    "dsm": "dsm_list.html",
-    "cbt": "cbt_list.html",
-    "tests": "tests_list.html",
-    "addiction": "addiction_list.html",
-    # تقدر تضيف أي قسم جديد بهالسطر:
-    # "wechsler": "wechsler.html",
+    "dsm": "dsm.html",
+    "cbt": "cbt.html",
+    "tests": "tests.html",
+    "test_run": "test_run.html",
+    "test_result": "test_result.html",
+    "case_study": "case_study.html",
 }
 
 def register_page(endpoint_name: str, template_name: str):
-    """يسجل Route لصفحة معينة باسم endpoint ثابت لتفادي BuildError."""
     def _view():
-        return render_template(template_name)
+        try:
+            return render_template(template_name)
+        except TemplateNotFound:
+            # يظهر 404 جميلة لو الملف ناقص
+            abort(404)
+        except TemplateSyntaxError as e:
+            # يساعدنا في اللوق لمعرفة السطر الخاطئ
+            app.logger.error(f"Jinja syntax error in {template_name}: {e.message} at line {e.lineno}")
+            return render_template("500.html", msg=f"خطأ في القالب {template_name} بالسطر {e.lineno}"), 500
+        except Exception as e:
+            app.logger.error(f"Render error in {template_name}: {e}")
+            return render_template("500.html", msg=str(e)), 500
     _view.__name__ = f"view__{endpoint_name}"
     app.add_url_rule(f"/{endpoint_name}", endpoint=endpoint_name, view_func=_view)
 
-# ✅ توليد جميع الروتات من القاموس
 for ep, tpl in PAGES.items():
     register_page(ep, tpl)
 
-# ✅ مسار عام لفتح أي تمبليت موجود بدون ما تعمل روت خاص
-# مثال: /view/wechsler يفتح templates/wechsler.html إذا موجود
 @app.route("/view/<name>", endpoint="view_generic")
 def view_generic(name: str):
-    expected = Path(app.template_folder) / f"{name}.html"
-    if expected.exists():
+    file_path = Path(app.template_folder) / f"{name}.html"
+    if file_path.exists():
         return render_template(f"{name}.html")
     abort(404)
 
-# ✅ صفحة صحّة للخدمة (مفيدة لـ Render)
-@app.route("/healthz", endpoint="healthz")
-def healthz():
-    return {"status": "ok"}
-
-# ✅ تعامل أنيق مع 404
 @app.errorhandler(404)
 def not_found(e):
     return render_template("404.html"), 404
 
+@app.errorhandler(500)
+def server_error(e):
+    return render_template("500.html"), 500
+
+@app.route("/healthz", endpoint="healthz")
+def healthz():
+    return {"status": "ok"}
+
 if __name__ == "__main__":
-    # للتجربة محلياً
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000)
