@@ -1,44 +1,32 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template
 
 app = Flask(__name__)
 
 # الصفحة الرئيسية
 @app.route("/")
-def index():
+def home():
     return render_template("index.html")
-
-# صفحة الاختبارات
-@app.route("/tests")
-def tests():
-    return render_template("tests.html")
 
 # صفحة DSM
 @app.route("/dsm")
-def dsm():
-    return render_template("dsm.html")
+def dsm_list():
+    return render_template("dsm_list.html")
 
 # صفحة CBT
 @app.route("/cbt")
-def cbt():
-    return render_template("cbt.html")
+def cbt_list():
+    return render_template("cbt_list.html")
 
-# صفحة دراسة الحالة
-@app.route("/case_study", methods=["GET", "POST"])
-def case_study():
-    if request.method == "POST":
-        patient_name = request.form.get("patient_name")
-        session_notes = request.form.get("session_notes")
-        recommendations = request.form.get("recommendations")
+# صفحة الاختبارات
+@app.route("/tests")
+def tests_list():
+    return render_template("tests_list.html")
 
-        # هنا تقدر تحفظ البيانات في قاعدة بيانات أو ملف
-        print("📝 دراسة حالة جديدة:")
-        print("اسم العميل:", patient_name)
-        print("ملاحظات الجلسة:", session_notes)
-        print("التوصيات:", recommendations)
+# صفحة الإدمان
+@app.route("/addiction")
+def addiction_list():
+    return render_template("addiction_list.html")
 
-        return redirect(url_for("index"))
-
-    return render_template("case_study.html")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
