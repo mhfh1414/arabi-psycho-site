@@ -1,1 +1,9 @@
-templates/_shared/500.html
+{% extends "_shared/base.html" %}
+{% block title %}خطأ داخلي{% endblock %}
+{% block content %}
+<div class="text-center">
+  <h3>حدث خطأ داخلي في الموقع</h3>
+  {% if msg %}<pre class="text-start bg-light p-3 border rounded mt-3">{{ msg }}</pre>{% endif %}
+  <a class="btn btn-outline-primary mt-3" href="{{ url_for('home') }}">العودة للرئيسية</a>
+</div>
+{% endblock %}
