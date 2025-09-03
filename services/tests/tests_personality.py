@@ -9,10 +9,8 @@ def personality_test(user_answers=None):
     if not user_answers:
         return {"status": "ok", "score": 0, "message": "لم تدخل إجابات"}
 
-    # نحسب النقاط بناءً على عدد الإجابات
     score = len(user_answers)
 
-    # نص بسيط يوضح النتيجة
     if score <= 3:
         message = "شخصية هادئة ومتحفظة"
     elif score <= 6:
