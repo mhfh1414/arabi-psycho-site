@@ -1,43 +1,16 @@
 {% extends "base.html" %}
-{% block title %}DSM-5 (علاجي){% endblock %}
 {% block content %}
-<h2 class="section-title">دليل DSM-5 العلاجي</h2>
+<div class="container">
+  <h1>🧠 العلاج المعرفي السلوكي (CBT)</h1>
+  <p>صفحة مختصرة لخطوات الـ CBT لتثقيف العميل وواجبات منزلية.</p>
 
-<form class="row gy-2 align-items-center mb-3" method="get" action="{{ url_for('dsm_list') }}">
-  <div class="col-auto">
-    <input class="form-control" name="q" placeholder="ابحث باسم الاضطراب أو كلمة مفتاحية…" value="{{ q or '' }}">
-  </div>
-  <div class="col-auto">
-    <button class="btn btn-primary"><i class="bi bi-search"></i> بحث</button>
-  </div>
-</form>
+  <ol>
+    <li>تحديد الأفكار الآلية السلبية</li>
+    <li>تحدي الفكرة بالأدلة</li>
+    <li>استبدالها بأفكار بديلة متوازنة</li>
+    <li>تجربة سلوكية بسيطة</li>
+  </ol>
 
-{% if q %}
-  <p class="text-muted">نتائج البحث عن: <strong>{{ q }}</strong></p>
-  {% if results and results|length %}
-    <div class="grid">
-      {% for hit in results %}
-        <a class="card" href="{{ url_for('dsm_detail', cat_key=hit.category, item_key=hit.item.id) }}">
-          <div class="card-title">{{ hit.item.name_ar or hit.item.name }}</div>
-          {% if hit.item.short %}<div class="card-sub">{{ hit.item.short }}</div>{% endif %}
-        </a>
-      {% endfor %}
-    </div>
-  {% else %}
-    <div class="alert alert-warning">لا توجد نتائج مطابقة.</div>
-  {% endif %}
-{% else %}
-  {% for key, cat in categories.items() %}
-    <h5 class="cat-title">{{ cat.name_ar or cat.name }}</h5>
-    <div class="grid">
-      {% for it in cat.get("items", []) %}
-        <a class="card" href="{{ url_for('dsm_detail', cat_key=key, item_key=it.id) }}">
-          <div class="card-title">{{ it.name_ar or it.name }}</div>
-          {% if it.short %}<div class="card-sub">{{ it.short }}</div>{% endif %}
-        </a>
-      {% endfor %}
-    </div>
-    <hr class="my-3">
-  {% endfor %}
-{% endif %}
+  <a class="btn btn-secondary" href="{{ url_for('index') }}">رجوع</a>
+</div>
 {% endblock %}
