@@ -1,43 +1,64 @@
-from flask import Flask, render_template, abort
+from flask import Flask, render_template, request, abort
 from jinja2 import TemplateNotFound, TemplateSyntaxError
 from pathlib import Path
 
+# استيراد الدوال من DSM
+from data.dsm5 import list_disorders, get_disorder
+
+# استيراد الاختبارات والتوصيات
+from services.tests import score_test, psych_info, score_big5
+from services.recommend import recommend_by_score
+
 app = Flask(__name__, static_folder="static", template_folder="templates")
 
-# الرئيسية
+# الصفحة الرئيسية
 @app.route("/", endpoint="home")
 def home():
     return render_template("main/index.html")
 
-# خرائط الأقسام ↔ ملفات القوالب
-PAGES = {
-    "dsm": "dsm/dsm.html",
-    "cbt": "cbt/cbt.html",
-    "tests": "tests/tests.html",
-    "test_run": "tests/test_run.html",
-    "test_result": "tests/test_result.html",
-    "case_study": "case/case_study.html",
-}
+# صفحة DSM تعرض قائمة الاضطرابات
+@app.route("/dsm", endpoint="dsm")
+def dsm():
+    disorders = list_disorders()
+    return render_template("dsm/dsm.html", disorders=disorders)
 
-def register_page(endpoint_name, template_name):
-    def _view():
-        try:
-            return render_template(template_name)
-        except TemplateNotFound:
-            abort(404)
-        except TemplateSyntaxError as e:
-            app.logger.error(f"Jinja error in {template_name}: {e.message} @ line {e.lineno}")
-            return render_template("_shared/500.html", msg=f"{template_name}:{e.lineno} {e.message}"), 500
-        except Exception as e:
-            app.logger.error(f"Render error in {template_name}: {e}")
-            return render_template("_shared/500.html", msg=str(e)), 500
-    _view.__name__ = f"view__{endpoint_name}"
-    app.add_url_rule(f"/{endpoint_name}", endpoint=endpoint_name, view_func=_view)
+# صفحة CBT
+@app.route("/cbt", endpoint="cbt")
+def cbt():
+    return render_template("cbt/cbt.html")
 
-for ep, tpl in PAGES.items():
-    register_page(ep, tpl)
+# صفحة الاختبارات
+@app.route("/tests", endpoint="tests")
+def tests():
+    return render_template("tests/tests.html")
 
-# فتح أي تمبلت موجود بالمسار النسبي داخل templates
+# تشغيل اختبار نفسي بسيط
+@app.route("/test_run", methods=["GET", "POST"], endpoint="test_run")
+def test_run():
+    if request.method == "POST":
+        # اجمع الإجابات
+        answers = [request.form.get("q1"), request.form.get("q2")]
+        result = score_test(answers)
+        # استخرج التوصية
+        recommendation = recommend_by_score(result["score"])
+        return render_template(
+            "tests/test_result.html",
+            result=result,
+            recommendation=recommendation
+        )
+    return render_template("tests/test_run.html")
+
+# صفحة نتيجة اختبار (لو فتحتها مباشرة بدون POST)
+@app.route("/test_result", endpoint="test_result")
+def test_result():
+    return render_template("tests/test_result.html", result=None, recommendation=None)
+
+# صفحة دراسة حالة
+@app.route("/case_study", endpoint="case_study")
+def case_study():
+    return render_template("case/case_study.html")
+
+# مسار عام لعرض أي قالب بالاسم
 @app.route("/view/<path:name>", endpoint="view_generic")
 def view_generic(name: str):
     file_path = Path(app.template_folder) / f"{name}.html"
@@ -54,15 +75,7 @@ def not_found(e):
 def server_error(e):
     return render_template("_shared/500.html"), 500
 
-# مثال استيراد من الخدمات بعد النقل
-try:
-    from services.tests.tests_psych import score_test
-    @app.route("/try_psych", endpoint="try_psych")
-    def try_psych():
-        return score_test(["نعم","لا","نعم"])
-except Exception as e:
-    app.logger.warning(f"tests services not ready: {e}")
-
+# مسار صحي للتأكد أن السيرفر شغال
 @app.route("/healthz", endpoint="healthz")
 def healthz():
     return {"status": "ok"}
