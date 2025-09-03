@@ -15,14 +15,15 @@
         <li class="nav-item"><a class="nav-link" href="{{ url_for('dsm') }}">DSM-5</a></li>
         <li class="nav-item"><a class="nav-link" href="{{ url_for('cbt') }}">CBT</a></li>
         <li class="nav-item"><a class="nav-link" href="{{ url_for('tests') }}">الاختبارات</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('case_study') }}">دراسة حالة</a></li>
       </ul>
     </div>
   </div>
 </nav>
+
 <main class="container">
   {% block content %}{% endblock %}
 </main>
+
 <footer class="bg-dark text-white text-center p-3 mt-4">
   <small>© 2025 عربي سايكو</small>
 </footer>
