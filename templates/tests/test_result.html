@@ -2,6 +2,18 @@
 {% block title %}نتيجة الاختبار{% endblock %}
 {% block content %}
 <h2 class="mb-3">نتيجة الاختبار</h2>
-<p>سيتم عرض النتيجة هنا.</p>
-<a class="btn btn-outline-secondary" href="{{ url_for('tests') }}">رجوع للاختبارات</a>
+
+{% if result %}
+  <p><strong>النتيجة:</strong> {{ result.message }}</p>
+  <p><strong>الدرجة:</strong> {{ result.score }}</p>
+  {% if recommendation %}
+    <div class="alert alert-info mt-3">
+      <strong>التوصية:</strong> {{ recommendation }}
+    </div>
+  {% endif %}
+{% else %}
+  <p class="text-muted">لا توجد نتائج بعد. يرجى إجراء اختبار أولاً.</p>
+{% endif %}
+
+<a class="btn btn-outline-secondary mt-3" href="{{ url_for('tests') }}">رجوع للاختبارات</a>
 {% endblock %}
