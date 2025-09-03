@@ -1,9 +1,9 @@
-{% extends "base.html" %}
-{% block title %}غير موجود{% endblock %}
+{% extends "_shared/base.html" %}
+{% block title %}الصفحة غير موجودة{% endblock %}
 {% block content %}
-<div class="card">
-  <h2>404</h2>
-  <p class="muted">الصفحة غير موجودة.</p>
-  <a class="btn" href="{{ url_for('index') }}">العودة للرئيسية</a>
+<div class="text-center mt-5">
+  <h2 class="text-danger">⚠️ الصفحة غير موجودة</h2>
+  <p class="mt-3">يبدو أنك حاولت الدخول إلى رابط غير صحيح.</p>
+  <a class="btn btn-outline-primary mt-3" href="{{ url_for('home') }}">العودة إلى الرئيسية</a>
 </div>
 {% endblock %}
