@@ -1,0 +1,14 @@
+{% extends "_shared/base.html" %}
+{% block title %}خطأ داخلي{% endblock %}
+{% block content %}
+<div class="text-center mt-5">
+  <h2 class="text-danger">🚨 خطأ داخلي في السيرفر</h2>
+  <p class="mt-3">حدث خلل أثناء معالجة الطلب. حاول مرة أخرى لاحقًا.</p>
+
+  {% if msg %}
+    <pre class="text-start bg-light p-3 border rounded mt-3">{{ msg }}</pre>
+  {% endif %}
+
+  <a class="btn btn-outline-primary mt-3" href="{{ url_for('home') }}">🔙 العودة إلى الرئيسية</a>
+</div>
+{% endblock %}
