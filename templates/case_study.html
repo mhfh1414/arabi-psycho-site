@@ -1,43 +1,0 @@
-{% extends "base.html" %}
-
-{% block content %}
-<div class="container">
-  <h1>📑 دراسة الحالة</h1>
-  <p>سجل ملاحظاتك وتوصياتك، ويمكنك رؤية توصيات آلية بالاختبارات حسب النص.</p>
-
-  <form method="post" action="{{ url_for('case_study') }}">
-    <div class="form-group">
-      <label for="patient_name">اسم العميل:</label>
-      <input type="text" id="patient_name" name="patient_name" class="form-control" value="{{ patient_name or '' }}" placeholder="ادخل اسم العميل">
-    </div>
-
-    <div class="form-group">
-      <label for="session_notes">ملاحظات الجلسة:</label>
-      <textarea id="session_notes" name="session_notes" class="form-control" rows="6" placeholder="اكتب ملاحظاتك هنا...">{{ session_notes or '' }}</textarea>
-    </div>
-
-    <div class="form-group">
-      <label for="recommendations">التوصيات:</label>
-      <textarea id="recommendations" name="recommendations" class="form-control" rows="4" placeholder="ادخل التوصيات...">{{ recommendations or '' }}</textarea>
-    </div>
-
-    <button type="submit" class="btn btn-primary">💾 حفظ الحالة</button>
-  </form>
-
-  {% if recommended %}
-    <hr>
-    <h3>🔎 توصيات آلية بالاختبارات</h3>
-    <ul>
-      {% for t in recommended %}
-        <li>
-          <a href="{{ url_for('test_run', test_code=t.code) }}">{{ t.name }}</a>
-          <small class="text-muted">({{ t.code }})</small>
-        </li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-
-  <hr>
-  <a href="{{ url_for('index') }}" class="btn btn-secondary">🏠 العودة للصفحة الرئيسية</a>
-</div>
-{% endblock %}
