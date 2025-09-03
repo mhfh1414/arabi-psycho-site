@@ -1,0 +1,16 @@
+{% extends "_shared/base.html" %}
+{% block title %}تشغيل اختبار{% endblock %}
+{% block content %}
+<h2 class="mb-3">تشغيل اختبار تجريبي</h2>
+<form method="post" action="{{ url_for('test_result') }}">
+  <div class="mb-3">
+    <label class="form-label">سؤال 1: هل تشعر بالقلق؟</label>
+    <select class="form-select" name="q1">
+      <option value="0">لا</option>
+      <option value="1">نعم</option>
+    </select>
+  </div>
+  <button type="submit" class="btn btn-primary">إرسال</button>
+  <a class="btn btn-outline-secondary" href="{{ url_for('tests') }}">رجوع</a>
+</form>
+{% endblock %}
