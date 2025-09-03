@@ -1,7 +1,18 @@
 {% extends "_shared/base.html" %}
-{% block title %}DSM-5{% endblock %}
+{% block title %}تفاصيل اضطراب DSM-5{% endblock %}
 {% block content %}
-<h2 class="mb-3">الاضطرابات النفسية DSM-5</h2>
-<p>هذه صفحة تمهيدية لقسم DSM-5.</p>
-<a class="btn btn-outline-secondary" href="{{ url_for('home') }}">العودة للرئيسية</a>
+<h2 class="mb-3">تفاصيل الاضطراب</h2>
+
+{% if disorder %}
+  <div class="card">
+    <div class="card-body">
+      <h4 class="card-title">{{ disorder.name }}</h4>
+      <p class="card-text">{{ disorder.desc }}</p>
+    </div>
+  </div>
+{% else %}
+  <p class="text-danger">الاضطراب غير موجود.</p>
+{% endif %}
+
+<a class="btn btn-outline-secondary mt-3" href="{{ url_for('dsm') }}">رجوع لقائمة DSM</a>
 {% endblock %}
