@@ -1,49 +1,43 @@
-from flask import Flask, render_template, request, redirect, url_for
+{% extends "base.html" %}
 
-app = Flask(__name__)
+{% block content %}
+<div class="container">
+  <h1>📑 دراسة الحالة</h1>
+  <p>سجل ملاحظاتك وتوصياتك، ويمكنك رؤية توصيات آلية بالاختبارات حسب النص.</p>
 
-# الصفحة الرئيسية
-@app.route('/')
-def index():
-    return render_template('index.html')
+  <form method="post" action="{{ url_for('case_study') }}">
+    <div class="form-group">
+      <label for="patient_name">اسم العميل:</label>
+      <input type="text" id="patient_name" name="patient_name" class="form-control" value="{{ patient_name or '' }}" placeholder="ادخل اسم العميل">
+    </div>
 
-# صفحة الاختبارات
-@app.route('/tests')
-def tests():
-    return render_template('tests.html')
+    <div class="form-group">
+      <label for="session_notes">ملاحظات الجلسة:</label>
+      <textarea id="session_notes" name="session_notes" class="form-control" rows="6" placeholder="اكتب ملاحظاتك هنا...">{{ session_notes or '' }}</textarea>
+    </div>
 
-# صفحة DSM
-@app.route('/dsm')
-def dsm():
-    return render_template('dsm.html')
+    <div class="form-group">
+      <label for="recommendations">التوصيات:</label>
+      <textarea id="recommendations" name="recommendations" class="form-control" rows="4" placeholder="ادخل التوصيات...">{{ recommendations or '' }}</textarea>
+    </div>
 
-# صفحة دراسة الحالة
-@app.route('/case_study', methods=["GET", "POST"])
-def case_study():
-    if request.method == "POST":
-        patient_name = request.form.get("patient_name")
-        session_notes = request.form.get("session_notes")
-        recommendations = request.form.get("recommendations")
+    <button type="submit" class="btn btn-primary">💾 حفظ الحالة</button>
+  </form>
 
-        # هنا تقدر تحفظ البيانات في قاعدة بيانات أو ملف
-        print("حفظ دراسة حالة:")
-        print("اسم العميل:", patient_name)
-        print("ملاحظات:", session_notes)
-        print("توصيات:", recommendations)
+  {% if recommended %}
+    <hr>
+    <h3>🔎 توصيات آلية بالاختبارات</h3>
+    <ul>
+      {% for t in recommended %}
+        <li>
+          <a href="{{ url_for('test_run', test_code=t.code) }}">{{ t.name }}</a>
+          <small class="text-muted">({{ t.code }})</small>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
 
-        return redirect(url_for('index'))
-
-    return render_template("case_study.html")
-
-# صفحة الأخطاء 404
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template("404.html"), 404
-
-# صفحة الأخطاء 500
-@app.errorhandler(500)
-def internal_error(e):
-    return render_template("500.html"), 500
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+  <hr>
+  <a href="{{ url_for('index') }}" class="btn btn-secondary">🏠 العودة للصفحة الرئيسية</a>
+</div>
+{% endblock %}
