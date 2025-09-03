@@ -11,7 +11,6 @@ def score_test(user_answers=None):
 
     truthy = {"نعم", "yes", "y", "1", "true", "صح", "صحيح"}
     score = 0
-
     for a in user_answers:
         if str(a).strip().lower() in truthy:
             score += 1
@@ -20,4 +19,5 @@ def score_test(user_answers=None):
 
 
 def psych_info():
-    """م
+    """معلومات/وصف مختصر للاختبار"""
+    return "هذا مجرد اختبار نفسي تجريبي (tests_psych)."
