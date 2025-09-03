@@ -2,12 +2,18 @@
 {% block title %}الرئيسية{% endblock %}
 {% block content %}
 <div class="text-center">
-  <h1 class="mb-3">مرحباً بك يا أبطال الصحة النفسية</h1>
-  <p class="lead">اختر القسم:</p>
+  <h1 class="mb-3">مرحباً بك في موقع عربي سايكو</h1>
+  <p class="lead">اختر القسم الذي تريد الدخول إليه:</p>
 </div>
 <div class="row g-3">
-  <div class="col-md-4"><a class="btn btn-primary w-100" href="{{ url_for('dsm') }}">الاضطرابات DSM-5</a></div>
-  <div class="col-md-4"><a class="btn btn-success w-100" href="{{ url_for('cbt') }}">العلاج المعرفي السلوكي CBT</a></div>
-  <div class="col-md-4"><a class="btn btn-warning w-100" href="{{ url_for('tests') }}">الاختبارات</a></div>
+  <div class="col-md-4">
+    <a class="btn btn-primary w-100" href="{{ url_for('dsm') }}">الاضطرابات DSM-5</a>
+  </div>
+  <div class="col-md-4">
+    <a class="btn btn-success w-100" href="{{ url_for('cbt') }}">العلاج المعرفي السلوكي CBT</a>
+  </div>
+  <div class="col-md-4">
+    <a class="btn btn-warning w-100" href="{{ url_for('tests') }}">الاختبارات النفسية</a>
+  </div>
 </div>
 {% endblock %}
