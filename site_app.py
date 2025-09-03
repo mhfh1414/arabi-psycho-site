@@ -1,133 +1,71 @@
-# site_app.py
-from flask import Flask, render_template, request, redirect, url_for, flash
-import os
+from flask import Flask, render_template, abort
+from jinja2 import TemplateNotFound, TemplateSyntaxError
+from pathlib import Path
 
-# ✅ استيرادات الحزمة الداخلية بشكل صحيح (من modules/__init__.py)
-# تأكد أن __init__.py فيه:
-# from .tests_psych import PSYCH_TESTS, score_test as score_psych
-# from .tests_personality import PERS_TESTS, score_personality
-# from .recommend import recommend_tests_from_case
-from modules import (
-    PSYCH_TESTS,
-    PERS_TESTS,
-    score_psych,
-    score_personality,
-    recommend_tests_from_case,
-)
+app = Flask(__name__, static_folder="static", template_folder="templates")
 
-# مبدئيًا، سنُعرّف قائمة وهمية لـ DSM حتى لا يتعطل الموقع إن لم تكن الداتا جاهزة
-DSM_LIST = [
-    {"code": "F32", "name": "اضطراب اكتئابي"},
-    {"code": "F41", "name": "اضطرابات القلق"},
-    {"code": "F90", "name": "اضطراب فرط الحركة وتشتت الانتباه"},
-]
+# الرئيسية
+@app.route("/", endpoint="home")
+def home():
+    return render_template("main/index.html")
 
-def create_app():
-    app = Flask(__name__)
-    app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
+# خرائط الأقسام ↔ ملفات القوالب
+PAGES = {
+    "dsm": "dsm/dsm.html",
+    "cbt": "cbt/cbt.html",
+    "tests": "tests/tests.html",
+    "test_run": "tests/test_run.html",
+    "test_result": "tests/test_result.html",
+    "case_study": "case/case_study.html",
+}
 
-    # -------------------- صفحات عامة --------------------
-    @app.route("/")
-    def index():
-        return render_template("index.html")
+def register_page(endpoint_name, template_name):
+    def _view():
+        try:
+            return render_template(template_name)
+        except TemplateNotFound:
+            abort(404)
+        except TemplateSyntaxError as e:
+            app.logger.error(f"Jinja error in {template_name}: {e.message} @ line {e.lineno}")
+            return render_template("_shared/500.html", msg=f"{template_name}:{e.lineno} {e.message}"), 500
+        except Exception as e:
+            app.logger.error(f"Render error in {template_name}: {e}")
+            return render_template("_shared/500.html", msg=str(e)), 500
+    _view.__name__ = f"view__{endpoint_name}"
+    app.add_url_rule(f"/{endpoint_name}", endpoint=endpoint_name, view_func=_view)
 
-    # -------------------- DSM --------------------
-    @app.route("/dsm")
-    def dsm():
-        return render_template("dsm.html", items=DSM_LIST)
+for ep, tpl in PAGES.items():
+    register_page(ep, tpl)
 
-    @app.route("/dsm/<code>")
-    def dsm_detail(code):
-        item = next((i for i in DSM_LIST if i["code"] == code), None)
-        if not item:
-            return render_template("404.html"), 404
-        return render_template("dsm_detail.html", item=item)
+# فتح أي تمبلت موجود بالمسار النسبي داخل templates
+@app.route("/view/<path:name>", endpoint="view_generic")
+def view_generic(name: str):
+    file_path = Path(app.template_folder) / f"{name}.html"
+    if file_path.exists():
+        return render_template(f"{name}.html")
+    abort(404)
 
-    # -------------------- الاختبارات --------------------
-    @app.route("/tests")
-    def tests():
-        """صفحة قائمة الاختبارات (نفسي + شخصية)"""
-        return render_template(
-            "tests.html",
-            psych_tests=PSYCH_TESTS,
-            pers_tests=PERS_TESTS
-        )
+# صفحات الأخطاء
+@app.errorhandler(404)
+def not_found(e):
+    return render_template("_shared/404.html"), 404
 
-    @app.route("/tests/run/<test_code>", methods=["GET", "POST"])
-    def test_run(test_code):
-        """
-        تشغيل اختبار محدد.
-        نفترض أن test_code موجود في أحد القائمتين: PSYCH_TESTS أو PERS_TESTS
-        """
-        test_info = None
-        test_info = next((t for t in PSYCH_TESTS if t["code"] == test_code), test_info)
-        test_info = next((t for t in PERS_TESTS if t["code"] == test_code), test_info)
+@app.errorhandler(500)
+def server_error(e):
+    return render_template("_shared/500.html"), 500
 
-        if not test_info:
-            flash("الاختبار غير موجود.", "danger")
-            return redirect(url_for("tests"))
+# مثال استيراد من الخدمات بعد النقل
+try:
+    from services.tests.tests_psych import score_test
+    @app.route("/try_psych", endpoint="try_psych")
+    def try_psych():
+        return score_test(["نعم","لا","نعم"])
+except Exception as e:
+    app.logger.warning(f"tests services not ready: {e}")
 
-        if request.method == "POST":
-            # نجمع الإجابات كنِسَب/قيم
-            # نفترض أن كل سؤال اسمه q1, q2, ...
-            answers = {k: v for k, v in request.form.items() if k.startswith("q")}
-            # نقرر الدالة المناسبة للتقييم
-            if test_code in [t["code"] for t in PSYCH_TESTS]:
-                result = score_psych(test_code, answers)
-            else:
-                result = score_personality(test_code, answers)
-
-            return render_template("test_result.html", test=test_info, result=result)
-
-        # GET: عرض النموذج
-        return render_template("test_run.html", test=test_info)
-
-    # -------------------- دراسة حالة --------------------
-    @app.route("/case-study", methods=["GET", "POST"])
-    def case_study():
-        """
-        صفحة دراسة الحالة + توصيات بالاختبارات
-        endpoint name = 'case_study'  (طابقناه مع url_for في القالب)
-        """
-        recommended = None
-        if request.method == "POST":
-            patient_name = request.form.get("patient_name", "").strip()
-            notes = request.form.get("session_notes", "").strip()
-            rec = request.form.get("recommendations", "").strip()
-
-            # توصية آلية بناءً على نص الحالة (إن أردت)
-            recommended = recommend_tests_from_case(notes)
-
-            flash("تم حفظ الحالة (مبدئيًا).", "success")
-            return render_template(
-                "case_study.html",
-                patient_name=patient_name,
-                session_notes=notes,
-                recommendations=rec,
-                recommended=recommended,
-            )
-
-        return render_template("case_study.html", recommended=recommended)
-
-    # -------------------- CBT (اختياري) --------------------
-    @app.route("/cbt")
-    def cbt():
-        return render_template("cbt.html")
-
-    # -------------------- أخطاء --------------------
-    @app.errorhandler(404)
-    def _404(e):
-        return render_template("404.html"), 404
-
-    @app.errorhandler(500)
-    def _500(e):
-        return render_template("500.html", error=e), 500
-
-    return app
-
-# كائن التطبيق لـ gunicorn
-app = create_app()
+@app.route("/healthz", endpoint="healthz")
+def healthz():
+    return {"status": "ok"}
 
 if __name__ == "__main__":
-    # للتجربة محليًا فقط
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(host="0.0.0.0", port=5000)
