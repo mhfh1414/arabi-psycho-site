@@ -1,23 +1,23 @@
-
-# دوال اختبارات نفسية عامة (تجريبية وبسيطة للعمل فوراً)
+# اختبارات نفسية عامة (تجريبية وبسيطة للعمل فوراً)
 
 def score_test(user_answers=None):
     """
-    يحسب درجة بسيطة: نعم/Yes/Y/1/True = 1 نقطة.
-    :param user_answers: قائمة إجابات مثل ["نعم","لا","Yes","1"]
+    نقطة = 1 لــ نعم/Yes/Y/1/True
+    :param user_answers: قائمة اجابات مثل ["نعم", "Yes", "1"]
     :return: dict يحتوي score ورسالة
     """
     if not user_answers:
-        return {"status": "ok", "score": 0, "message": "لا توجد إجابات"}
+        return {"status": "ok", "score": 0, "message": "لم تدخل إجابات"}
 
     truthy = {"نعم", "yes", "y", "1", "true", "صح", "صحيح"}
     score = 0
+
     for a in user_answers:
         if str(a).strip().lower() in truthy:
             score += 1
-    return {"status": "ok", "score": score, "message": f"عدد النقاط = {score}"}
+
+    return {"status": "ok", "score": score, "message": f"نتيجتك = {score}"}
 
 
 def psych_info():
-    """معلومة/وصف مختصر للوحدة."""
-    return "وحدة الاختبارات النفسية (tests_psych) جاهزة للعمل."
+    """م
