@@ -1,0 +1,19 @@
+{% extends "_shared/base.html" %}
+{% block title %}اختبار نفسي{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">🧠 اختبار نفسي</h2>
+<form method="post">
+    <div class="mb-3">
+        <label>سؤال 1: هل تشعر أنك متفائل؟</label><br>
+        <input type="radio" name="answers" value="1"> نعم
+        <input type="radio" name="answers" value="0"> لا
+    </div>
+    <div class="mb-3">
+        <label>سؤال 2: هل تستطيع التحكم في قلقك بسهولة؟</label><br>
+        <input type="radio" name="answers" value="1"> نعم
+        <input type="radio" name="answers" value="0"> لا
+    </div>
+    <button type="submit" class="btn btn-primary">إرسال</button>
+</form>
+{% endblock %}
