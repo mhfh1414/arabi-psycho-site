@@ -1,103 +1,15 @@
-/* 🎨 الأساس */
-:root {
-    --c-primary: #0d47a1;
-    --c-primary2: #1976d2;
-    --c-accent: #00bfa5;
-    --c-bg: #f5f7fa;
-}
-
 body {
-    font-family: 'Tajawal', Tahoma, sans-serif;
-    margin: 0;
-    background: var(--c-bg);
-    color: #333;
+  font-family: "Tahoma", Arial, sans-serif;
+  background-color: #f9f9f9;
+  margin: 0;
+  padding: 0;
 }
 
-.navbar {
-    background: var(--c-primary);
-    padding: 10px 20px;
-    color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.container {
+  width: 80%;
+  margin: auto;
 }
 
-.navbar a {
-    color: white;
-    margin: 0 10px;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-.hero {
-    text-align: center;
-    padding: 50px 20px;
-    background: linear-gradient(to right, var(--c-primary), var(--c-primary2));
-    color: white;
-}
-
-footer {
-    text-align: center;
-    padding: 15px;
-    background: #222;
-    color: #aaa;
-    margin-top: 40px;
-}
-
-/* 📘 CBT */
-.cbt-plan {
-    background: #f5faff;
-    border: 1px solid var(--c-primary2);
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-}
-.cbt-plan h3 {
-    color: var(--c-primary);
-}
-.cbt-plan ul {
-    list-style-type: square;
-    padding-left: 20px;
-}
-
-/* 📝 الاختبارات */
-.test-card {
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 15px;
-    transition: all 0.2s;
-}
-.test-card:hover {
-    background: #f7f7f7;
-    transform: scale(1.01);
-}
-.test-question {
-    margin: 10px 0;
-    font-weight: bold;
-}
-
-/* 📋 دراسة الحالة */
-.case-form {
-    background: #fffbe7;
-    padding: 20px;
-    border-radius: 12px;
-    border: 1px solid #ffc107;
-    max-width: 600px;
-    margin: auto;
-}
-.case-form h2 {
-    color: #e65100;
-}
-.case-form label {
-    font-weight: bold;
-}
-.case-form input, 
-.case-form textarea, 
-.case-form select {
-    width: 100%;
-    padding: 8px;
-    margin: 8px 0;
-    border-radius: 8px;
-    border: 1px solid #ddd;
+h1, h2, h3 {
+  color: #333;
 }
