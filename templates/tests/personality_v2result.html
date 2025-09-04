@@ -1,0 +1,18 @@
+{% extends "_shared/base.html" %}
+
+{% block title %}نتيجة اختبار الشخصية{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="text-center mb-4">نتيجة اختبار الشخصية</h2>
+
+  <div class="card shadow p-4">
+    <h4>درجتك النهائية: {{ score }}</h4>
+    <p class="mt-3">{{ result_text }}</p>
+  </div>
+
+  <div class="text-center mt-4">
+    <a href="{{ url_for('main.index') }}" class="btn btn-primary">العودة إلى الصفحة الرئيسية</a>
+  </div>
+</div>
+{% endblock %}
