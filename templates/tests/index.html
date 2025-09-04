@@ -1,88 +1,83 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>عربي سايكو</title>
-  <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Font Awesome -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <style>
-    body {
-      background: linear-gradient(135deg, #6a11cb, #2575fc);
-      font-family: "Cairo", sans-serif;
-      color: white;
-      text-align: center;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-    .logo {
-      width: 120px;
-      height: auto;
-      margin-bottom: 15px;
-    }
-    h1 {
-      font-size: 3rem;
-      margin-bottom: 10px;
-      font-weight: bold;
-      text-shadow: 2px 2px 6px rgba(0,0,0,0.5);
-    }
-    p.slogan {
-      font-size: 1.4rem;
-      margin-bottom: 40px;
-      color: #ffd700;
-      font-weight: 500;
-    }
-    .btn-custom {
-      width: 230px;
-      margin: 12px;
-      padding: 14px;
-      font-size: 1.1rem;
-      border-radius: 12px;
-      box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
-      transition: transform 0.2s;
-    }
-    .btn-custom:hover {
-      transform: scale(1.08);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>مركز عربي سايكو</title>
+    <style>
+        body {
+            font-family: 'Tahoma', sans-serif;
+            text-align: center;
+            background: linear-gradient(135deg, #004d26, #b8860b); /* أخضر × ذهبي */
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            margin-top: 80px;
+        }
+        header h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+        header h2 {
+            font-size: 22px;
+            font-weight: normal;
+            color: #f0f0f0;
+        }
+        .buttons {
+            margin-top: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .btn {
+            padding: 15px 40px;
+            font-size: 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            width: 260px;
+            color: #fff;
+            font-weight: bold;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+        }
+        .btn-green {
+            background: #228B22;
+        }
+        .btn-gold {
+            background: #DAA520;
+        }
+        .btn-white {
+            background: #fff;
+            color: #333;
+        }
+        footer {
+            margin-top: 60px;
+            font-size: 14px;
+            color: #eee;
+        }
+    </style>
 </head>
 <body>
-  <!-- شعار عربي سايكو -->
-  <img src="{{ url_for('static', filename='logo.png') }}" alt="شعار عربي سايكو" class="logo">
+    <header>
+        <h1>مركز عربي سايكو يرحب بكم</h1>
+        <h2>صديق الجميع</h2>
+    </header>
 
-  <!-- العنوان -->
-  <h1>عربي سايكو</h1>
-  <p class="slogan">صديق الجميع 🌿</p>
+    <div class="buttons">
+        <a href="/tests"><button class="btn btn-green">🔹 اختبار عام</button></a>
+        <a href="/tests/personality_form"><button class="btn btn-gold">👤 اختبار الشخصية</button></a>
+        <a href="/tests/psych_form"><button class="btn btn-white">🧠 اختبار نفسي</button></a>
+    </div>
 
-  <!-- أزرار الاختبارات -->
-  <a href="/tests/psych" class="btn btn-light btn-custom">
-    <i class="fa-solid fa-brain"></i> اختبار نفسي
-  </a>
-  <a href="/tests/personality" class="btn btn-warning btn-custom">
-    <i class="fa-solid fa-user"></i> اختبار الشخصية
-  </a>
-  <a href="/tests/run" class="btn btn-success btn-custom">
-    <i class="fa-solid fa-list-check"></i> اختبارات عامة
-  </a>
-
-  <!-- أزرار التواصل -->
-  <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
-    <a href="https://wa.me/966530565696" target="_blank" 
-       class="btn btn-custom"
-       style="background: linear-gradient(45deg, #25D366, #FFD700); color: #fff;">
-      <i class="fa-brands fa-whatsapp"></i> واتساب
-    </a>
-
-    <a href="https://t.me/Mhfh1414" target="_blank" 
-       class="btn btn-custom"
-       style="background: linear-gradient(45deg, #0088cc, #FFD700); color: #fff;">
-      <i class="fa-brands fa-telegram"></i> تيليجرام
-    </a>
-  </div>
+    <footer>
+        تواصل معنا عبر:
+        <a href="https://wa.me/966530565696" target="_blank" style="color:#fff;">واتساب</a> | 
+        <a href="https://t.me/Mhfh1414" target="_blank" style="color:#fff;">تليجرام</a>
+    </footer>
 </body>
 </html>
