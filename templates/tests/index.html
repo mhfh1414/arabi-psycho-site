@@ -6,59 +6,61 @@
     <style>
         body {
             font-family: 'Tahoma', sans-serif;
-            text-align: center;
-            background: linear-gradient(135deg, #004d26, #b8860b); /* أخضر × ذهبي */
-            color: #fff;
             margin: 0;
             padding: 0;
+            text-align: center;
+            background: linear-gradient(135deg, #006400, #FFD700); /* أخضر مع ذهبي */
+            color: #fff;
         }
         header {
-            margin-top: 80px;
+            padding: 40px;
         }
         header h1 {
-            font-size: 42px;
-            margin-bottom: 10px;
+            font-size: 48px;
+            margin: 0;
         }
         header h2 {
             font-size: 22px;
+            margin-top: 10px;
             font-weight: normal;
-            color: #f0f0f0;
+        }
+        .sections {
+            margin-top: 30px;
+            font-size: 20px;
+            line-height: 1.8;
         }
         .buttons {
-            margin-top: 60px;
+            margin-top: 40px;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
         .btn {
-            padding: 15px 40px;
-            font-size: 20px;
-            border: none;
+            background: #fff;
+            color: #333;
+            padding: 18px 40px;
             border-radius: 12px;
-            cursor: pointer;
-            transition: 0.3s;
-            width: 260px;
-            color: #fff;
+            font-size: 18px;
             font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: 0.3s;
         }
         .btn:hover {
             transform: scale(1.05);
-        }
-        .btn-green {
             background: #228B22;
-        }
-        .btn-gold {
-            background: #DAA520;
-        }
-        .btn-white {
-            background: #fff;
-            color: #333;
+            color: #fff;
         }
         footer {
-            margin-top: 60px;
-            font-size: 14px;
-            color: #eee;
+            margin-top: 50px;
+            padding: 20px;
+            font-size: 16px;
+        }
+        footer a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 10px;
         }
     </style>
 </head>
@@ -68,16 +70,28 @@
         <h2>صديق الجميع</h2>
     </header>
 
+    <div class="sections">
+        🧠 العلاج السلوكي المعرفي (CBT) <br>
+        📚 الاضطرابات النفسية (DSM-5) <br>
+        👥 دراسة الحالة والتحويل <br>
+        🩺 التحويل إلى الطبيب | 🧑‍⚕️ التحويل إلى الأخصائي النفسي <br>
+        📝 اختبارات نفسية وشخصية شاملة
+    </div>
+
     <div class="buttons">
-        <a href="/tests"><button class="btn btn-green">🔹 اختبار عام</button></a>
-        <a href="/tests/personality_form"><button class="btn btn-gold">👤 اختبار الشخصية</button></a>
-        <a href="/tests/psych_form"><button class="btn btn-white">🧠 اختبار نفسي</button></a>
+        <a href="/tests"><button class="btn">🔹 اختبار عام</button></a>
+        <a href="/tests/personality_form"><button class="btn">👤 اختبار الشخصية</button></a>
+        <a href="/tests/psych_form"><button class="btn">🧠 اختبار نفسي</button></a>
+        <a href="/dsm"><button class="btn">📚 الأمراض النفسية</button></a>
+        <a href="/cbt"><button class="btn">🧩 العلاج السلوكي المعرفي</button></a>
+        <a href="/case"><button class="btn">📑 دراسة الحالة</button></a>
     </div>
 
     <footer>
-        تواصل معنا عبر:
-        <a href="https://wa.me/966530565696" target="_blank" style="color:#fff;">واتساب</a> | 
-        <a href="https://t.me/Mhfh1414" target="_blank" style="color:#fff;">تليجرام</a>
+        تواصل معنا عبر:  
+        <a href="https://wa.me/966530565696" target="_blank">📱 واتساب</a> | 
+        <a href="https://t.me/Mhfh1414" target="_blank">💬 تليجرام</a> | 
+        <a href="mailto:info@arabipsycho.com">✉️ البريد الإلكتروني</a>
     </footer>
 </body>
 </html>
