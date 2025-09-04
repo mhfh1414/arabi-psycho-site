@@ -1,4 +1,2 @@
-# يجعل services مكتبة بايثون
-# ويجهز التصدير المباشر
-from . import tests
-from . import recommend
+# ملف تهيئة لمجلد services
+# يخلي المجلد يُعامل كموديول بايثون
