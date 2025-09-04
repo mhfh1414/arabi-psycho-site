@@ -1,26 +1,18 @@
-# اختبارات شخصية بسيطة (تجريبية)
+# ملف اختبارات الشخصية - tests_personality.py
+# يقدّم اختبار شخصية بسيط مع نتائج مفسّرة
 
-def personality_test(user_answers=None):
+def personality_test(answers: list[str]) -> str:
     """
-    اختبار شخصية تجريبي
-    :param user_answers: قائمة اجابات مثل ["A", "B", "C"]
-    :return: dict يحتوي score ورسالة
+    يقيم شخصية العميل بناءً على الإجابات (نعم/لا أو Y/N).
     """
-    if not user_answers:
-        return {"status": "ok", "score": 0, "message": "لم تدخل إجابات"}
+    score = 0
+    for ans in answers:
+        if ans.strip().lower() in ["نعم", "y", "yes"]:
+            score += 1
 
-    score = len(user_answers)
-
-    if score <= 3:
-        message = "شخصية هادئة ومتحفظة"
-    elif score <= 6:
-        message = "شخصية متوازنة واجتماعية"
+    if score >= 7:
+        return "شخصية قيادية: تحب السيطرة واتخاذ القرارات."
+    elif score >= 4:
+        return "شخصية متوازنة: تميل للتعاون وتحب المشاركة."
     else:
-        message = "شخصية قيادية ونشيطة"
-
-    return {"status": "ok", "score": score, "message": message}
-
-
-def personality_info():
-    """معلومات/وصف مختصر للاختبار"""
-    return "هذا مجرد اختبار شخصية تجريبي (tests_personality)."
+        return "شخصية هادئة: تفضل العزلة والتفكير قبل اتخاذ القرارات."
