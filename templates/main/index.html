@@ -1,24 +1,25 @@
 {% extends "_shared/base.html" %}
+
 {% block title %}الرئيسية{% endblock %}
 
 {% block content %}
 <div class="text-center mt-5">
-  <h1 class="mb-4">مرحباً بك في منصة عربي سايكو</h1>
-  <p class="lead">هنا تجد كل ما تحتاجه من موارد نفسية، اختبارات، وعلاج سلوكي معرفي.</p>
+    <h1 class="mb-4">مرحباً بك في منصة عربي سايكو</h1>
+    <p class="lead">هنا ستجد اختبارات ودعم نفسي مجاني بإشراف متخصصين</p>
+</div>
 
-  <div class="row mt-5">
+<div class="row mt-5">
     <div class="col-md-3 mb-3">
-      <a href="{{ url_for('dsm') }}" class="btn btn-primary w-100 py-3">📘 الاضطرابات (DSM-5)</a>
+        <a href="{{ url_for('dsm') }}" class="btn btn-primary btn-block">الدليل التشخيصي DSM-5</a>
     </div>
     <div class="col-md-3 mb-3">
-      <a href="{{ url_for('cbt') }}" class="btn btn-success w-100 py-3">🧠 العلاج السلوكي المعرفي (CBT)</a>
+        <a href="{{ url_for('cbt') }}" class="btn btn-success btn-block">العلاج السلوكي المعرفي CBT</a>
     </div>
     <div class="col-md-3 mb-3">
-      <a href="{{ url_for('tests') }}" class="btn btn-warning w-100 py-3">📝 الاختبارات</a>
+        <a href="{{ url_for('tests') }}" class="btn btn-warning btn-block">الاختبارات النفسية</a>
     </div>
     <div class="col-md-3 mb-3">
-      <a href="{{ url_for('case_study') }}" class="btn btn-danger w-100 py-3">📊 دراسة حالة</a>
+        <a href="{{ url_for('case_study') }}" class="btn btn-info btn-block">دراسات حالة</a>
     </div>
-  </div>
 </div>
 {% endblock %}
