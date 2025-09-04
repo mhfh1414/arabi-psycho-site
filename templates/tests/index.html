@@ -1,106 +1,104 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <title>مركز عربي سايكو</title>
-    <style>
-        body {
-            font-family: 'Tahoma', sans-serif;
-            margin: 0;
-            padding: 0;
-            text-align: center;
-            background: linear-gradient(135deg, #1E3C72, #2A5298); /* أزرق متدرج */
-            color: #fff;
-        }
-        header {
-            padding: 30px;
-        }
-        header img {
-            width: 90px;
-            margin-bottom: 10px;
-        }
-        header h1 {
-            font-size: 42px;
-            margin: 0;
-        }
-        header h2 {
-            font-size: 20px;
-            margin-top: 8px;
-            font-weight: normal;
-            color: #FFD700; /* ذهبي */
-        }
-        .sections {
-            margin-top: 25px;
-            font-size: 18px;
-            line-height: 1.9;
-        }
-        .buttons {
-            margin-top: 35px;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        .btn {
-            background: #fff;
-            color: #1E3C72;
-            padding: 14px 30px;
-            border-radius: 10px;
-            font-size: 17px;
-            font-weight: bold;
-            cursor: pointer;
-            border: none;
-            min-width: 180px;
-            transition: 0.3s;
-        }
-        .btn:hover {
-            transform: scale(1.07);
-            background: #FFD700;
-            color: #1E3C72;
-        }
-        footer {
-            margin-top: 40px;
-            padding: 15px;
-            font-size: 15px;
-        }
-        footer a {
-            color: #FFD700;
-            text-decoration: none;
-            margin: 0 8px;
-            font-weight: bold;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>عربي سايكو</title>
+  <style>
+    body {
+      font-family: 'Tahoma', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); /* أزرق داكن متدرج */
+      color: #fff;
+    }
+    header {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 20px 40px;
+    }
+    header h1 {
+      font-size: 36px;
+      margin: 0;
+      color: #FFD700; /* ذهبي */
+    }
+    .intro {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .intro h2 {
+      font-size: 22px;
+      font-weight: normal;
+      margin: 5px 0;
+      color: #ddd;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      padding: 40px;
+      max-width: 1000px;
+      margin: auto;
+    }
+    .card {
+      background: #fff;
+      color: #2c3e50;
+      border-radius: 12px;
+      padding: 25px;
+      text-align: center;
+      transition: 0.3s;
+      font-weight: bold;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      background: #FFD700;
+      color: #000;
+    }
+    .card span {
+      display: block;
+      font-size: 35px;
+      margin-bottom: 12px;
+    }
+    footer {
+      text-align: center;
+      padding: 20px;
+      margin-top: 30px;
+      background: rgba(255, 255, 255, 0.05);
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    footer a {
+      color: #FFD700;
+      margin: 0 10px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <!-- شعار عربي سايكو (حط صورة شعارك مكان الرابط أدناه) -->
-        <img src="https://i.ibb.co/qm2VJhY/logo.png" alt="شعار عربي سايكو">
-        <h1>مركز عربي سايكو يرحب بكم</h1>
-        <h2>نخدمك أينما كنت 🌍</h2>
-    </header>
+  <header>
+    <h1>عربي سايكو</h1>
+  </header>
 
-    <div class="sections">
-        🧠 العلاج السلوكي المعرفي (CBT) <br>
-        📚 الاضطرابات النفسية (DSM-5) <br>
-        👥 دراسة الحالة والتحويل <br>
-        🩺 التحويل إلى الطبيب | 🧑‍⚕️ التحويل إلى الأخصائي النفسي <br>
-        📝 اختبارات نفسية وشخصية شاملة
-    </div>
+  <div class="intro">
+    <h2>مركز عربي سايكو يرحب بكم 🌿</h2>
+    <h2>نخدمك أينما كنت</h2>
+  </div>
 
-    <div class="buttons">
-        <a href="/tests"><button class="btn">🔹 اختبار عام</button></a>
-        <a href="/tests/personality_form"><button class="btn">👤 اختبار الشخصية</button></a>
-        <a href="/tests/psych_form"><button class="btn">🧠 اختبار نفسي</button></a>
-        <a href="/dsm"><button class="btn">📚 الأمراض النفسية</button></a>
-        <a href="/cbt"><button class="btn">🧩 العلاج السلوكي</button></a>
-        <a href="/case"><button class="btn">📑 دراسة الحالة</button></a>
-    </div>
+  <div class="grid">
+    <a href="/cbt" class="card"><span>🧠</span> العلاج السلوكي (CBT)</a>
+    <a href="/dsm" class="card"><span>📚</span> الاضطرابات النفسية (DSM-5)</a>
+    <a href="/case" class="card"><span>📝</span> دراسة الحالة</a>
+    <a href="/doctor" class="card"><span>🧑‍⚕️</span> التحويل إلى الطبيب</a>
+    <a href="/specialist" class="card"><span>👥</span> التحويل إلى الأخصائي النفسي</a>
+    <a href="/tests" class="card"><span>📊</span> الاختبارات النفسية</a>
+    <a href="/addiction" class="card"><span>🚭</span> الإدمان والمخدرات</a>
+  </div>
 
-    <footer>
-        تواصل معنا عبر:  
-        <a href="https://wa.me/966530565696" target="_blank">📱 واتساب</a> | 
-        <a href="https://t.me/Mhfh1414" target="_blank">💬 تليجرام</a> | 
-        <a href="mailto:info@arabipsycho.com">✉️ البريد الإلكتروني</a>
-    </footer>
+  <footer>
+    تواصل معنا عبر:
+    <a href="https://wa.me/966530565696" target="_blank">📱 واتساب</a> | 
+    <a href="https://t.me/Mhfh1414" target="_blank">💬 تليجرام</a> | 
+    <a href="mailto:info@arabipsycho.com">✉️ البريد الإلكتروني</a>
+  </footer>
 </body>
 </html>
