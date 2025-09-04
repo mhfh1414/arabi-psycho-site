@@ -1,23 +1,20 @@
-# اختبارات نفسية عامة (تجريبية وبسيطة للعمل فوراً)
+# ملف الاختبارات النفسية - tests_psych.py
+# يحتوي على دوال لاختبار نفسي بسيط وحساب الدرجة
 
-def score_test(user_answers=None):
+def score_test(answers: list[int]) -> int:
     """
-    نقطة = 1 لــ نعم/Yes/Y/1/True
-    :param user_answers: قائمة اجابات مثل ["نعم", "Yes", "1"]
-    :return: dict يحتوي score ورسالة
+    يحسب مجموع النقاط من إجابات العميل (قائمة أرقام)
     """
-    if not user_answers:
-        return {"status": "ok", "score": 0, "message": "لم تدخل إجابات"}
-
-    truthy = {"نعم", "yes", "y", "1", "true", "صح", "صحيح"}
-    score = 0
-    for a in user_answers:
-        if str(a).strip().lower() in truthy:
-            score += 1
-
-    return {"status": "ok", "score": score, "message": f"نتيجتك = {score}"}
+    return sum(answers)
 
 
-def psych_info():
-    """معلومات/وصف مختصر للاختبار"""
-    return "هذا مجرد اختبار نفسي تجريبي (tests_psych)."
+def psych_info(score: int) -> str:
+    """
+    يعطي وصف لحالة العميل بناءً على مجموع النقاط
+    """
+    if score >= 80:
+        return "ممتاز: حالتك النفسية مستقرة وجيدة جدًا."
+    elif score >= 50:
+        return "متوسط: تحتاج بعض التمارين والاسترخاء للحفاظ على توازنك النفسي."
+    else:
+        return "منخفض: يفضل استشارة أخصائي نفسي لمتابعة حالتك بشكل أفضل."
