@@ -1,55 +1,42 @@
-from flask import Flask, render_template, request, jsonify
-
-# ✅ استيراد من الملفات داخل المشروع
+# site_app.py
+from flask import Flask, render_template
 from tests.tests_psych import score_test, psych_info
-from tests.tests_personality import personality_test  # تأكد أن الدالة موجودة
-from data.dsm5.dsm import get_disorder                # تأكد أن الدالة موجودة
-from services.recommend import get_recommendations    # تأكد أن الدالة موجودة
+from tests.tests_personality import personality_test
 
 app = Flask(__name__)
 
-# ======================
-# صفحات أساسية
-# ======================
-@app.route('/')
+# الصفحة الرئيسية
+@app.route("/")
 def home():
-    return render_template('main/index.html')
+    return render_template("main/index.html")
 
-@app.route('/dsm')
-def dsm_list():
-    disorders = get_disorder()
-    return render_template('dsm/dsm.html', disorders=disorders)
+# صفحة DSM
+@app.route("/dsm")
+def dsm_page():
+    return render_template("dsm/dsm.html")
 
-@app.route('/dsm/<string:disorder_id>')
-def dsm_detail(disorder_id):
-    disorder = get_disorder(disorder_id)
-    return render_template('dsm/dsm_detail.html', disorder=disorder)
+# صفحة CBT
+@app.route("/cbt")
+def cbt_page():
+    return render_template("cbt/cbt.html")
 
-# ======================
-# اختبارات
-# ======================
-@app.route('/tests/psych', methods=['POST'])
-def run_psych_test():
-    user_answers = request.json.get("answers", [])
-    result = score_test(user_answers)
-    return jsonify(result)
+# صفحة دراسة حالة
+@app.route("/case")
+def case_page():
+    return render_template("case/case_study.html")
 
-@app.route('/tests/personality', methods=['POST'])
-def run_personality_test():
-    user_answers = request.json.get("answers", [])
-    result = personality_test(user_answers)
-    return jsonify(result)
+# صفحة اختبارات عامة (نفسي)
+@app.route("/tests/psych")
+def psych_test_page():
+    result = score_test(["نعم", "لا", "yes"])
+    return render_template("tests/psych_test.html", result=result)
 
-# ======================
-# توصيات
-# ======================
-@app.route('/recommend', methods=['GET'])
-def recommend():
-    recs = get_recommendations()
-    return jsonify(recs)
+# صفحة اختبارات شخصية
+@app.route("/tests/personality")
+def personality_test_page():
+    result = personality_test(["A", "B", "C"])
+    return render_template("tests/personality_test.html", result=result)
 
-# ======================
-# تشغيل
-# ======================
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, debug=True)
