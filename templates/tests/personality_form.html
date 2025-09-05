@@ -1,19 +1,0 @@
-{% extends "_shared/base.html" %}
-{% block title %}اختبار الشخصية{% endblock %}
-
-{% block content %}
-<h2 class="mb-4">🧩 اختبار الشخصية</h2>
-<form method="post">
-    <div class="mb-3">
-        <label>سؤال 1: هل تفضل العمل ضمن فريق؟</label><br>
-        <input type="radio" name="answers" value="نعم"> نعم
-        <input type="radio" name="answers" value="لا"> لا
-    </div>
-    <div class="mb-3">
-        <label>سؤال 2: هل تحب التحديات الجديدة؟</label><br>
-        <input type="radio" name="answers" value="نعم"> نعم
-        <input type="radio" name="answers" value="لا"> لا
-    </div>
-    <button type="submit" class="btn btn-primary">إرسال</button>
-</form>
-{% endblock %}
