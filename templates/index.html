@@ -3,78 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <title>مركز عربي سايكو</title>
-  <style>
-    body {
-      font-family: "Tajawal", sans-serif;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-      background: linear-gradient(to bottom, #002B5B, #1A5F7A);
-      color: white;
-    }
-    header {
-      padding: 20px;
-    }
-    header h1 {
-      font-size: 36px;
-      margin: 10px 0;
-      color: #FFD700;
-    }
-    header h2 {
-      font-size: 22px;
-      margin: 5px 0;
-      font-weight: normal;
-    }
-    .buttons {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
-      max-width: 900px;
-      margin: 40px auto;
-    }
-    .btn {
-      background: #004E89;
-      border: none;
-      padding: 20px;
-      border-radius: 12px;
-      font-size: 18px;
-      color: white;
-      text-decoration: none;
-      transition: 0.3s;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-    }
-    .btn:hover {
-      background: #FFD700;
-      color: black;
-    }
-    footer {
-      margin-top: 40px;
-      font-size: 14px;
-      color: #ccc;
-    }
-  </style>
 </head>
 <body>
+  <h1>🌿 مركز عربي سايكو يرحب بكم</h1>
+  <p>نخدمك أينما كنت | صديق الجميع</p>
 
-  <header>
-    <h1>🌿 عربي سايكو</h1>
-    <h2>مركز عربي سايكو يرحب بكم</h2>
-    <p>نخدمك أينما كنت</p>
-  </header>
-
-  <section class="buttons">
-    <a href="/case_study" class="btn">📋 دراسة حالة</a>
-    <a href="/dsm" class="btn">📚 الأمراض النفسية (DSM-5)</a>
-    <a href="/tests" class="btn">🧩 الاختبارات النفسية والشخصية</a>
-    <a href="/cbt" class="btn">💡 العلاج السلوكي المعرفي (CBT)</a>
-    <a href="/addiction" class="btn">🚫 علاج الإدمان</a>
-    <a href="/request_specialist" class="btn">👨‍⚕️ طلب الأخصائي النفسي</a>
-    <a href="/request_doctor" class="btn">🏥 طلب الطبيب</a>
-  </section>
-
-  <footer>
-    <p>© 2025 جميع الحقوق محفوظة - عربي سايكو</p>
-  </footer>
-
+  <nav>
+    <ul>
+      <li><a href="{{ url_for('case_study') }}">📝 دراسة حالة</a></li>
+      <li><a href="{{ url_for('dsm') }}">📖 الأمراض النفسية (DSM-5)</a></li>
+      <li><a href="{{ url_for('tests') }}">🧪 الاختبارات النفسية والشخصية</a></li>
+      <li><a href="{{ url_for('cbt') }}">💡 العلاج السلوكي المعرفي</a></li>
+      <li><a href="{{ url_for('addiction') }}">🚭 علاج الإدمان</a></li>
+      <li><a href="{{ url_for('request_doctor') }}">👨‍⚕️ طلب الطبيب</a></li>
+      <li><a href="{{ url_for('request_specialist') }}">👨‍💼 طلب الأخصائي النفسي</a></li>
+    </ul>
+  </nav>
 </body>
 </html>
