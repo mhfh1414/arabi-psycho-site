@@ -1,58 +1,47 @@
-from flask import Flask, render_template, request, redirect, url_for, session
-from datetime import timedelta
+from flask import Flask, render_template
 
 app = Flask(__name__)
-app.secret_key = "change-me"      # غيّرها لقيمة سرّية
-app.permanent_session_lifetime = timedelta(hours=6)
 
+# الصفحة الرئيسية
 @app.route("/")
 def home():
-    return render_template("main/index.html")
+    return render_template("index.html")
 
-# صفحة دراسة الحالة
-@app.route("/case", methods=["GET", "POST"])
-def case():
-    if request.method == "POST":
-        data = {
-            "name":  request.form.get("name",""),
-            "age":   request.form.get("age",""),
-            "gender":request.form.get("gender",""),
-            "cc":    request.form.get("cc",""),
-            "hx":    request.form.get("hx",""),
-            "rx":    request.form.get("rx",""),
-            "risk":  request.form.get("risk",""),
-        }
-        session["case_info"] = data
-        return redirect(url_for("dsm"))
-    # GET
+# دراسة الحالة
+@app.route("/case_study")
+def case_study():
     return render_template("case_study.html")
 
-# صفحة DSM-5 (تقرأ بيانات دراسة الحالة إن وُجدت)
+# الأمراض النفسية (DSM-5)
 @app.route("/dsm")
 def dsm():
-    case_info = session.get("case_info", {})
-    return render_template("dsm.html", case_info=case_info)
+    return render_template("dsm.html")
 
-# صفحات أخرى (اختياري)
+# العلاج السلوكي المعرفي (CBT)
 @app.route("/cbt")
 def cbt():
     return render_template("cbt.html")
 
+# الاختبارات النفسية والشخصية
 @app.route("/tests")
 def tests():
     return render_template("tests.html")
 
+# علاج الإدمان
 @app.route("/addiction")
 def addiction():
     return render_template("addiction.html")
 
-@app.route("/request/specialist")
-def request_specialist():
-    return render_template("request_specialist.html")
-
-@app.route("/request/doctor")
+# طلب الطبيب
+@app.route("/request_doctor")
 def request_doctor():
     return render_template("request_doctor.html")
 
+# طلب الأخصائي النفسي
+@app.route("/request_specialist")
+def request_specialist():
+    return render_template("request_specialist.html")
+
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=10000)
