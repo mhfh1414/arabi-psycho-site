@@ -1,203 +1,115 @@
-<!doctype html>
+<!-- templates/dsm.html -->
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>DSM — مطابقة الأعراض وعرض النتائج</title>
-<style>
-  :root{--bg:#0f2347;--ink:#eef3ff;--muted:#cbd5e1;--c1:#123a7acc;--c2:#0c2a59cc;--accent:#f5b546;--ok:#22c55e;--warn:#f59e0b;--bad:#ef4444;--chip:#14366f}
-  *{box-sizing:border-box} body{margin:0;font-family:"Tajawal","Noto Kufi Arabic",Tahoma,Arial,sans-serif;background:radial-gradient(1000px 700px at 80% -10%,#1b4da0 0%,#0f2347 55%) fixed;color:var(--ink);line-height:1.9}
-  .wrap{max-width:1180px;margin:auto;padding:22px}
-  h1{margin:0 0 8px;font-size:clamp(22px,3vw,32px)} .sub{color:var(--muted);font-size:13px;margin-top:-6px}
-  .grid{display:grid;gap:14px;grid-template-columns:repeat(12,1fr)} .card{grid-column:span 12;background:linear-gradient(180deg,var(--c1),var(--c2));border:1px solid #ffffff1a;border-radius:18px;padding:16px;backdrop-filter:blur(6px);box-shadow:0 8px 22px #0005}
-  @media (min-width:960px){ .sm{grid-column:span 6} } label{display:block;margin:6px 0 6px;font-weight:700}
-  input,textarea,select{width:100%;background:#0a1b3b;border:1px solid #ffffff22;color:#fff;border-radius:10px;padding:10px;font-size:15px;outline:none}
-  textarea{min-height:90px;resize:vertical}
-  .btn{background:linear-gradient(180deg,#1e3a8a,#0b1c3e);color:#fff;border:1px solid #ffffff22;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer}
-  .btn:active{transform:translateY(1px)} .btn.alt{background:linear-gradient(180deg,#15803d,#0b3e1b)}
-  .badge{background:var(--chip);border:1px solid #ffffff22;color:#dbe6ff;border-radius:999px;padding:4px 10px;font-size:12px}
-  .results h2{margin:0 0 10px} .item{border:1px solid #ffffff1a;border-radius:14px;padding:12px;margin:10px 0;background:#0b1f49cc}
-  .bar{height:9px;background:#ffffff18;border-radius:999px;overflow:hidden} .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#22c55e,#f59e0b,#ef4444)}
-  .pill{display:inline-block;background:#14366f;border:1px solid #ffffff22;color:#dbe6ff;border-radius:999px;padding:6px 10px;font-size:12px;margin:3px 5px 0 0}
-  details{border:1px solid #ffffff12;border-radius:14px;padding:10px 12px;background:#0a1e45cc} details summary{cursor:pointer;font-weight:800}
-  .warn{color:var(--warn)} .bad{color:var(--bad)} .ok{color:var(--ok)} .muted{color:var(--muted)}
-</style>
+  <meta charset="UTF-8">
+  <title>نتائج التشخيص (DSM) - عربي سايكو</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    body{margin:0;font-family:"Tajawal",Tahoma,Arial,sans-serif;
+      background:linear-gradient(135deg,#0e3a8a,#1d4ed8);color:#fff}
+    .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
+    .title{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+    .title h1{margin:0;color:#FFD700;font-size:clamp(22px,3.4vw,30px)}
+    .card{background:#0b1220ee;border:1px solid rgba(255,255,255,.15);border-radius:16px;
+      box-shadow:0 10px 24px rgba(0,0,0,.25);padding:16px;margin:12px 0}
+    .subtle{color:#dbe5ff;opacity:.95}
+    .grid{display:grid;gap:10px}
+    @media(min-width:860px){.grid-2{grid-template-columns:1fr 1fr}}
+    table{width:100%;border-collapse:separate;border-spacing:0 8px}
+    th{color:#f1c40f;text-align:right;font-weight:800}
+    td,th{padding:8px 10px;background:rgba(255,255,255,.05);border-radius:10px}
+    .muted{color:#d0dcff;opacity:.9}
+    .warn{color:#f59e0b}.bad{color:#ff6b6b}.ok{color:#22c55e}
+    .pill{display:inline-block;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+      color:#dbe6ff;border-radius:999px;padding:6px 10px;font-size:12px;margin:4px 6px 0 0}
+    .result{border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:12px;margin-top:10px;background:#0c1529}
+    .bar{height:10px;background:rgba(255,255,255,.18);border-radius:999px;overflow:hidden;margin-top:6px}
+    .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#22c55e,#f59e0b,#ef4444)}
+    .section-title{color:#f1c40f;margin:0 0 10px;font-size:18px}
+    .btns{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{background:#FFD700;color:#063162;border:none;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}
+    .note{font-size:13px;color:#dbe6ff;opacity:.9}
+    a.link{color:#ffe082;text-decoration:none}
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <header style="margin-bottom:14px">
-    <h1>مطابقة الأعراض (نمط DSM) — عرض النتائج</h1>
-    <div class="sub">صياغة مبسّطة وغير منسوخة حرفيًا. أداة دعم وليست تشخيصًا نهائيًا.</div>
-  </header>
+  <div class="wrap">
 
-  <!-- نموذج/بيانات مدخلة (تملأ تلقائيًا من دراسة الحالة إن وُجدت) -->
-  <section class="grid">
-    <div class="card sm">
-      <h2>بيانات الحالة</h2>
-      <label>الاسم</label><input id="name" placeholder="—">
-      <div class="grid" style="gap:10px">
-        <div class="sm"><label>العمر</label><input id="age" type="number" min="1" placeholder="—"></div>
-        <div class="sm"><label>الجنس</label>
-          <select id="gender"><option value="">—</option><option>ذكر</option><option>أنثى</option><option>آخر</option></select>
-        </div>
-      </div>
-      <label>مدّة الأعراض (بالأيام)</label><input id="duration" type="number" min="0" placeholder="—">
+    <div class="title">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="عربي سايكو" style="width:38px;height:38px;border-radius:8px">
+      <h1>نتائج التشخيص (DSM)</h1>
     </div>
-    <div class="card sm">
-      <h2>وصف الأعراض</h2>
-      <label>الأعراض</label><textarea id="symptoms" placeholder="النص الذي أدخله العميل"></textarea>
-      <label>التاريخ الطبي/النفسي</label><textarea id="history" placeholder="اختياري"></textarea>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
-        <button class="btn" onclick="analyze()">تحليل الأعراض</button>
-        <button class="btn alt" onclick="resetForm()">مسح</button>
-        <span class="badge">لا يتم حفظ البيانات</span>
+
+    <!-- بيانات الحالة -->
+    <div class="card">
+      <h3 class="section-title">📋 بيانات الحالة</h3>
+      <div class="grid grid-2">
+        <table>
+          <tr><th>الاسم</th><td>{{ (case.name if case and case.name else '—') }}</td></tr>
+          <tr><th>العمر</th><td>{{ (case.age if case and case.age else '—') }}</td></tr>
+          <tr><th>الجنس</th><td>{{ (case.gender if case and case.gender else '—') }}</td></tr>
+          <tr><th>مدة الأعراض</th><td>{{ (case.duration if case and case.duration else '—') }}</td></tr>
+        </table>
+        <table>
+          <tr><th>الأعراض</th><td>{{ (case.symptoms if case and case.symptoms else '—') }}</td></tr>
+          <tr><th>التاريخ الطبي/النفسي</th><td>{{ (case.history if case and case.history else '—') }}</td></tr>
+        </table>
+      </div>
+      <div class="btns" style="margin-top:10px">
+        <a class="link" href="{{ url_for('case_study') }}">↩︎ تعديل البيانات</a>
       </div>
     </div>
-  </section>
 
-  <!-- النتائج -->
-  <section id="results" class="card results" style="margin-top:14px;display:none">
-    <h2>🎯 النتائج المرتبة حسب الثقة</h2>
-    <div id="flags" class="muted" style="margin:-6px 0 8px"></div>
-    <div id="list"></div>
-    <div class="muted" style="margin-top:8px">⚠️ للاسترشاد فقط — يُنصح بمراجعة مختص عند الحاجة.</div>
-  </section>
+    <!-- أعلام حمراء (إن وجدت) -->
+    {% if flags and flags|length > 0 %}
+    <div class="card">
+      <h3 class="section-title">⚠️ تنبيهات طبية عاجلة</h3>
+      {% for f in flags %}
+        <div class="pill bad">{{ f }}</div>
+      {% endfor %}
+      <p class="note" style="margin-top:8px">عند وجود خطر على النفس أو الآخرين، يُنصح بطلب مساعدة فورية.</p>
+    </div>
+    {% endif %}
 
-  <!-- كتالوج الاضطرابات (مرجع كبير) -->
-  <section class="card" style="margin-top:14px">
-    <h2>📚 مرجع الاضطرابات</h2>
-    <p class="muted">قائمة واسعة مُبسّطة تغطي الاضطرابات الشائعة (مزاج، قلق، وسواس، صدمة، ذهاني، نمائي، نوم، أكل، جسدي الشكل، شخصية، إدمان...).</p>
-    <div id="catalog"></div>
-  </section>
-</div>
+    <!-- النتائج -->
+    <div class="card">
+      <h3 class="section-title">🎯 أعلى التشخيصات المحتملة</h3>
+      {% if results and results|length > 0 %}
+        {% for r in results %}
+          <div class="result">
+            <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
+              <div><b>{{ r.name }}</b> <span class="muted">({{ r.group }})</span></div>
+              <div class="muted">درجة الثقة</div>
+            </div>
+            <div class="bar"><i style="width: {{ (r.score * 100)|round(0) }}%"></i></div>
+            <div class="muted" style="margin-top:6px">
+              أعراض مطابقة: {{ r.met }} • الحد الأدنى: {{ r.min_required }}
+              {% if r.duration_required %} • المدة الموصى بها ≥ {{ r.duration_required }} يوم{% endif %}
+            </div>
+            {% if r.matched_keys and r.matched_keys|length > 0 %}
+              <div style="margin-top:6px">
+                {% for k in r.matched_keys[:8] %}
+                  <span class="pill">{{ k }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
+            {% if r.red_flags and r.red_flags|length > 0 %}
+              <div class="warn" style="margin-top:6px">⚠️ مؤشرات خطورة: {{ r.red_flags|join("، ") }}</div>
+            {% endif %}
+            {% if r.tips and r.tips|length > 0 %}
+              <div class="note" style="margin-top:6px">اقتراحات: {{ r.tips|join(" — ") }}</div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="subtle">لا توجد أعراض كافية لإظهار تشخيص محتمل. يرجى توضيح الأعراض بشكل أكبر.</div>
+      {% endif %}
+      <p class="note" style="margin-top:10px">
+        هذه النتائج إرشادية وفق قواعد سريرية مبسطة، ولا تغني عن التقييم الطبي المتخصص.
+      </p>
+    </div>
 
-<!-- نمرّر بيانات دراسة الحالة من Flask للتهيئة -->
-<script>window.CASE={{ case_data|tojson|safe }};</script>
-
-<script>
-/* ========== قواعد المطابقة (مختصرة هنا — نفس روح DSM بدون نسخ حرفي) ========== */
-const RULES=[ /* نفس المجموعة الواسعة من القواعد كما في الرد السابق (MDE, GAD, PANIC, OCD, PTSD, PSY, MANIA, PDD, SAD, PHOBIA, ADHD_A, ASD, SSD, IAD, AN, BN, BED, INS, SUD, BPD_S, DISS) */
-  {code:'MDE',name:'نوبة اكتئابية كبرى',group:'المزاج',min:5,core:['حزن','كآبة','مزاج منخفض','فقدان المتعة','عدم استمتاع'],durationMin:14,keys:['حزن','كآبة','فقدان المتعة','عدم استمتاع','أرق','نوم قليل','نعاس زائد','شهية منخفضة','فقدان وزن','شهية زائدة','تباطؤ','إثارة نفسية حركية','إرهاق','طاقة منخفضة','ذنب','عديم القيمة','لوم الذات','صعوبة تركيز','تشتت','بطء التفكير','أفكار انتحار','تمني الموت'],red:['انتحار','أؤذي نفسي','قتل نفسي'],tips:['العلاج السلوكي المعرفي مفيد','استشارة مختص عند اشتداد الأعراض']},
-  {code:'PDD',name:'اكتئاب مستمر (مزمن)',group:'المزاج',min:2,core:['مزاج منخفض'],durationMin:730,keys:['مزاج منخفض','فقدان شهية','زيادة شهية','نوم زائد','أرق','طاقة منخفضة','تقدير ذات متدن','تركيز ضعيف','تردد'],red:[],tips:['تتبّع المزاج والدعم النفسي']},
-  {code:'MANIA',name:'هوس (ثنائي القطب)',group:'المزاج',min:3,core:['مزاج مرتفع','هيجان غير معتاد','طاقة عالية'],durationMin:7,keys:['ثقة مفرطة','قلة حاجة للنوم','كلام كثير','ثرثرة','أفكار سباق','تشتيت سريع','اندفاع','مخاطرة مالية','سلوك جنسي متهور'],red:['اندفاع خطير','مخاطرة شديدة'],tips:['تقيـيم طبيب نفسي ضروري']},
-  {code:'GAD',name:'قلق معمّم',group:'القلق',min:3,core:['قلق','توتر','خوف مستمر'],durationMin:180,keys:['توتر','عصبية','تعب','إرهاق','صعوبة تركيز','تشتيت','شد عضلي','أرق','صحو متكرر','قلق على أشياء كثيرة','قلق مفرط'],red:[],tips:['تمارين الاسترخاء وCBT فعّالة']},
-  {code:'PANIC',name:'نوبات هلع',group:'القلق',min:4,core:['نوبة','هلع','خوف شديد فجأة'],durationMin:0,keys:['خفقان','رجفة','تعرق','ضيق نفس','اختناق','ألم صدر','دوخة','غثيان','غربة الواقع','خوف من الموت','خدر','تنميل','قشعريرة','سخونة'],red:['فقدان وعي متكرر'],tips:['تدريب تنفّس وأرضنة','تقييم رهاب الساح إن وُجد']},
-  {code:'SAD',name:'قلق اجتماعي',group:'القلق',min:3,core:['خوف من التقييم','قلق اجتماعي','خجل شديد'],durationMin:180,keys:['تجنّب مواقف اجتماعية','احمرار','ارتجاف','تعرّق','تعطّل وظيفي'],red:[],tips:['تعرض تدريجي ومهارات اجتماعية']},
-  {code:'PHOBIA',name:'رُهاب محدد',group:'القلق',min:2,core:['خوف شديد من شيء محدد','فوبيا'],durationMin:180,keys:['تجنّب الشيء','تحمّل مع قلق شديد','تعطّل وظيفي'],red:[],tips:['التعرّض التدريجي فعّال جدًا']},
-  {code:'OCD',name:'وسواس قهري',group:'وسواس/قهر',min:2,core:['وساوس','أفكار متسلطة'],durationMin:30,keys:['سلوك قهري','غسل متكرر','تفقد الأبواب','ترتيب','عدّ متكرر','ضيق إن توقفت الطقوس'],red:[],tips:['ERP (التعرّض ومنع الاستجابة) هو العلاج الأبرز']},
-  {code:'PTSD',name:'ما بعد الصدمة',group:'الصدمة',min:4,core:['حادثة صادمة','اعتداء','حرب','حادث شديد'],durationMin:30,keys:['ذكريات اقتحامية','كوابيس','تجنّب مذكّرات','تيقظ مفرط','استثارة','نوبات غضب','خدر عاطفي','انفصال'],red:['خطر على النفس أو الآخرين'],tips:['علاج معرفي متمركز على الصدمة / EMDR']},
-  {code:'PSY',name:'ذهان/طيف فصامي',group:'ذهاني',min:2,core:['هلاوس','ضلالات','تفكك كلام'],durationMin:30,keys:['هلاوس سمعية','أفكار اضطهاد','تفكك التفكير','انسحاب اجتماعي','إهمال ذات'],red:['أصوات تأمر','خطورة على الآخرين'],tips:['تقييم طبي مبكّر مهم']},
-  {code:'ADHD_A',name:'فرط حركة وتشتت (بالغ)',group:'نمائي',min:5,core:['تشتت','نقص انتباه','اندفاع'],durationMin:180,keys:['نسيان','فقد الأشياء','تأجيل','عدم إنجاز','بدء مهام كثيرة','حركة زائدة','توتر جسدي','مقاطعة الآخرين','اندفاعية'],red:[],tips:['تنظيم الوقت واستراتيجيات سلوكية']},
-  {code:'ASD',name:'طيف توحد (فحص بالغين)',group:'نمائي',min:4,core:['صعوبات تواصل اجتماعي منذ الطفولة'],durationMin:365,keys:['حساسية للأصوات','حساسية للمس','اهتمامات ضيقة','روتين صارم','صعوبة قراءة الإشارات الاجتماعية','تاريخ منذ الطفولة'],red:[],tips:['تقييم متخصص للتشخيص المؤكد']},
-  {code:'SSD',name:'أعراض جسدية مع قلق صحي',group:'جسدي الشكل',min:2,core:['أعراض جسدية مزمنة','قلق على الصحة'],durationMin:180,keys:['تفكير مفرط بالأعراض','فحوصات متكررة','قلق صحي مستمر'],red:[],tips:['التثقيف وإدارة القلق مهمّان']},
-  {code:'IAD',name:'قلق مرضي (قلق على الصحة)',group:'جسدي الشكل',min:1,core:['قلق صحي'],durationMin:180,keys:['خوف من مرض خطير','اطمئنان طبي متكرر','تفقد مستمر لأعراض جسدية'],red:[],tips:['CBT يستهدف المبالغة الإدراكية']},
-  {code:'AN',name:'فقدان شهية عصبي',group:'أكل',min:3,core:['نحافة شديدة','خوف من زيادة الوزن'],durationMin:90,keys:['تقييد الأكل','حساب السعرات','صورة جسم مشوّهة','دوخة','انقطاع حيض'],red:['دوار شديد','إغماء','بطء قلب'],tips:['فريق متعدد التخصصات مطلوب']},
-  {code:'BN',name:'نهام عصبي',group:'أكل',min:3,core:['نهم','إفراط في الأكل'],durationMin:90,keys:['سلوك تعويضي (قيء/مسهل/صوم)','تأثر تقدير الذات بالوزن','نوبات متكررة'],red:[],tips:['CBT-E خيار فعّال']},
-  {code:'BED',name:'نهم الطعام',group:'أكل',min:3,core:['نهم'],durationMin:90,keys:['أكل سريع جدًا','أكل حتى الانزعاج','أكل دون جوع','شعور بالذنب بعد النهم'],red:[],tips:['تنظيم الوجبات ودعم سلوكي']},
-  {code:'INS',name:'أرق مزمن',group:'نوم',min:1,core:['أرق','صعوبة نوم','استيقاظ مبكر'],durationMin:90,keys:['صعوبة بدء النوم','صحو متكرر','نعاس نهاري','تعب'],red:[],tips:['CBT-I ونظافة النوم']},
-  {code:'SUD',name:'اضطراب تعاطي مواد',group:'إدمان',min:3,core:['تعاطي','مخدرات','كحول','منبّهات'],durationMin:90,keys:['رغبة قوية','فقد السيطرة','أكثر مما أنوي','محاولات فاشلة','وقت طويل للتعاطي/التعافي','مشاكل اجتماعية/مهنية','تحمّل','انسحاب'],red:['تعاطي حقن','إغماء','جرعة زائدة'],tips:['خطة امتناع + دعم + أحيانًا دواء']},
-  {code:'BPD_S',name:'نمط عاطفي غير مستقر (فحص)',group:'شخصية',min:5,core:['اندفاع','علاقات مضطربة','تقلّب مزاج'],durationMin:180,keys:['خوف هجر','اندفاع مؤذٍ للذات','فراغ مزمن','غضب شديد','إيذاء الذات','ندوب'],red:['انتحار','إيذاء الذات'],tips:['مهارات DBT وتنظيم انفعالي']},
-  {code:'DISS',name:'تفارقي (فجوات/تبدد/تغرّب)',group:'تفارقي',min:2,core:['فجوات ذاكرة','تبدد','تغرّب'],durationMin:0,keys:['انفصال','إحساس بعدم الواقعية','نسيان أحداث مهمة'],red:[],tips:['تقييم متخصص عند الشك']},
-];
-
-/* ========== تهيئة تلقائية من دراسة الحالة ========== */
-(function prefill(){
-  try{
-    const d = (window.CASE||{});
-    if(d.name)     document.getElementById('name').value = d.name;
-    if(d.age)      document.getElementById('age').value = d.age;
-    if(d.gender)   document.getElementById('gender').value = d.gender;
-    if(d.duration) document.getElementById('duration').value = d.duration;
-    if(d.symptoms) document.getElementById('symptoms').value = d.symptoms;
-    if(d.history)  document.getElementById('history').value = d.history;
-    if(d.symptoms) analyze();
-  }catch(_){}
-})();
-
-/* ========== التحليل والعرض ========== */
-function normalize(t){return (t||'').toString().trim().toLowerCase();}
-function analyze(){
-  const dur = parseInt(document.getElementById('duration').value||'0',10)||0;
-  const txt = normalize([document.getElementById('symptoms').value, document.getElementById('history').value].join(' '));
-
-  const flags=[];
-  if(txt.includes('انتحار')||txt.includes('أؤذي نفسي')||txt.includes('قتل نفسي')) flags.push('⚠️ مؤشرات خطر على النفس — اطلب مساعدة عاجلة');
-  if(txt.includes('أصوات')||txt.includes('هلاوس')||txt.includes('ضلالات')) flags.push('⚠️ مؤشرات ذهانية — يلزم تقييم سريع');
-
-  const scored = RULES.map(r=>{
-    const coreHit = r.core.length===0?true:r.core.some(k=>txt.includes(k));
-    if(!coreHit) return null;
-    let met=0, matched=[];
-    r.keys.forEach(k=>{
-      const variants = k.split('/').join('|').split('|').map(x=>x.trim()).filter(Boolean);
-      if(variants.some(v=>txt.includes(v))) { met++; matched.push(k); }
-    });
-    if(met<r.min) return {r,score:0,met,matched};
-    const coverage = met/Math.max(r.keys.length,r.min);
-    let score = 1/(1+Math.exp(-8*(coverage-0.5)));
-    if(r.durationMin && dur>=r.durationMin) score=Math.min(1,score+0.1);
-    if(r.durationMin && dur>0 && dur<r.durationMin/2) score=Math.max(0,score-0.1);
-    const reds=(r.red||[]).filter(x=>txt.includes(x));
-    return {r,score,met,matched,reds};
-  }).filter(Boolean).sort((a,b)=>b.score-a.score);
-
-  const results=document.getElementById('results');
-  const list=document.getElementById('list');
-  const flagsBox=document.getElementById('flags');
-  list.innerHTML=''; flagsBox.innerHTML='';
-  if(flags.length) flagsBox.innerHTML=flags.map(f=>`<div class="bad">${f}</div>`).join('');
-
-  if(scored.length===0){
-    results.style.display='block';
-    list.innerHTML=`<div class="item"><b>لا توجد مطابقة كافية</b><div class="muted">جرّب وصفًا أدق للأعراض والمدة.</div></div>`;
-    return;
-  }
-
-  scored.slice(0,10).forEach(({r,score,met,matched,reds})=>{
-    const pct=Math.round(score*100);
-    const redsHtml=(reds&&reds.length)?`<div class="bad" style="margin-top:6px">⚠️ أعلام حمراء: ${reds.join('، ')}</div>`:'';
-    const tipsHtml=(r.tips&&r.tips.length)?`<div class="muted" style="margin-top:6px">اقتراحات: ${r.tips.join(' — ')}</div>`:'';
-    const el=document.createElement('div');
-    el.className='item';
-    el.innerHTML=`
-      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:6px">
-        <div><b>${r.name}</b> <span class="muted">(${r.group})</span></div>
-        <div style="min-width:120px;text-align:left"><small>الثقة</small></div>
-      </div>
-      <div class="bar"><i style="width:${pct}%"></i></div>
-      <div class="muted" style="margin-top:6px">أعراض مطابقة: ${met} • الحد الأدنى: ${r.min}${r.durationMin?` • المدة الموصى بها ≥ ${r.durationMin} يوم`:''}</div>
-      ${matched.length?`<div style="margin-top:6px">${matched.slice(0,6).map(k=>`<span class="pill">${k}</span>`).join(' ')}</div>`:''}
-      ${redsHtml}
-      ${tipsHtml}
-    `;
-    list.appendChild(el);
-  });
-
-  results.style.display='block';
-}
-
-/* ========== كتالوج كامل للتصفح ========== */
-function renderCatalog(){
-  const byGroup={}; RULES.forEach(r=>{(byGroup[r.group]=byGroup[r.group]||[]).push(r);});
-  const root=document.getElementById('catalog'); root.innerHTML='';
-  Object.keys(byGroup).forEach(group=>{
-    const box=document.createElement('details'); box.open=false;
-    const items=byGroup[group].map(r=>{
-      const keys=r.keys.slice(0,8).map(k=>`<span class="pill">${k}</span>`).join(' ');
-      return `<div class="item"><div><b>${r.name}</b> <span class="muted">— الحد الأدنى: ${r.min}${r.durationMin?`, المدة ≥ ${r.durationMin} يوم`:''}</span></div><div style="margin-top:6px">${keys}</div></div>`;
-    }).join('');
-    box.innerHTML=`<summary>${group}</summary>${items}`;
-    root.appendChild(box);
-  });
-}
-renderCatalog();
-
-/* ========== أدوات ========== */
-function resetForm(){
-  ['name','age','gender','duration','symptoms','history'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.value='';
-  });
-  document.getElementById('results').style.display='none';
-}
-</script>
+  </div>
 </body>
 </html>
