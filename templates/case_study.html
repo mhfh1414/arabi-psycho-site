@@ -1,93 +1,51 @@
-<!-- templates/case_study.html -->
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>دراسة حالة - عربي سايكو</title>
+  <title>دراسة حالة — شخص نفسك</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Tahoma', sans-serif;
-      background: linear-gradient(135deg, #003366, #0055aa);
-      color: #fff;
-      text-align: center;
-    }
-    h1 {
-      color: #FFD700;
-      margin-top: 30px;
-    }
-    form {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 20px;
-      margin: 30px auto;
-      border-radius: 12px;
-      width: 80%;
-      max-width: 600px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.4);
-    }
-    label {
-      display: block;
-      margin: 10px 0 5px;
-      text-align: right;
-      font-weight: bold;
-      color: #FFD700;
-    }
-    input, select, textarea {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 15px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-    textarea {
-      resize: vertical;
-      min-height: 80px;
-    }
-    button {
-      background-color: #FFD700;
-      color: #003366;
-      border: none;
-      padding: 12px 20px;
-      font-size: 18px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    button:hover {
-      background-color: #e6c200;
-    }
-  </style>
 </head>
-<body>
-  <h1>📝 دراسة حالة – شخص نفسك</h1>
-  <p>املأ البيانات التالية ليقوم النظام بتحليل حالتك وربطها مع DSM-5</p>
+<body class="bg">
+  <header class="hero small">
+    <h2>🧾 دراسة حالة — شخص نفسك</h2>
+    <p>املأ الحقول بدقّة، وسيقوم النظام بربط حالتك بـ DSM-5 وعرض التشخيص المحتمل.</p>
+  </header>
 
-  <form action="{{ url_for('dsm') }}" method="post">
-    <label for="name">الاسم الكامل:</label>
-    <input type="text" id="name" name="name" placeholder="مثال: أحمد محمد" required>
+  <main class="form-wrap">
+    <form method="post" class="form">
+      <label>الاسم الكامل:
+        <input name="full_name" placeholder="مثال: أحمد محمد">
+      </label>
 
-    <label for="age">العمر:</label>
-    <input type="number" id="age" name="age" placeholder="مثال: 30" required>
+      <div class="row">
+        <label>العمر:
+          <input name="age" placeholder="مثال: 30">
+        </label>
+        <label>الجنس:
+          <select name="gender">
+            <option value="">— اختر —</option>
+            <option>ذكر</option>
+            <option>أنثى</option>
+          </select>
+        </label>
+        <label>مدة الأعراض (بالأيام):
+          <input name="duration_days" placeholder="مثال: 30">
+        </label>
+      </div>
 
-    <label for="gender">الجنس:</label>
-    <select id="gender" name="gender" required>
-      <option value="">اختر...</option>
-      <option value="ذكر">ذكر</option>
-      <option value="أنثى">أنثى</option>
-    </select>
+      <label>الأعراض (أضِف بدقّة):
+        <textarea name="symptoms" rows="5" placeholder="مثال: قلق مفرط، نوبات هلع، أفكار سلبية..."></textarea>
+      </label>
 
-    <label for="duration">مدة الأعراض (بالأيام):</label>
-    <input type="number" id="duration" name="duration" placeholder="مثال: 30">
+      <label>التاريخ الطبي/النَّفسي (اختياري):
+        <textarea name="history" rows="4" placeholder="عمليات سابقة، أدوية، حساسيّات، إصابات، أحداث صادمة..."></textarea>
+      </label>
 
-    <label for="symptoms">الأعراض (أصف بدقة):</label>
-    <textarea id="symptoms" name="symptoms" placeholder="مثال: حزن، قلق، اضطراب نوم، أفكار سلبية..." required></textarea>
-
-    <label for="history">التاريخ الطبي والنفسي (اختياري):</label>
-    <textarea id="history" name="history" placeholder="مثال: لا يوجد، أو: أجريت عمليات/أعاني أمراض مزمنة..."></textarea>
-
-    <button type="submit">🔍 تشخيص عبر DSM</button>
-  </form>
+      <div class="actions">
+        <a class="btn ghost" href="{{ url_for('home') }}">الرجوع للرئيسية</a>
+        <button class="btn primary" type="submit">متابعة إلى DSM-5</button>
+      </div>
+    </form>
+  </main>
 </body>
 </html>
