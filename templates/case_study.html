@@ -2,31 +2,84 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>دراسة حالة</title>
+  <title>📝 دراسة حالة</title>
+  <style>
+    body { 
+      font-family: "Tajawal", sans-serif; 
+      background: linear-gradient(to bottom, #002B5B, #1A5F7A);
+      margin:0; padding:30px; color:white;
+      text-align:center;
+    }
+    .form-box {
+      background: rgba(255,255,255,0.1);
+      padding: 25px;
+      border-radius: 14px;
+      max-width: 600px;
+      margin: auto;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      text-align: right;
+    }
+    h1 {
+      color: #FFD700;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      font-weight: bold;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+    textarea { min-height: 80px; resize: vertical; }
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      background: #FFD700;
+      color: black;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #FFA500;
+      color: white;
+    }
+  </style>
 </head>
 <body>
-  <h2>📝 دراسة حالة - شخص نفسك</h2>
+  <div class="form-box">
+    <h1>📝 دراسة حالة</h1>
+    <form method="POST" action="{{ url_for('case_study') }}">
+      <label>الاسم الكامل</label>
+      <input type="text" name="name" required>
 
-  <form method="post" action="{{ url_for('case_study') }}">
-    <label>الاسم:</label><br>
-    <input type="text" name="name" required><br><br>
+      <label>العمر</label>
+      <input type="number" name="age" min="1" max="100" required>
 
-    <label>العمر:</label><br>
-    <input type="number" name="age" required><br><br>
+      <label>الجنس</label>
+      <select name="gender" required>
+        <option value="">— اختر —</option>
+        <option value="ذكر">ذكر</option>
+        <option value="أنثى">أنثى</option>
+      </select>
 
-    <label>الجنس:</label><br>
-    <select name="gender" required>
-      <option value="ذكر">ذكر</option>
-      <option value="أنثى">أنثى</option>
-    </select><br><br>
+      <label>الأعراض</label>
+      <textarea name="symptoms" placeholder="اشرح الأعراض التي تعاني منها..."></textarea>
 
-    <label>الأعراض:</label><br>
-    <textarea name="symptoms" required></textarea><br><br>
+      <label>التاريخ الطبي والنفسي</label>
+      <textarea name="history" placeholder="اذكر أي أمراض سابقة أو علاجات..."></textarea>
 
-    <label>التاريخ الطبي والنفسي:</label><br>
-    <textarea name="history"></textarea><br><br>
-
-    <button type="submit">متابعة إلى DSM</button>
-  </form>
+      <button type="submit">متابعة إلى DSM</button>
+    </form>
+  </div>
 </body>
 </html>
