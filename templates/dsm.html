@@ -1,241 +1,34 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>الأمراض النفسية (DSM) — التقييم السريري الموسَّع</title>
-<style>
-  :root{
-    --bg:#0f2347; --surface:#0b1a35; --card:#113169; --ink:#eef3ff; --muted:#c8d4f3;
-    --brand:#f5b546; --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444; --chip:#14366f;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:"Noto Kufi Arabic",Tahoma,Arial,sans-serif;background:
-    radial-gradient(1000px 700px at 80% -10%, #1b4da0 0%, var(--bg) 55%) fixed;color:var(--ink);line-height:1.85}
-  .wrap{max-width:1180px;margin:auto;padding:22px}
-  header{display:flex;gap:14px;align-items:center;margin:6px 0 18px}
-  .logo{width:44px;height:44px;border-radius:12px;background:
-    conic-gradient(from 90deg,#fff0 0 45deg,var(--brand) 0 145deg,#fff0 0),
-    radial-gradient(20px 20px at 62% 40%,var(--brand) 36%,#0000 37%),
-    radial-gradient(24px 24px at 40% 65%,#18c08d 36%,#0000 37%);
-    box-shadow:0 6px 18px #0006,inset 0 0 0 2px #ffffff1a}
-  h1{margin:0;font-size:clamp(22px,3.2vw,34px)}
-  .sub{color:var(--muted);font-size:13px;margin-top:-4px}
-  .banner{display:grid;gap:12px;grid-template-columns:repeat(12,1fr)}
-  .card{grid-column:span 12;background:linear-gradient(180deg,#123674cc,#0c2556cc);
-    border:1px solid #ffffff17;border-radius:18px;padding:16px;backdrop-filter:blur(6px);
-    box-shadow:0 8px 22px #0005}
-  @media(min-width:920px){.card.sm{grid-column:span 6}}
-  .row{display:grid;gap:10px;grid-template-columns:repeat(12,1fr)}
-  .row>label{grid-column:span 4}
-  .row>input[type="text"], .row>input[type="number"], .row>select, .row>textarea{
-    grid-column:span 8;background:#0a1b3b;border:1px solid #ffffff22;color:#fff;border-radius:10px;padding:10px;font-size:14px}
-  textarea{min-height:86px;resize:vertical}
-  .sect{margin-top:14px}
-  .head{display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer}
-  .head h2{margin:0;font-size:18px}
-  .badge{background:var(--chip);border:1px solid #ffffff1a;color:#dbe6ff;border-radius:999px;padding:4px 10px;font-size:12px}
-  .body{display:none;margin-top:10px}
-  .open .body{display:block}
-  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-  .chip{background:var(--chip);border:1px solid #ffffff22;color:#dbe6ff;border-radius:999px;padding:6px 10px;font-size:12px;cursor:pointer}
-  .crit{display:grid;gap:10px;grid-template-columns:repeat(12,1fr);align-items:center;margin-top:12px}
-  .crit > label{grid-column:span 9}
-  .crit > input[type="checkbox"]{grid-column:span 1;justify-self:start;accent-color:var(--brand);width:18px;height:18px}
-  .crit > textarea{grid-column:span 12;background:#0a1b3b;border:1px solid #ffffff22;color:#fff;border-radius:10px;padding:10px}
-  .bar{height:9px;background:#ffffff18;border-radius:999px;overflow:hidden}
-  .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#22c55e,#f59e0b,#ef4444)}
-  .foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-top:14px}
-  .btn{background:linear-gradient(180deg,#1e3a8a,#0b1c3e);color:#fff;border:1px solid #ffffff22;border-radius:12px;padding:10px 14px;font-weight:700;cursor:pointer}
-  .muted{color:var(--muted)} .ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)}
-  .print{background:linear-gradient(180deg,#15803d,#0b3e1b)}
-</style>
+  <meta charset="UTF-8">
+  <title>DSM - التشخيص المبدئي</title>
+  <style>
+    body { font-family: "Tajawal", sans-serif; background:#f4f6f9; margin:0; padding:20px; }
+    h1 { color:#2c3e50; }
+    .card { background:#fff; padding:20px; border-radius:12px; box-shadow:0 2px 6px rgba(0,0,0,0.1); margin:20px auto; max-width:700px; }
+    p { line-height:1.6; }
+    .diag { font-weight:bold; color:#c0392b; margin-top:15px; }
+    a { display:inline-block; margin-top:20px; text-decoration:none; color:#2980b9; }
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div class="logo" aria-hidden="true"></div>
-    <div>
-      <h1>الأمراض النفسية (هيكل DSM) — استمارة تقييم موسَّعة</h1>
-      <div class="sub">هذه الصفحة تستعمل صياغات عامة (Placeholders) للمعايير. استبدلها لاحقًا بنصوصك المرخّصة/الخاصة.</div>
-    </div>
-  </header>
+  <div class="card">
+    <h1>📖 نتيجة التشخيص (DSM)</h1>
 
-  <!-- بيانات دراسة الحالة (معبأة تلقائيًا إن وُجدت) -->
-  <section class="banner">
-    <div class="card sm">
-      <div class="row">
-        <label>الاسم</label><input id="p_name" type="text" placeholder="—">
-      </div>
-      <div class="row">
-        <label>العمر</label><input id="p_age" type="number" placeholder="—">
-      </div>
-      <div class="row">
-        <label>الجنس</label>
-        <select id="p_gender"><option value="">—</option><option>ذكر</option><option>أنثى</option><option>آخر</option></select>
-      </div>
-      <div class="row">
-        <label>الأعراض الحالية</label><textarea id="p_cc" placeholder="الوصف المختصر للأعراض / البداية / المحفزات / المُخفِّفات"></textarea>
-      </div>
-    </div>
-    <div class="card sm">
-      <div class="row"><label>سوابق نفسية/طبية</label><textarea id="p_hx" placeholder=""></textarea></div>
-      <div class="row"><label>أدوية/مواد</label><textarea id="p_rx" placeholder=""></textarea></div>
-      <div class="row"><label>عوامل خطورة/وقاية</label><textarea id="p_risk" placeholder=""></textarea></div>
-    </div>
-  </section>
+    {% if case_data %}
+      <p><strong>الاسم:</strong> {{ case_data.name }}</p>
+      <p><strong>العمر:</strong> {{ case_data.age }}</p>
+      <p><strong>الجنس:</strong> {{ case_data.gender }}</p>
+      <p><strong>الأعراض:</strong> {{ case_data.symptoms }}</p>
+      <p><strong>التاريخ الطبي والنفسي:</strong> {{ case_data.history }}</p>
 
-  <!-- أقسام الفئات الكبرى (بدون فهرس، كلها هنا) -->
-  <div id="sections"></div>
+      <p class="diag">🔎 التشخيص المبدئي: {{ diagnosis or "لم يتم تحديد تشخيص" }}</p>
+    {% else %}
+      <p>⚠️ لم يتم إدخال بيانات بعد. الرجاء البدء من <a href="{{ url_for('case_study') }}">دراسة الحالة</a>.</p>
+    {% endif %}
 
-  <!-- ملخص وتشيرت التقدم -->
-  <section class="card open">
-    <div class="head" onclick="toggle(this)">
-      <h2>الملخّص المبدئي وتجميع النقاط</h2>
-      <span class="badge">مساعدة سريرية</span>
-    </div>
-    <div class="body">
-      <div class="row">
-        <label>التقدّم الكلّي</label>
-        <div class="bar"><i id="scoreBar"></i></div>
-      </div>
-      <div class="row">
-        <label>ملخص نصي</label>
-        <textarea id="summaryText" readonly></textarea>
-      </div>
-      <div class="foot">
-        <div class="muted">⚠️ للاستخدام التعليمي/الداعم. القرار التشخيصي للأخصائي/الطبيب.</div>
-        <div>
-          <button class="btn" onclick="buildSummary()">تحديث الملخص</button>
-          <button class="btn print" onclick="window.print()">طباعة / PDF</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <footer class="muted" style="margin:16px 4px">© مركز عربي سايكو — نخدمك أينما كنت</footer>
-</div>
-
-<!-- تمرير بيانات دراسة الحالة من Flask -->
-<script>window.INIT_CASE={{ case_data|tojson|safe }};</script>
-
-<script>
-  /* فتح/طي */
-  function toggle(el){ el.parentElement.classList.toggle('open'); }
-
-  /* تعريف الفئات الكبرى + قوالب المعايير (Placeholders) */
-  const groups = [
-    { key:'neuro',     title:'الاضطرابات النمائية العصبية',            chips:['بداية مبكرة','تأثير على التحصيل/الوظيفة'], crit:['A','B','C'] },
-    { key:'schizo',    title:'طيف الفصام واضطرابات ذهانية',            chips:['أعراض ذهانية','تدهور وظيفي'],             crit:['A','B','C'] },
-    { key:'bipolar',   title:'ثنائية القطب والاضطرابات المرتبطة',       chips:['نوبات هوس/هيبو','تذبذب مزاجي'],           crit:['A','B','C'] },
-    { key:'depress',   title:'الاضطرابات الاكتئابية',                   chips:['مزاج مكتئب','فقد المتعة'],                 crit:['A','B','C'] },
-    { key:'anxiety',   title:'اضطرابات القلق',                          chips:['قلق مفرط','تجنّب'],                        crit:['A','B','C'] },
-    { key:'ocd',       title:'الوسواس القهري وما يتعلّق به',             chips:['وساوس/أفعال قهرية'],                      crit:['A','B','C'] },
-    { key:'trauma',    title:'الصدمة والضغوط',                          chips:['تعرض صادمي','إعادة خبرة'],                 crit:['A','B','C','D'] },
-    { key:'diss',      title:'الاضطرابات التفارقية',                    chips:['فجوات ذاكرة','تبدد/تغرّب'],                 crit:['A','B'] },
-    { key:'somatic',   title:'الجسدية العرضية وما يرتبط بها',           chips:['انشغال بالأعراض','فحوصات مكررة'],          crit:['A','B'] },
-    { key:'feeding',   title:'اضطرابات التغذية/الأكل',                   chips:['سلوك أكل مضطرب'],                          crit:['A','B','C'] },
-    { key:'elimination',title:'اضطرابات الإخراج',                       chips:['سلس/تبرّز'],                               crit:['A','B'] },
-    { key:'sleep',     title:'اضطرابات النوم/اليقظة',                   chips:['أرق/نعاس','سلوكيات نوم'],                  crit:['A','B'] },
-    { key:'sexual',    title:'الاختلالات الجنسية',                      chips:['استمرار ≥6 أشهر'],                         crit:['A','B'] },
-    { key:'gender',    title:'اضطراب الهوية الجنسية',                   chips:['ضيق مُعتبر'],                              crit:['A','B'] },
-    { key:'disrupt',   title:'التخريب وضبط الاندفاع والسلوك',           chips:['اندفاع/عدوانية'],                         crit:['A','B','C'] },
-    { key:'substance', title:'المرتبطة بالمواد والإدمان',                chips:['تحمّل/انسحاب','سيطرة ضعيفة'],              crit:['A','B','C'] },
-    { key:'neurocog',  title:'الاضطرابات العصبية المعرفية',             chips:['تدهور معرفي'],                             crit:['A','B'] },
-    { key:'personality',title:'اضطرابات الشخصية',                        chips:['أنماط ثابتة'],                             crit:['A','B','C'] },
-    { key:'paraphilic',title:'البارافيليا',                              chips:['مدة/ضيق/أذى'],                             crit:['A','B'] },
-    { key:'other',     title:'تشخيصات أخرى/غير محددة',                   chips:['يُحدَّد لاحقًا'],                          crit:['A','B'] },
-  ];
-
-  /* رسم الأقسام */
-  const container = document.getElementById('sections');
-  groups.forEach(g=>{
-    const sec = document.createElement('section');
-    sec.className='card open sect';
-    sec.innerHTML = `
-      <div class="head" onclick="toggle(this)">
-        <h2>${g.title}</h2>
-        <span class="badge">معايير عامة + محددات</span>
-      </div>
-      <div class="body">
-        <div class="chips">${g.chips.map(c=>`<span class="chip" onclick="this.classList.toggle('ok')">${c}</span>`).join('')}</div>
-
-        ${g.crit.map((c,i)=>`
-          <div class="crit">
-            <label>المعيار ${c} (Placeholder — استبدله بصياغتك المرخّصة)</label>
-            <input type="checkbox" data-k="${g.key}" data-c="${i}" onchange="scoreChanged()" />
-            <textarea placeholder="ملاحظات سريرية لشرح كيفية انطباق المعيار ${c}"></textarea>
-          </div>
-        `).join('')}
-
-        <div class="row" style="margin-top:10px">
-          <label>شدة/وخامة</label>
-          <select class="sev" data-k="${g.key}" onchange="scoreChanged()">
-            <option value="0">بلا</option><option value="1">خفيفة</option>
-            <option value="2">متوسطة</option><option value="3">شديدة</option>
-          </select>
-        </div>
-
-        <div class="row">
-          <label>محددات / استثناءات / تفريق تشخيصي</label>
-          <textarea placeholder="محددات (مثال: بداية مبكرة / متواصلة / في هدأة جزئية...) — الاستثناءات — التشخيصات التفريقية — عوامل ثقافية/سياقية."></textarea>
-        </div>
-      </div>
-    `;
-    container.appendChild(sec);
-  });
-
-  /* تعبئة بيانات دراسة الحالة (من السيشن) */
-  (function prefill(){
-    const d = window.INIT_CASE || {};
-    const s = id => document.getElementById(id);
-    if(s('p_name'))   s('p_name').value   = d.name     || '';
-    if(s('p_age'))    s('p_age').value    = d.age      || '';
-    if(s('p_gender')) s('p_gender').value = d.gender   || '';
-    if(s('p_cc'))     s('p_cc').value     = d.symptoms || '';
-    if(s('p_hx'))     s('p_hx').value     = d.history  || '';
-    if(s('p_rx'))     s('p_rx').value     = d.rx       || '';
-    if(s('p_risk'))   s('p_risk').value   = d.risk     || '';
-    scoreChanged();
-  })();
-
-  /* احتساب تقدّم المعايير وعرضه كشريط */
-  function scoreChanged(){
-    const checks = [...document.querySelectorAll('input[type="checkbox"][data-k]')];
-    const sevs =   [...document.querySelectorAll('select.sev')];
-    const hits = checks.filter(c=>c.checked).length;
-    const sevSum = sevs.reduce((a,s)=>a+Number(s.value||0),0);
-    const total = checks.length + (3 * groups.length);
-    const pct = Math.min(100, Math.round(((hits + sevSum) / total) * 100));
-    document.getElementById('scoreBar').style.width = pct + '%';
-  }
-
-  /* بناء ملخص نصي مبدئي للطباعة/الحفظ */
-  function buildSummary(){
-    const name = val('p_name'), age = val('p_age'), gen = val('p_gender');
-    const cc = (val('p_cc')||'').slice(0,400);
-    const notes = [];
-
-    document.querySelectorAll('#sections .card').forEach(sec=>{
-      const title = sec.querySelector('.head h2')?.textContent?.trim() || '';
-      const count = sec.querySelectorAll('input[type="checkbox"]:checked').length;
-      const sev = sec.querySelector('select.sev')?.value || '0';
-      if(count>0 || Number(sev)>0){
-        const grade = sev==='3' ? 'شديدة' : sev==='2' ? 'متوسطة' : sev==='1' ? 'خفيفة' : '—';
-        notes.push(`• ${title}: معايير نشطة ≈ ${count}، الشدة: ${grade}.`);
-      }
-    });
-
-    const out = [
-      `الاسم: ${name || '—'} — العمر: ${age || '—'} — الجنس: ${gen || '—'}`,
-      cc ? `العرض الحالي: ${cc}` : '',
-      notes.length ? 'انطباعات مُجمَّعة:\n' + notes.join('\n') : 'لم تُفعَّل معايير بعد.',
-      '⚠️ هذا الملخص مساعد وليس تشخيصًا نهائيًا.'
-    ].filter(Boolean).join('\n\n');
-
-    document.getElementById('summaryText').value = out;
-  }
-  function val(id){ const e=document.getElementById(id); return e?e.value:''; }
-</script>
+    <a href="{{ url_for('case_study') }}">⬅ العودة لتعبئة دراسة حالة جديدة</a>
+  </div>
 </body>
 </html>
