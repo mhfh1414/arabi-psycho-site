@@ -1,91 +1,31 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>عربي سايكو | الصفحة الرئيسية</title>
+  <meta charset="UTF-8">
+  <title>مركز عربي سايكو</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-  <style>
-    .hero{max-width:1100px;margin:40px auto;padding:32px 24px;border-radius:18px;
-      background:linear-gradient(135deg,#0e3a8a 0%,#1d4ed8 50%,#0ea5e9 100%);
-      color:#fff;box-shadow:0 10px 30px rgba(0,0,0,.15)}
-    .hero h1{font-size:clamp(28px,5vw,40px);margin:0 0 10px}
-    .hero p{margin:6px 0 0;opacity:.9}
-    .grid{max-width:1100px;margin:22px auto;display:grid;gap:16px;
-      grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-    .card{background:#0b1220ee;color:#fff;border-radius:16px;padding:18px 16px;
-      box-shadow:0 10px 20px rgba(0,0,0,.12);transition:transform .15s ease,box-shadow .15s ease}
-    .card:hover{transform:translateY(-3px);box-shadow:0 16px 28px rgba(0,0,0,.18)}
-    .card a{display:block;color:#fff;text-decoration:none}
-    .title{font-weight:700;font-size:18px;margin-bottom:8px}
-    .sub{opacity:.85;font-size:14px}
-    .brand{display:flex;align-items:center;gap:12px;margin:8px auto 0;max-width:1100px}
-    .brand img{width:42px;height:42px;border-radius:10px;object-fit:cover}
-    .brand .name{font-weight:800;color:#fbbf24;font-size:22px}
-  </style>
 </head>
-<body>
-
-  <div class="brand">
-    <img src="{{ url_for('static', filename='logo.png') }}" alt="عربي سايكو">
-    <div class="name">عربي سايكو</div>
-  </div>
-
-  <section class="hero">
-    <h1>مركز عربي سايكو يرحب بكم</h1>
-    <p>نخدمك أينما كنت • صديق الجميع</p>
-  </section>
-
-  <section class="grid">
-    <div class="card">
-      <a href="{{ url_for('case_study') }}">
-        <div class="title">📝 دراسة حالة</div>
-        <div class="sub">صفحة مستقلة لتعبئة بياناتك والأعراض</div>
-      </a>
+<body class="bg">
+  <header class="hero">
+    <div class="brand">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="ArabiPsycho" class="logo">
+      <h1>عربي سايكو</h1>
+      <p>مركز عربي سايكو يرحّب بكم • نخدمك أينما كنت</p>
     </div>
+  </header>
 
-    <div class="card">
-      <a href="{{ url_for('dsm') }}">
-        <div class="title">📖 الأمراض النفسية (DSM-5)</div>
-        <div class="sub">مراجعة تشخيصات ودلائل DSM-5</div>
-      </a>
-    </div>
+  <main class="grid">
+    <a class="card gold" href="{{ url_for('case_study') }}">📝 دراسة حالة</a>
+    <a class="card" href="{{ url_for('dsm') }}">📖 الأمراض النفسية (DSM-5)</a>
+    <a class="card" href="{{ url_for('tests') }}">🧪 الاختبارات النفسية والشخصية</a>
+    <a class="card" href="{{ url_for('cbt') }}">💡 العلاج السلوكي المعرفي (CBT)</a>
+    <a class="card" href="{{ url_for('addiction') }}">🚭 علاج الإدمان</a>
+    <a class="card" href="{{ url_for('request_specialist') }}">👨‍💼 طلب الأخصائي النفسي</a>
+    <a class="card" href="{{ url_for('request_doctor') }}">👨‍⚕️ طلب الطبيب</a>
+  </main>
 
-    <div class="card">
-      <a href="{{ url_for('tests') }}">
-        <div class="title">🧪 الاختبارات النفسية والشخصية</div>
-        <div class="sub">اختبارات معيارية ومقاييس مهنية</div>
-      </a>
-    </div>
-
-    <div class="card">
-      <a href="{{ url_for('cbt') }}">
-        <div class="title">💡 العلاج السلوكي المعرفي (CBT)</div>
-        <div class="sub">خطط علاجية مرتبطة بنتائج الاختبارات</div>
-      </a>
-    </div>
-
-    <div class="card">
-      <a href="{{ url_for('addiction') }}">
-        <div class="title">🚭 علاج الإدمان</div>
-        <div class="sub">برنامج متكامل للإدمان والمخدرات</div>
-      </a>
-    </div>
-
-    <div class="card">
-      <a href="{{ url_for('request_specialist') }}">
-        <div class="title">👨‍💼 طلب الأخصائي النفسي</div>
-        <div class="sub">حجز جلسة مع الأخصائي</div>
-      </a>
-    </div>
-
-    <div class="card">
-      <a href="{{ url_for('request_doctor') }}">
-        <div class="title">👨‍⚕️ طلب الطبيب</div>
-        <div class="sub">إحالة طبية عند الحاجة</div>
-      </a>
-    </div>
-  </section>
-
+  <footer class="foot">
+    <span>تواصل معنا: واتساب | تليجرام</span>
+  </footer>
 </body>
 </html>
