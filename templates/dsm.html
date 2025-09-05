@@ -1,273 +1,164 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>DSM — مرجع الاضطرابات + مطابقة الأعراض</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DSM — مطابقة الأعراض وعرض النتائج</title>
 <style>
-  :root{
-    --bg:#0f2347; --ink:#eef3ff; --muted:#cbd5e1;
-    --card:#123a7acc; --card2:#0c2a59cc; --accent:#f5b546;
-    --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444; --chip:#14366f;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:"Tajawal","Noto Kufi Arabic",Tahoma,Arial,sans-serif;
-       background: radial-gradient(1000px 700px at 80% -10%, #1b4da0 0%, #0f2347 55%) fixed; color:var(--ink); line-height:1.9}
+  :root{--bg:#0f2347;--ink:#eef3ff;--muted:#cbd5e1;--c1:#123a7acc;--c2:#0c2a59cc;--accent:#f5b546;--ok:#22c55e;--warn:#f59e0b;--bad:#ef4444;--chip:#14366f}
+  *{box-sizing:border-box} body{margin:0;font-family:"Tajawal","Noto Kufi Arabic",Tahoma,Arial,sans-serif;background:radial-gradient(1000px 700px at 80% -10%,#1b4da0 0%,#0f2347 55%) fixed;color:var(--ink);line-height:1.9}
   .wrap{max-width:1180px;margin:auto;padding:22px}
-  h1{margin:0 0 8px;font-size:clamp(22px,3vw,32px)}
-  .sub{color:var(--muted);font-size:13px;margin-top:-6px}
-  .grid{display:grid;gap:14px;grid-template-columns:repeat(12,1fr)}
-  .card{grid-column:span 12;background:linear-gradient(180deg,var(--card),var(--card2));
-        border:1px solid #ffffff1a;border-radius:18px;padding:16px;backdrop-filter:blur(6px);box-shadow:0 8px 22px #0005}
-  @media (min-width:960px){ .sm{grid-column:span 6} }
-  label{display:block;margin:6px 0 6px;font-weight:700}
-  input, textarea, select{
-    width:100%;background:#0a1b3b;border:1px solid #ffffff22;color:#fff;
-    border-radius:10px;padding:10px;font-size:15px;outline:none
-  }
+  h1{margin:0 0 8px;font-size:clamp(22px,3vw,32px)} .sub{color:var(--muted);font-size:13px;margin-top:-6px}
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(12,1fr)} .card{grid-column:span 12;background:linear-gradient(180deg,var(--c1),var(--c2));border:1px solid #ffffff1a;border-radius:18px;padding:16px;backdrop-filter:blur(6px);box-shadow:0 8px 22px #0005}
+  @media (min-width:960px){ .sm{grid-column:span 6} } label{display:block;margin:6px 0 6px;font-weight:700}
+  input,textarea,select{width:100%;background:#0a1b3b;border:1px solid #ffffff22;color:#fff;border-radius:10px;padding:10px;font-size:15px;outline:none}
   textarea{min-height:90px;resize:vertical}
-  .btn{background:linear-gradient(180deg,#1e3a8a,#0b1c3e);color:#fff;border:1px solid #ffffff22;
-       border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer}
-  .btn:active{transform:translateY(1px)}
-  .btn.alt{background:linear-gradient(180deg,#15803d,#0b3e1b)}
+  .btn{background:linear-gradient(180deg,#1e3a8a,#0b1c3e);color:#fff;border:1px solid #ffffff22;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer}
+  .btn:active{transform:translateY(1px)} .btn.alt{background:linear-gradient(180deg,#15803d,#0b3e1b)}
   .badge{background:var(--chip);border:1px solid #ffffff22;color:#dbe6ff;border-radius:999px;padding:4px 10px;font-size:12px}
-  .results h2{margin:0 0 10px}
-  .item{border:1px solid #ffffff1a;border-radius:14px;padding:12px;margin:10px 0;background:#0b1f49cc}
-  .bar{height:9px;background:#ffffff18;border-radius:999px;overflow:hidden}
-  .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#22c55e,#f59e0b,#ef4444)}
+  .results h2{margin:0 0 10px} .item{border:1px solid #ffffff1a;border-radius:14px;padding:12px;margin:10px 0;background:#0b1f49cc}
+  .bar{height:9px;background:#ffffff18;border-radius:999px;overflow:hidden} .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#22c55e,#f59e0b,#ef4444)}
   .pill{display:inline-block;background:#14366f;border:1px solid #ffffff22;color:#dbe6ff;border-radius:999px;padding:6px 10px;font-size:12px;margin:3px 5px 0 0}
-  details{border:1px solid #ffffff12;border-radius:14px;padding:10px 12px;background:#0a1e45cc}
-  details summary{cursor:pointer;font-weight:800}
-  .warn{color:var(--warn)} .bad{color:var(--bad)} .ok{color:var(--ok)}
-  .muted{color:var(--muted)}
+  details{border:1px solid #ffffff12;border-radius:14px;padding:10px 12px;background:#0a1e45cc} details summary{cursor:pointer;font-weight:800}
+  .warn{color:var(--warn)} .bad{color:var(--bad)} .ok{color:var(--ok)} .muted{color:var(--muted)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header style="margin-bottom:14px">
-    <h1>مرجع الاضطرابات (نمط DSM) + مطابقة الأعراض</h1>
+    <h1>مطابقة الأعراض (نمط DSM) — عرض النتائج</h1>
     <div class="sub">صياغة مبسّطة وغير منسوخة حرفيًا. أداة دعم وليست تشخيصًا نهائيًا.</div>
   </header>
 
-  <!-- نموذج إدخال الأعراض -->
+  <!-- نموذج/بيانات مدخلة (تملأ تلقائيًا من دراسة الحالة إن وُجدت) -->
   <section class="grid">
     <div class="card sm">
-      <h2>📝 دراسة حالة سريعة</h2>
-      <label>الاسم</label>
-      <input id="name" placeholder="اختياري">
+      <h2>بيانات الحالة</h2>
+      <label>الاسم</label><input id="name" placeholder="—">
       <div class="grid" style="gap:10px">
-        <div class="sm">
-          <label>العمر</label>
-          <input id="age" type="number" min="1" placeholder="مثال: 30">
-        </div>
-        <div class="sm">
-          <label>الجنس</label>
-          <select id="gender"><option value="">— اختر —</option><option>ذكر</option><option>أنثى</option><option>آخر</option></select>
+        <div class="sm"><label>العمر</label><input id="age" type="number" min="1" placeholder="—"></div>
+        <div class="sm"><label>الجنس</label>
+          <select id="gender"><option value="">—</option><option>ذكر</option><option>أنثى</option><option>آخر</option></select>
         </div>
       </div>
-      <label>مدّة الأعراض (بالأيام)</label>
-      <input id="duration" type="number" min="0" placeholder="مثال: 30">
+      <label>مدّة الأعراض (بالأيام)</label><input id="duration" type="number" min="0" placeholder="—">
     </div>
     <div class="card sm">
-      <h2>🧭 وصف الأعراض</h2>
-      <label>صف أعراضك بحرّية</label>
-      <textarea id="symptoms" placeholder="أمثلة: حزن شديد، فقدان المتعة، أرق، قلق مستمر، نوبات هلع، وسواس وغسل متكرر، كوابيس بعد حادث..."></textarea>
+      <h2>وصف الأعراض</h2>
+      <label>الأعراض</label><textarea id="symptoms" placeholder="النص الذي أدخله العميل"></textarea>
+      <label>التاريخ الطبي/النفسي</label><textarea id="history" placeholder="اختياري"></textarea>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
         <button class="btn" onclick="analyze()">تحليل الأعراض</button>
-        <button class="btn alt" onclick="resetForm()">مسح المدخلات</button>
-        <span class="badge">لن يتم حفظ بياناتك</span>
+        <button class="btn alt" onclick="resetForm()">مسح</button>
+        <span class="badge">لا يتم حفظ البيانات</span>
       </div>
     </div>
   </section>
 
   <!-- النتائج -->
   <section id="results" class="card results" style="margin-top:14px;display:none">
-    <h2>🎯 نتائج المطابقة</h2>
+    <h2>🎯 النتائج المرتبة حسب الثقة</h2>
     <div id="flags" class="muted" style="margin:-6px 0 8px"></div>
     <div id="list"></div>
-    <div class="muted" style="margin-top:8px">
-      ⚠️ هذه نتائج إرشادية. عند وجود خطر على النفس أو الآخرين الرجاء طلب مساعدة عاجلة.
-    </div>
+    <div class="muted" style="margin-top:8px">⚠️ للاسترشاد فقط — يُنصح بمراجعة مختص عند الحاجة.</div>
   </section>
 
-  <!-- المرجع الكامل للأمراض (مختصرات وأعراض شائعة غير منسوخة) -->
+  <!-- كتالوج الاضطرابات (مرجع كبير) -->
   <section class="card" style="margin-top:14px">
-    <h2>📚 مرجع الاضطرابات (نظرة عامة)</h2>
-    <p class="muted">قائمة شاملة مبسّطة لتغطية معظم الشكاوى الشائعة، مصنّفة بحسب الفئات.</p>
-
-    <!-- سنولّد المحتوى برمجيًا من تعريف القواعد -->
+    <h2>📚 مرجع الاضطرابات</h2>
+    <p class="muted">قائمة واسعة مُبسّطة تغطي الاضطرابات الشائعة (مزاج، قلق، وسواس، صدمة، ذهاني، نمائي، نوم، أكل، جسدي الشكل، شخصية، إدمان...).</p>
     <div id="catalog"></div>
   </section>
 </div>
 
+<!-- نمرّر بيانات دراسة الحالة من Flask للتهيئة -->
+<script>window.CASE={{ case_data|tojson|safe }};</script>
+
 <script>
-/* ============ تعريف القواعد (غير منسوخة حرفيًا) ============ */
-const RULES = [
-  // المزاج
-  { code:'MDE', name:'نوبة اكتئابية كبرى', group:'المزاج', min:5, core:['حزن','كآبة','مزاج منخفض','فقدان المتعة','عدم استمتاع'], durationMin:14,
-    keys:['حزن','كآبة','فقدان المتعة','عدم استمتاع','أرق','نوم قليل','نعاس زائد','شهية منخفضة','فقدان وزن','شهية زائدة','تباطؤ','إثارة نفسية حركية','إرهاق','طاقة منخفضة','ذنب','عديم القيمة','لوم الذات','صعوبة تركيز','تشتت','بطء التفكير','أفكار انتحار','تمني الموت'],
-    red:['انتحار','أؤذي نفسي','قتل نفسي'],
-    tips:['العلاج السلوكي المعرفي مفيد','استشارة مختص عند اشتداد الأعراض'] },
-
-  { code:'PDD', name:'اكتئاب مستمر (مزمن)', group:'المزاج', min:2, core:['مزاج منخفض'], durationMin:365*2,
-    keys:['مزاج منخفض','فقدان شهية or زيادة','نوم زائد or أرق','طاقة منخفضة','تقدير ذات متدن','تركيز ضعيف','تردد'],
-    red:[], tips:['تتبّع المزاج والدعم النفسي'] },
-
-  { code:'MANIA', name:'هوس (ثنائي القطب)', group:'المزاج', min:3, core:['مزاج مرتفع','هيجان غير معتاد','طاقة عالية'], durationMin:7,
-    keys:['ثقة مفرطة','قلة حاجة للنوم','كلام كثير','ثرثرة','أفكار سباق','تشتيت سريع','اندفاع','مخاطرة مالية','سلوك جنسي متهور'],
-    red:['اندفاع خطير','مخاطرة شديدة'], tips:['تقيـيم طبيب نفسي ضروري'] },
-
-  // القلق
-  { code:'GAD', name:'قلق معمّم', group:'القلق', min:3, core:['قلق','توتر','خوف مستمر'], durationMin:180,
-    keys:['توتر','عصبية','تعب','إرهاق','صعوبة تركيز','تشتيت','شد عضلي','أرق','صحو متكرر','قلق على أشياء كثيرة','قلق مفرط'],
-    red:[], tips:['تمارين الاسترخاء وCBT فعّالة'] },
-
-  { code:'PANIC', name:'نوبات هلع', group:'القلق', min:4, core:['نوبة','هلع','خوف شديد فجأة'], durationMin:0,
-    keys:['خفقان','رجفة','تعرق','ضيق نفس','اختناق','ألم صدر','دوخة','غثيان','غربة الواقع','خوف من الموت','خدر','تنميل','قشعريرة','سخونة'],
-    red:['فقدان وعي متكرر'], tips:['تدريب تنفّس وأرضنة','تقييم رهاب الساح إن وُجد'] },
-
-  { code:'SAD', name:'قلق اجتماعي', group:'القلق', min:3, core:['خوف من التقييم','قلق اجتماعي','خجل شديد'], durationMin:180,
-    keys:['تجنّب مواقف اجتماعية','ارتباك','احمرار','ارتجاف','تعرّق','تعطّل وظيفي'], red:[], tips:['تعرض تدريجي ومهارات اجتماعية'] },
-
-  { code:'PHOBIA', name:'رُهاب محدد', group:'القلق', min:2, core:['خوف شديد من شيء محدد','فوبيا'], durationMin:180,
-    keys:['تجنّب الشيء','تحمّل مع قلق شديد','تعطّل وظيفي'], red:[], tips:['التعرّض التدريجي فعّال جدًا'] },
-
-  // وسواس وصدمة
-  { code:'OCD', name:'وسواس قهري', group:'وسواس/قهر', min:2, core:['وساوس','أفكار متسلطة'], durationMin:30,
-    keys:['سلوك قهري','غسل متكرر','تفقد الأبواب','ترتيب','عدّ متكرر','ضيق إن توقفت الطقوس'],
-    red:[], tips:['ERP (التعرّض ومنع الاستجابة) هو العلاج الأبرز'] },
-
-  { code:'PTSD', name:'ما بعد الصدمة', group:'الصدمة', min:4, core:['حادثة صادمة','تعرضت لاعتداء','حرب','حادث شديد'], durationMin:30,
-    keys:['ذكريات اقتحامية','كوابيس','تجنّب مذكّرات','تيقظ مفرط','استثارة','نوبات غضب','خدر عاطفي','انفصال'],
-    red:['خطر على النفس أو الآخرين'], tips:['علاج معرفي متمركز على الصدمة / EMDR'] },
-
-  // ذهاني
-  { code:'PSY', name:'ذهان/طيف فصامي', group:'ذهاني', min:2, core:['هلاوس','ضلالات','تفكك كلام'], durationMin:30,
-    keys:['هلاوس سمعية','أفكار اضطهاد','تفكك التفكير','انسحاب اجتماعي','إهمال ذات'],
-    red:['أصوات تأمر','خطورة على الآخرين'], tips:['تقييم طبي مبكّر مهم'] },
-
-  // نمائي/انتباه وتوحد
-  { code:'ADHD_A', name:'فرط حركة وتشتت (بالغ)', group:'نمائي', min:5, core:['تشتت','نقص انتباه','اندفاع'], durationMin:180,
-    keys:['نسيان','فقد الأشياء','تأجيل','عدم إنجاز','بدء مهام كثيرة','حركة زائدة','توتر جسدي','مقاطعة الآخرين','اندفاعية'],
-    red:[], tips:['تنظيم الوقت واستراتيجيات سلوكية'] },
-
-  { code:'ASD', name:'طيف توحد (فحص بالغين)', group:'نمائي', min:4, core:['صعوبات تواصل اجتماعي منذ الطفولة'], durationMin:365,
-    keys:['حساسية للأصوات','حساسية للمس','اهتمامات ضيقة','روتين صارم','صعوبة قراءة الإشارات الاجتماعية','تاريخ منذ الطفولة'],
-    red:[], tips:['تقييم متخصص للتشخيص المؤكد'] },
-
-  // جسدية/قلق صحي
-  { code:'SSD', name:'أعراض جسدية مع قلق صحي', group:'جسدي الشكل', min:2, core:['أعراض جسدية مزمنة','قلق على الصحة'], durationMin:180,
-    keys:['تفكير مفرط بالأعراض','فحوصات متكررة','قلق صحي مستمر'],
-    red:[], tips:['التثقيف وإدارة القلق مهمّان'] },
-
-  { code:'IAD', name:'قلق مرضي (قلق على الصحة)', group:'جسدي الشكل', min:1, core:['قلق صحي'], durationMin:180,
-    keys:['خوف من مرض خطير','اطمئنان طبي متكرر','تفقد مستمر لأعراض جسدية'],
-    red:[], tips:['CBT يستهدف المبالغة الإدراكية'] },
-
-  // أكل
-  { code:'AN', name:'فقدان شهية عصبي', group:'أكل', min:3, core:['نحافة شديدة','خوف من زيادة الوزن'], durationMin:90,
-    keys:['تقييد الأكل','حساب السعرات','صورة جسم مشوّهة','دوخة','انقطاع حيض'],
-    red:['دوار شديد','إغماء','بطء قلب'], tips:['فريق متعدد التخصصات مطلوب'] },
-
-  { code:'BN', name:'نهام عصبي (بوليميا)', group:'أكل', min:3, core:['نهم','إفراط في الأكل'], durationMin:90,
-    keys:['سلوك تعويضي (قيء/مسهل/صوم)','تأثر تقدير الذات بالوزن','نوبات متكررة'],
-    red:[], tips:['CBT-E خيار فعّال'] },
-
-  { code:'BED', name:'نهم الطعام (بدون تعويض)', group:'أكل', min:3, core:['نهم'], durationMin:90,
-    keys:['أكل سريع جدًا','أكل حتى الانزعاج','أكل دون جوع','شعور بالذنب بعد النهم'],
-    red:[], tips:['تنظيم الوجبات ودعم سلوكي'] },
-
-  // نوم
-  { code:'INS', name:'أرق مزمن', group:'نوم', min:1, core:['أرق','صعوبة نوم','استيقاظ مبكر'], durationMin:90,
-    keys:['صعوبة بدء النوم','صحو متكرر','نعاس نهاري','تعب'],
-    red:[], tips:['CBT-I ونظافة النوم'] },
-
-  // مواد/إدمان
-  { code:'SUD', name:'اضطراب تعاطي مواد', group:'إدمان', min:3, core:['تعاطي','مخدرات','كحول','منبّهات'], durationMin:90,
-    keys:['رغبة قوية','فقد السيطرة','أكثر مما أنوي','محاولات فاشلة','وقت طويل للتعاطي/التعافي','مشاكل اجتماعية/مهنية','تحمّل','انسحاب'],
-    red:['تعاطي حقن','إغماء','جرعة زائدة'], tips:['خطة امتناع + دعم + أحيانًا دواء'] },
-
-  // شخصية (فحوص)
-  { code:'BPD_S', name:'نمط عاطفي غير مستقر (فحص)', group:'شخصية', min:5, core:['اندفاع','علاقات مضطربة','تقلّب مزاج'], durationMin:180,
-    keys:['خوف هجر','اندفاع مؤذٍ للذات','فراغ مزمن','غضب شديد','إيذاء الذات','ندوب'],
-    red:['انتحار','إيذاء الذات'], tips:['مهارات DBT وتنظيم انفعالي'] },
-
-  // تفارقي
-  { code:'DISS', name:'تفارقي (فجوات/تبدد/تغرّب)', group:'تفارقي', min:2, core:['فجوات ذاكرة','تبدد','تغرّب'], durationMin:0,
-    keys:['انفصال','إحساس بعدم الواقعية','نسيان أحداث مهمة'],
-    red:[], tips:['تقييم متخصص عند الشك'] },
+/* ========== قواعد المطابقة (مختصرة هنا — نفس روح DSM بدون نسخ حرفي) ========== */
+const RULES=[ /* نفس المجموعة الواسعة من القواعد كما في الرد السابق (MDE, GAD, PANIC, OCD, PTSD, PSY, MANIA, PDD, SAD, PHOBIA, ADHD_A, ASD, SSD, IAD, AN, BN, BED, INS, SUD, BPD_S, DISS) */
+  {code:'MDE',name:'نوبة اكتئابية كبرى',group:'المزاج',min:5,core:['حزن','كآبة','مزاج منخفض','فقدان المتعة','عدم استمتاع'],durationMin:14,keys:['حزن','كآبة','فقدان المتعة','عدم استمتاع','أرق','نوم قليل','نعاس زائد','شهية منخفضة','فقدان وزن','شهية زائدة','تباطؤ','إثارة نفسية حركية','إرهاق','طاقة منخفضة','ذنب','عديم القيمة','لوم الذات','صعوبة تركيز','تشتت','بطء التفكير','أفكار انتحار','تمني الموت'],red:['انتحار','أؤذي نفسي','قتل نفسي'],tips:['العلاج السلوكي المعرفي مفيد','استشارة مختص عند اشتداد الأعراض']},
+  {code:'PDD',name:'اكتئاب مستمر (مزمن)',group:'المزاج',min:2,core:['مزاج منخفض'],durationMin:730,keys:['مزاج منخفض','فقدان شهية','زيادة شهية','نوم زائد','أرق','طاقة منخفضة','تقدير ذات متدن','تركيز ضعيف','تردد'],red:[],tips:['تتبّع المزاج والدعم النفسي']},
+  {code:'MANIA',name:'هوس (ثنائي القطب)',group:'المزاج',min:3,core:['مزاج مرتفع','هيجان غير معتاد','طاقة عالية'],durationMin:7,keys:['ثقة مفرطة','قلة حاجة للنوم','كلام كثير','ثرثرة','أفكار سباق','تشتيت سريع','اندفاع','مخاطرة مالية','سلوك جنسي متهور'],red:['اندفاع خطير','مخاطرة شديدة'],tips:['تقيـيم طبيب نفسي ضروري']},
+  {code:'GAD',name:'قلق معمّم',group:'القلق',min:3,core:['قلق','توتر','خوف مستمر'],durationMin:180,keys:['توتر','عصبية','تعب','إرهاق','صعوبة تركيز','تشتيت','شد عضلي','أرق','صحو متكرر','قلق على أشياء كثيرة','قلق مفرط'],red:[],tips:['تمارين الاسترخاء وCBT فعّالة']},
+  {code:'PANIC',name:'نوبات هلع',group:'القلق',min:4,core:['نوبة','هلع','خوف شديد فجأة'],durationMin:0,keys:['خفقان','رجفة','تعرق','ضيق نفس','اختناق','ألم صدر','دوخة','غثيان','غربة الواقع','خوف من الموت','خدر','تنميل','قشعريرة','سخونة'],red:['فقدان وعي متكرر'],tips:['تدريب تنفّس وأرضنة','تقييم رهاب الساح إن وُجد']},
+  {code:'SAD',name:'قلق اجتماعي',group:'القلق',min:3,core:['خوف من التقييم','قلق اجتماعي','خجل شديد'],durationMin:180,keys:['تجنّب مواقف اجتماعية','احمرار','ارتجاف','تعرّق','تعطّل وظيفي'],red:[],tips:['تعرض تدريجي ومهارات اجتماعية']},
+  {code:'PHOBIA',name:'رُهاب محدد',group:'القلق',min:2,core:['خوف شديد من شيء محدد','فوبيا'],durationMin:180,keys:['تجنّب الشيء','تحمّل مع قلق شديد','تعطّل وظيفي'],red:[],tips:['التعرّض التدريجي فعّال جدًا']},
+  {code:'OCD',name:'وسواس قهري',group:'وسواس/قهر',min:2,core:['وساوس','أفكار متسلطة'],durationMin:30,keys:['سلوك قهري','غسل متكرر','تفقد الأبواب','ترتيب','عدّ متكرر','ضيق إن توقفت الطقوس'],red:[],tips:['ERP (التعرّض ومنع الاستجابة) هو العلاج الأبرز']},
+  {code:'PTSD',name:'ما بعد الصدمة',group:'الصدمة',min:4,core:['حادثة صادمة','اعتداء','حرب','حادث شديد'],durationMin:30,keys:['ذكريات اقتحامية','كوابيس','تجنّب مذكّرات','تيقظ مفرط','استثارة','نوبات غضب','خدر عاطفي','انفصال'],red:['خطر على النفس أو الآخرين'],tips:['علاج معرفي متمركز على الصدمة / EMDR']},
+  {code:'PSY',name:'ذهان/طيف فصامي',group:'ذهاني',min:2,core:['هلاوس','ضلالات','تفكك كلام'],durationMin:30,keys:['هلاوس سمعية','أفكار اضطهاد','تفكك التفكير','انسحاب اجتماعي','إهمال ذات'],red:['أصوات تأمر','خطورة على الآخرين'],tips:['تقييم طبي مبكّر مهم']},
+  {code:'ADHD_A',name:'فرط حركة وتشتت (بالغ)',group:'نمائي',min:5,core:['تشتت','نقص انتباه','اندفاع'],durationMin:180,keys:['نسيان','فقد الأشياء','تأجيل','عدم إنجاز','بدء مهام كثيرة','حركة زائدة','توتر جسدي','مقاطعة الآخرين','اندفاعية'],red:[],tips:['تنظيم الوقت واستراتيجيات سلوكية']},
+  {code:'ASD',name:'طيف توحد (فحص بالغين)',group:'نمائي',min:4,core:['صعوبات تواصل اجتماعي منذ الطفولة'],durationMin:365,keys:['حساسية للأصوات','حساسية للمس','اهتمامات ضيقة','روتين صارم','صعوبة قراءة الإشارات الاجتماعية','تاريخ منذ الطفولة'],red:[],tips:['تقييم متخصص للتشخيص المؤكد']},
+  {code:'SSD',name:'أعراض جسدية مع قلق صحي',group:'جسدي الشكل',min:2,core:['أعراض جسدية مزمنة','قلق على الصحة'],durationMin:180,keys:['تفكير مفرط بالأعراض','فحوصات متكررة','قلق صحي مستمر'],red:[],tips:['التثقيف وإدارة القلق مهمّان']},
+  {code:'IAD',name:'قلق مرضي (قلق على الصحة)',group:'جسدي الشكل',min:1,core:['قلق صحي'],durationMin:180,keys:['خوف من مرض خطير','اطمئنان طبي متكرر','تفقد مستمر لأعراض جسدية'],red:[],tips:['CBT يستهدف المبالغة الإدراكية']},
+  {code:'AN',name:'فقدان شهية عصبي',group:'أكل',min:3,core:['نحافة شديدة','خوف من زيادة الوزن'],durationMin:90,keys:['تقييد الأكل','حساب السعرات','صورة جسم مشوّهة','دوخة','انقطاع حيض'],red:['دوار شديد','إغماء','بطء قلب'],tips:['فريق متعدد التخصصات مطلوب']},
+  {code:'BN',name:'نهام عصبي',group:'أكل',min:3,core:['نهم','إفراط في الأكل'],durationMin:90,keys:['سلوك تعويضي (قيء/مسهل/صوم)','تأثر تقدير الذات بالوزن','نوبات متكررة'],red:[],tips:['CBT-E خيار فعّال']},
+  {code:'BED',name:'نهم الطعام',group:'أكل',min:3,core:['نهم'],durationMin:90,keys:['أكل سريع جدًا','أكل حتى الانزعاج','أكل دون جوع','شعور بالذنب بعد النهم'],red:[],tips:['تنظيم الوجبات ودعم سلوكي']},
+  {code:'INS',name:'أرق مزمن',group:'نوم',min:1,core:['أرق','صعوبة نوم','استيقاظ مبكر'],durationMin:90,keys:['صعوبة بدء النوم','صحو متكرر','نعاس نهاري','تعب'],red:[],tips:['CBT-I ونظافة النوم']},
+  {code:'SUD',name:'اضطراب تعاطي مواد',group:'إدمان',min:3,core:['تعاطي','مخدرات','كحول','منبّهات'],durationMin:90,keys:['رغبة قوية','فقد السيطرة','أكثر مما أنوي','محاولات فاشلة','وقت طويل للتعاطي/التعافي','مشاكل اجتماعية/مهنية','تحمّل','انسحاب'],red:['تعاطي حقن','إغماء','جرعة زائدة'],tips:['خطة امتناع + دعم + أحيانًا دواء']},
+  {code:'BPD_S',name:'نمط عاطفي غير مستقر (فحص)',group:'شخصية',min:5,core:['اندفاع','علاقات مضطربة','تقلّب مزاج'],durationMin:180,keys:['خوف هجر','اندفاع مؤذٍ للذات','فراغ مزمن','غضب شديد','إيذاء الذات','ندوب'],red:['انتحار','إيذاء الذات'],tips:['مهارات DBT وتنظيم انفعالي']},
+  {code:'DISS',name:'تفارقي (فجوات/تبدد/تغرّب)',group:'تفارقي',min:2,core:['فجوات ذاكرة','تبدد','تغرّب'],durationMin:0,keys:['انفصال','إحساس بعدم الواقعية','نسيان أحداث مهمة'],red:[],tips:['تقييم متخصص عند الشك']},
 ];
 
-/* ============ تحليل الأعراض ============ */
-function normalize(t){ return (t||'').toString().trim().toLowerCase(); }
+/* ========== تهيئة تلقائية من دراسة الحالة ========== */
+(function prefill(){
+  try{
+    const d = (window.CASE||{});
+    if(d.name)     document.getElementById('name').value = d.name;
+    if(d.age)      document.getElementById('age').value = d.age;
+    if(d.gender)   document.getElementById('gender').value = d.gender;
+    if(d.duration) document.getElementById('duration').value = d.duration;
+    if(d.symptoms) document.getElementById('symptoms').value = d.symptoms;
+    if(d.history)  document.getElementById('history').value = d.history;
+    if(d.symptoms) analyze();
+  }catch(_){}
+})();
 
+/* ========== التحليل والعرض ========== */
+function normalize(t){return (t||'').toString().trim().toLowerCase();}
 function analyze(){
-  const name = document.getElementById('name').value.trim();
-  const age  = document.getElementById('age').value.trim();
-  const gender = document.getElementById('gender').value.trim();
-  const dur = parseInt(document.getElementById('duration').value||'0',10) || 0;
-  const txt = normalize(document.getElementById('symptoms').value);
+  const dur = parseInt(document.getElementById('duration').value||'0',10)||0;
+  const txt = normalize([document.getElementById('symptoms').value, document.getElementById('history').value].join(' '));
 
-  const flags = [];
-  if (txt.includes('انتحار') || txt.includes('أؤذي نفسي') || txt.includes('قتل نفسي')) flags.push('⚠️ مؤشرات خطر على النفس (يرجى طلب مساعدة عاجلة)');
-  if (txt.includes('أصوات') || txt.includes('هلاوس') || txt.includes('ضلالات')) flags.push('⚠️ مؤشرات ذهانية تتطلب تقييمًا سريعًا');
+  const flags=[];
+  if(txt.includes('انتحار')||txt.includes('أؤذي نفسي')||txt.includes('قتل نفسي')) flags.push('⚠️ مؤشرات خطر على النفس — اطلب مساعدة عاجلة');
+  if(txt.includes('أصوات')||txt.includes('هلاوس')||txt.includes('ضلالات')) flags.push('⚠️ مؤشرات ذهانية — يلزم تقييم سريع');
 
   const scored = RULES.map(r=>{
-    // تحقق الأساس
-    const coreHit = r.core.length===0 ? true : r.core.some(k=>txt.includes(k));
+    const coreHit = r.core.length===0?true:r.core.some(k=>txt.includes(k));
     if(!coreHit) return null;
-
-    // عدّ المطابقات من المفاتيح
-    let met = 0, matched=[];
+    let met=0, matched=[];
     r.keys.forEach(k=>{
-      // دعم "or" البسيط داخل المفتاح: "سلوك تعويضي (قيء/مسهل/صوم)" → نقسم على / والـ or
       const variants = k.split('/').join('|').split('|').map(x=>x.trim()).filter(Boolean);
-      if (variants.some(v=>txt.includes(v))){
-        met++; matched.push(k);
-      }
+      if(variants.some(v=>txt.includes(v))) { met++; matched.push(k); }
     });
+    if(met<r.min) return {r,score:0,met,matched};
+    const coverage = met/Math.max(r.keys.length,r.min);
+    let score = 1/(1+Math.exp(-8*(coverage-0.5)));
+    if(r.durationMin && dur>=r.durationMin) score=Math.min(1,score+0.1);
+    if(r.durationMin && dur>0 && dur<r.durationMin/2) score=Math.max(0,score-0.1);
+    const reds=(r.red||[]).filter(x=>txt.includes(x));
+    return {r,score,met,matched,reds};
+  }).filter(Boolean).sort((a,b)=>b.score-a.score);
 
-    // شرط الحد الأدنى
-    if (met < r.min) return {r,score:0,met,matched};
+  const results=document.getElementById('results');
+  const list=document.getElementById('list');
+  const flagsBox=document.getElementById('flags');
+  list.innerHTML=''; flagsBox.innerHTML='';
+  if(flags.length) flagsBox.innerHTML=flags.map(f=>`<div class="bad">${f}</div>`).join('');
 
-    // درجة أولية: تغطية الأعراض
-    const coverage = met / Math.max(r.keys.length, r.min);
-    let score = 1 / (1 + Math.exp(-8*(coverage - 0.5))); // دالة لوجستية
-
-    // مكافأة للمدة عند استيفاء الحد الأدنى
-    if (r.durationMin && dur >= r.durationMin) score = Math.min(1, score + 0.1);
-
-    // عقوبة إن كانت المدة أقصر بكثير
-    if (r.durationMin && dur>0 && dur < r.durationMin/2) score = Math.max(0, score - 0.1);
-
-    // أعلام حمراء خاصة
-    const reds = (r.red||[]).filter(x=>txt.includes(x));
-
-    return { r, score, met, matched, reds };
-  }).filter(Boolean);
-
-  scored.sort((a,b)=>b.score - a.score);
-
-  // عرض النتائج
-  const results = document.getElementById('results');
-  const list = document.getElementById('list');
-  const flagsBox = document.getElementById('flags');
-  list.innerHTML = ''; flagsBox.innerHTML = '';
-  if(flags.length) flagsBox.innerHTML = flags.map(f=>`<div class="bad">${f}</div>`).join('');
-
-  if (scored.length===0){
+  if(scored.length===0){
     results.style.display='block';
-    list.innerHTML = `<div class="item"><b>لا توجد مطابقة كافية</b><div class="muted">جرّب وصفًا أدق للأعراض والمدة.</div></div>`;
+    list.innerHTML=`<div class="item"><b>لا توجد مطابقة كافية</b><div class="muted">جرّب وصفًا أدق للأعراض والمدة.</div></div>`;
     return;
   }
 
-  scored.slice(0,8).forEach(({r,score,met,matched,reds})=>{
-    const pct = Math.round(score*100);
-    const redsHtml = (reds&&reds.length)? `<div class="bad" style="margin-top:6px">⚠️ أعلام حمراء: ${reds.join('، ')}</div>` : '';
-    const tipsHtml = (r.tips&&r.tips.length)? `<div class="muted" style="margin-top:6px">اقتراحات: ${r.tips.join(' — ')}</div>` : '';
-    const el = document.createElement('div');
+  scored.slice(0,10).forEach(({r,score,met,matched,reds})=>{
+    const pct=Math.round(score*100);
+    const redsHtml=(reds&&reds.length)?`<div class="bad" style="margin-top:6px">⚠️ أعلام حمراء: ${reds.join('، ')}</div>`:'';
+    const tipsHtml=(r.tips&&r.tips.length)?`<div class="muted" style="margin-top:6px">اقتراحات: ${r.tips.join(' — ')}</div>`:'';
+    const el=document.createElement('div');
     el.className='item';
-    el.innerHTML = `
+    el.innerHTML=`
       <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:6px">
         <div><b>${r.name}</b> <span class="muted">(${r.group})</span></div>
         <div style="min-width:120px;text-align:left"><small>الثقة</small></div>
@@ -284,45 +175,29 @@ function analyze(){
   results.style.display='block';
 }
 
-/* ============ مرجع الاضطرابات (كتالوج) ============ */
+/* ========== كتالوج كامل للتصفح ========== */
 function renderCatalog(){
-  const byGroup = {};
-  RULES.forEach(r => {
-    (byGroup[r.group] = byGroup[r.group] || []).push(r);
-  });
-  const root = document.getElementById('catalog');
-  root.innerHTML = '';
+  const byGroup={}; RULES.forEach(r=>{(byGroup[r.group]=byGroup[r.group]||[]).push(r);});
+  const root=document.getElementById('catalog'); root.innerHTML='';
   Object.keys(byGroup).forEach(group=>{
-    const box = document.createElement('details');
-    box.open = false;
-    const items = byGroup[group].map(r=>{
-      const keys = r.keys.slice(0,8).map(k=>`<span class="pill">${k}</span>`).join(' ');
-      return `<div class="item">
-        <div><b>${r.name}</b> <span class="muted">— حد أدنى للأعراض: ${r.min}${r.durationMin?`, والمدّة ≥ ${r.durationMin} يوم`:''}</span></div>
-        <div style="margin-top:6px">${keys}</div>
-      </div>`;
+    const box=document.createElement('details'); box.open=false;
+    const items=byGroup[group].map(r=>{
+      const keys=r.keys.slice(0,8).map(k=>`<span class="pill">${k}</span>`).join(' ');
+      return `<div class="item"><div><b>${r.name}</b> <span class="muted">— الحد الأدنى: ${r.min}${r.durationMin?`, المدة ≥ ${r.durationMin} يوم`:''}</span></div><div style="margin-top:6px">${keys}</div></div>`;
     }).join('');
-    box.innerHTML = `<summary>${group}</summary>${items}`;
+    box.innerHTML=`<summary>${group}</summary>${items}`;
     root.appendChild(box);
   });
 }
 renderCatalog();
 
-/* ============ أدوات ============ */
+/* ========== أدوات ========== */
 function resetForm(){
-  ['name','age','gender','duration','symptoms'].forEach(id=>{
-    const el = document.getElementById(id); if(el) el.value='';
+  ['name','age','gender','duration','symptoms','history'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
   });
-  const results = document.getElementById('results');
-  results.style.display='none';
+  document.getElementById('results').style.display='none';
 }
-
-/* ============ تهيئة من بارامترات الرابط (اختياري) ============ */
-(function prefillFromURL(){
-  const p = new URLSearchParams(location.search);
-  if(p.get('symptoms')) document.getElementById('symptoms').value = p.get('symptoms');
-  if(p.get('duration')) document.getElementById('duration').value = p.get('duration');
-})();
 </script>
 </body>
 </html>
