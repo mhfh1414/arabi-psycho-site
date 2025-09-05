@@ -1,15 +1,35 @@
-body {
-  font-family: "Tahoma", Arial, sans-serif;
-  background-color: #f9f9f9;
-  margin: 0;
-  padding: 0;
+@font-face{font-family:"Cairo";src:local("Cairo");}
+:root{
+  --bg1:#0b2e66; --bg2:#0d3d88; --gold:#f5b300; --card:#143b73; --card2:#11406f;
+  --text:#eef4ff; --muted:#bcd0ff; --white:#fff;
 }
+*{box-sizing:border-box} html,body{margin:0;padding:0;font-family:"Cairo",system-ui,Segoe UI,Tahoma}
+.bg{background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;color:var(--text)}
+.hero{padding:32px 20px;text-align:center}
+.hero.small{padding:20px}
+.brand{display:flex;flex-direction:column;align-items:center;gap:8px}
+.logo{width:56px;height:56px;object-fit:contain;filter:drop-shadow(0 2px 6px #0005)}
+h1,h2{margin:6px 0 0;font-weight:800;letter-spacing:.5px}
+.hero p{margin:6px 0;color:var(--muted)}
 
-.container {
-  width: 80%;
-  margin: auto;
-}
+.grid{max-width:980px;margin:10px auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;padding:0 14px 28px}
+.card{display:block;background:linear-gradient(180deg,var(--card),var(--card2));padding:18px 16px;border-radius:16px;text-align:center;text-decoration:none;color:var(--white);font-weight:700;border:1px solid #ffffff1a;box-shadow:0 10px 22px #00000026}
+.card:hover{transform:translateY(-2px);transition:.2s ease;box-shadow:0 14px 26px #00000033}
+.card.gold{background:linear-gradient(180deg,#f9c846,#e6a900);color:#2b1e00}
 
-h1, h2, h3 {
-  color: #333;
+.foot{max-width:980px;margin:0 auto;padding:10px 16px;color:#d7e3ff80;text-align:center}
+
+.form-wrap{max-width:880px;margin:16px auto;padding:0 14px}
+.form{background:#ffffff10;border:1px solid #ffffff22;border-radius:16px;padding:18px;backdrop-filter:blur(6px)}
+.form label{display:block;margin:8px 0;font-size:15px}
+.form input,.form select,.form textarea{
+  width:100%;margin-top:6px;background:#0d2958;color:var(--white);border:1px solid #ffffff33;
+  border-radius:10px;padding:10px 12px;outline:none
 }
+.form textarea{resize:vertical}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}
+.btn.primary{background:linear-gradient(180deg,#f9c846,#e6a900);color:#2b1e00}
+.btn.ghost{background:transparent;color:var(--muted);border:1px dashed #ffffff44}
+@media (max-width:720px){.row{grid-template-columns:1fr}}
