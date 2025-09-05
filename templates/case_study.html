@@ -1,23 +1,96 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>دراسة حالة</title>
+  <title>دراسة حالة - عربي سايكو</title>
+  <style>
+    body {
+      font-family: "Tajawal", sans-serif;
+      background: linear-gradient(to bottom, #002B5B, #1A5F7A);
+      color: white;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      text-align: center;
+      padding: 20px;
+    }
+    header h1 {
+      font-size: 28px;
+      color: #FFD700;
+    }
+    form {
+      max-width: 800px;
+      margin: 30px auto;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 25px;
+      border-radius: 12px;
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+      font-weight: bold;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+    button {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      font-size: 18px;
+      background: #FFD700;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #FFA500;
+      color: #000;
+    }
+  </style>
 </head>
 <body>
-  <h2>📝 دراسة حالة - شخص نفسك</h2>
-  <form method="post" action="/case_study">
-    <label>الاسم:</label>
-    <input type="text" name="name" required><br><br>
 
-    <label>العمر:</label>
-    <input type="number" name="age" required><br><br>
+  <header>
+    <h1>📋 دراسة حالة</h1>
+    <p>شخص نفسك عبر نموذج دراسة الحالة</p>
+  </header>
 
-    <label>الأعراض:</label>
-    <textarea name="symptoms" required></textarea><br><br>
+  <form action="/dsm" method="post">
+    <label for="name">الاسم الكامل</label>
+    <input type="text" id="name" name="name" placeholder="اكتب اسمك هنا..." required>
 
-    <button type="submit">إرسال</button>
+    <label for="age">العمر</label>
+    <input type="number" id="age" name="age" min="5" max="100" placeholder="اكتب عمرك..." required>
+
+    <label for="gender">الجنس</label>
+    <select id="gender" name="gender" required>
+      <option value="">اختر</option>
+      <option value="male">ذكر</option>
+      <option value="female">أنثى</option>
+    </select>
+
+    <label for="history">التاريخ الطبي والنفسي</label>
+    <textarea id="history" name="history" rows="4" placeholder="اذكر أي أمراض سابقة أو علاجات..."></textarea>
+
+    <label for="symptoms">الأعراض الحالية</label>
+    <textarea id="symptoms" name="symptoms" rows="4" placeholder="اشرح الأعراض التي تعاني منها..."></textarea>
+
+    <label for="duration">مدة ظهور الأعراض</label>
+    <input type="text" id="duration" name="duration" placeholder="مثال: منذ شهر / منذ سنة">
+
+    <label for="impact">تأثير الأعراض على حياتك اليومية</label>
+    <textarea id="impact" name="impact" rows="3" placeholder="اشرح كيف تؤثر الأعراض على عملك أو علاقاتك..."></textarea>
+
+    <button type="submit">متابعة إلى التشخيص (DSM)</button>
   </form>
+
 </body>
 </html>
