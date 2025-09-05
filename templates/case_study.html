@@ -1,68 +1,93 @@
+<!-- templates/case_study.html -->
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>📝 دراسة حالة</title>
+  <title>دراسة حالة - عربي سايكو</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <style>
-    body{
-      font-family:"Tajawal",sans-serif;background:linear-gradient(to bottom,#002B5B,#1A5F7A);
-      margin:0;padding:30px;color:#fff;text-align:center
+    body {
+      margin: 0;
+      font-family: 'Tahoma', sans-serif;
+      background: linear-gradient(135deg, #003366, #0055aa);
+      color: #fff;
+      text-align: center;
     }
-    .box{background:rgba(255,255,255,.1);max-width:760px;margin:auto;padding:24px;border-radius:16px;
-      box-shadow:0 6px 14px rgba(0,0,0,.35);text-align:right}
-    h1{color:#FFD700;margin:0 0 16px}
-    label{display:block;margin:10px 0 6px;font-weight:700}
-    input,select,textarea{
-      width:100%;padding:12px;border-radius:10px;border:none;font-size:16px;margin-bottom:12px
+    h1 {
+      color: #FFD700;
+      margin-top: 30px;
     }
-    textarea{min-height:100px;resize:vertical}
-    .grid{display:grid;gap:12px}
-    @media(min-width:820px){.grid{grid-template-columns:1fr 1fr}}
-    button{
-      width:100%;padding:14px;border:none;border-radius:10px;background:#FFD700;color:#000;
-      font-size:18px;font-weight:800;cursor:pointer;transition:.25s
+    form {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      margin: 30px auto;
+      border-radius: 12px;
+      width: 80%;
+      max-width: 600px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.4);
     }
-    button:hover{background:#FFA500;color:#fff}
-    .hint{font-size:13px;opacity:.9;margin-top:8px}
+    label {
+      display: block;
+      margin: 10px 0 5px;
+      text-align: right;
+      font-weight: bold;
+      color: #FFD700;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    button {
+      background-color: #FFD700;
+      color: #003366;
+      border: none;
+      padding: 12px 20px;
+      font-size: 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background-color: #e6c200;
+    }
   </style>
 </head>
 <body>
-  <div class="box">
-    <h1>📝 دراسة حالة — شخص نفسك</h1>
-    <form method="POST" action="{{ url_for('case_study') }}">
-      <div class="grid">
-        <div>
-          <label>الاسم الكامل</label>
-          <input name="name" placeholder="اختياري">
-        </div>
-        <div>
-          <label>العمر</label>
-          <input name="age" type="number" min="1" placeholder="مثال: 30">
-        </div>
-        <div>
-          <label>الجنس</label>
-          <select name="gender">
-            <option value="">— اختر —</option>
-            <option value="ذكر">ذكر</option>
-            <option value="أنثى">أنثى</option>
-            <option value="آخر">آخر</option>
-          </select>
-        </div>
-        <div>
-          <label>مدّة الأعراض (بالأيام)</label>
-          <input name="duration_days" type="number" min="0" placeholder="مثال: 30">
-        </div>
-      </div>
+  <h1>📝 دراسة حالة – شخص نفسك</h1>
+  <p>املأ البيانات التالية ليقوم النظام بتحليل حالتك وربطها مع DSM-5</p>
 
-      <label>الأعراض (وصف حر)</label>
-      <textarea name="symptoms" placeholder="مثال: حزن شديد، فقدان المتعة، أرق..."></textarea>
+  <form action="{{ url_for('dsm') }}" method="post">
+    <label for="name">الاسم الكامل:</label>
+    <input type="text" id="name" name="name" placeholder="مثال: أحمد محمد" required>
 
-      <label>التاريخ الطبي/النفسي (اختياري)</label>
-      <textarea name="history" placeholder="أدوية حالية، أحداث صادمة، أمراض جسدية..."></textarea>
+    <label for="age">العمر:</label>
+    <input type="number" id="age" name="age" placeholder="مثال: 30" required>
 
-      <button type="submit">متابعة إلى التشخيص (DSM)</button>
-      <div class="hint">⚠️ البيانات للتقييم المبدئي ولا تغني عن الاستشارة الطبية.</div>
-    </form>
-  </div>
+    <label for="gender">الجنس:</label>
+    <select id="gender" name="gender" required>
+      <option value="">اختر...</option>
+      <option value="ذكر">ذكر</option>
+      <option value="أنثى">أنثى</option>
+    </select>
+
+    <label for="duration">مدة الأعراض (بالأيام):</label>
+    <input type="number" id="duration" name="duration" placeholder="مثال: 30">
+
+    <label for="symptoms">الأعراض (أصف بدقة):</label>
+    <textarea id="symptoms" name="symptoms" placeholder="مثال: حزن، قلق، اضطراب نوم، أفكار سلبية..." required></textarea>
+
+    <label for="history">التاريخ الطبي والنفسي (اختياري):</label>
+    <textarea id="history" name="history" placeholder="مثال: لا يوجد، أو: أجريت عمليات/أعاني أمراض مزمنة..."></textarea>
+
+    <button type="submit">🔍 تشخيص عبر DSM</button>
+  </form>
 </body>
 </html>
