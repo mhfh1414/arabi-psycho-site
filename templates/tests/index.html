@@ -2,103 +2,127 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>عربي سايكو</title>
+  <title>مركز عربي سايكو</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <style>
     body {
-      font-family: 'Tahoma', sans-serif;
+      font-family: "Tajawal", sans-serif;
+      background: linear-gradient(135deg, #003366, #006633);
+      color: white;
+      text-align: center;
       margin: 0;
       padding: 0;
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); /* أزرق داكن متدرج */
-      color: #fff;
     }
     header {
       display: flex;
-      justify-content: flex-end;
+      justify-content: flex-start;
       align-items: center;
       padding: 20px 40px;
+      gap: 15px;
+    }
+    header img {
+      width: 60px;
+      height: 60px;
     }
     header h1 {
-      font-size: 36px;
+      font-size: 28px;
+      color: #FFD700;
       margin: 0;
-      color: #FFD700; /* ذهبي */
     }
-    .intro {
-      text-align: center;
-      margin-top: 20px;
+    header span {
+      display: block;
+      font-size: 14px;
+      color: #eee;
     }
-    .intro h2 {
-      font-size: 22px;
-      font-weight: normal;
-      margin: 5px 0;
-      color: #ddd;
-    }
-    .grid {
+    .container {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 20px;
       padding: 40px;
-      max-width: 1000px;
+      max-width: 1100px;
       margin: auto;
     }
     .card {
-      background: #fff;
-      color: #2c3e50;
+      background: #ffffff22;
       border-radius: 12px;
-      padding: 25px;
-      text-align: center;
+      padding: 20px;
       transition: 0.3s;
-      font-weight: bold;
     }
     .card:hover {
+      background: #ffffff33;
       transform: translateY(-5px);
-      background: #FFD700;
-      color: #000;
     }
-    .card span {
-      display: block;
-      font-size: 35px;
-      margin-bottom: 12px;
-    }
-    footer {
-      text-align: center;
-      padding: 20px;
-      margin-top: 30px;
-      background: rgba(255, 255, 255, 0.05);
-      border-top: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    footer a {
+    .card h2 {
+      margin: 0;
+      font-size: 22px;
       color: #FFD700;
-      margin: 0 10px;
-      text-decoration: none;
-      font-weight: bold;
+      position: relative;
+      display: inline-block;
+    }
+    .card h2::after {
+      content: "";
+      display: block;
+      width: 60%;
+      height: 3px;
+      background: #FFD700;
+      margin: 6px auto;
+      border-radius: 2px;
+    }
+    .card p {
+      margin: 10px 0 0;
+      font-size: 16px;
+      color: #eee;
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>عربي سايكو</h1>
+    <!-- ضع شعارك هنا -->
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="شعار عربي سايكو">
+    <div>
+      <h1>عربي سايكو</h1>
+      <span>صديق الجميع</span>
+    </div>
   </header>
 
-  <div class="intro">
-    <h2>مركز عربي سايكو يرحب بكم 🌿</h2>
-    <h2>نخدمك أينما كنت</h2>
-  </div>
+  <h2>مركز عربي سايكو يرحب بكم</h2>
+  <p>نخدمك أينما كنت</p>
 
-  <div class="grid">
-    <a href="/cbt" class="card"><span>🧠</span> العلاج السلوكي (CBT)</a>
-    <a href="/dsm" class="card"><span>📚</span> الاضطرابات النفسية (DSM-5)</a>
-    <a href="/case" class="card"><span>📝</span> دراسة الحالة</a>
-    <a href="/doctor" class="card"><span>🧑‍⚕️</span> التحويل إلى الطبيب</a>
-    <a href="/specialist" class="card"><span>👥</span> التحويل إلى الأخصائي النفسي</a>
-    <a href="/tests" class="card"><span>📊</span> الاختبارات النفسية</a>
-    <a href="/addiction" class="card"><span>🚭</span> الإدمان والمخدرات</a>
-  </div>
+  <div class="container">
+    <div class="card">
+      <h2>دراسة حالة</h2>
+      <p>شخّص نفسك</p>
+    </div>
 
-  <footer>
-    تواصل معنا عبر:
-    <a href="https://wa.me/966530565696" target="_blank">📱 واتساب</a> | 
-    <a href="https://t.me/Mhfh1414" target="_blank">💬 تليجرام</a> | 
-    <a href="mailto:info@arabipsycho.com">✉️ البريد الإلكتروني</a>
-  </footer>
+    <div class="card">
+      <h2>الاضطرابات النفسية DSM-5</h2>
+      <p>مكتبة تشخيصية شاملة</p>
+    </div>
+
+    <div class="card">
+      <h2>العلاج السلوكي المعرفي CBT</h2>
+      <p>خطط علاجية متكاملة</p>
+    </div>
+
+    <div class="card">
+      <h2>الاختبارات النفسية</h2>
+      <p>اختبر ذاتك بسهولة</p>
+    </div>
+
+    <div class="card">
+      <h2>الإدمان والمخدرات</h2>
+      <p>التشخيص والعلاج</p>
+    </div>
+
+    <div class="card">
+      <h2>التحويل إلى الأخصائي النفسي</h2>
+      <p>دعم نفسي متكامل</p>
+    </div>
+
+    <div class="card">
+      <h2>التحويل إلى الطبيب</h2>
+      <p>متابعة طبية دقيقة</p>
+    </div>
+  </div>
 </body>
 </html>
