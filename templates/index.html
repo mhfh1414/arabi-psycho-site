@@ -1,77 +1,31 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <title>عربي سايكو</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <meta charset="UTF-8">
+  <title>عربي سايكو - الصفحة الرئيسية</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <header class="header">
-        <div class="logo">
-            <img src="{{ url_for('static', filename='logo.png') }}" alt="شعار عربي سايكو">
-            <h1>عربي سايكو</h1>
-            <p>صديق الجميع</p>
-        </div>
-        <h2 class="welcome">مركز عربي سايكو يرحب بكم</h2>
-        <p class="subtext">نخدمك أينما كنت</p>
-    </header>
+  <header>
+    <h1>مركز عربي سايكو يرحب بكم</h1>
+    <p>نخدمك أينما كنت | صديق الجميع</p>
+  </header>
 
-    <main class="menu">
-        <div class="card">
-            <a href="{{ url_for('case_study') }}">
-                📝 دراسة حالة
-                <p>شخص نفسك</p>
-            </a>
-        </div>
+  <main class="menu">
+    <a href="{{ url_for('case_study') }}">📝 دراسة حالة</a>
+    <a href="{{ url_for('dsm') }}">📖 الأمراض النفسية (DSM-5)</a>
+    <a href="{{ url_for('tests') }}">🧪 الاختبارات النفسية والشخصية</a>
+    <a href="{{ url_for('cbt') }}">💡 العلاج السلوكي المعرفي (CBT)</a>
+    <a href="{{ url_for('addiction') }}">🚭 علاج الإدمان</a>
+    <a href="{{ url_for('request_doctor') }}">👨‍⚕️ طلب الطبيب</a>
+    <a href="{{ url_for('request_specialist') }}">👨‍💼 طلب الأخصائي النفسي</a>
+  </main>
 
-        <div class="card">
-            <a href="{{ url_for('dsm') }}">
-                📖 الأمراض النفسية (DSM-5)
-                <p>مكتبة تشخيص شاملة</p>
-            </a>
-        </div>
-
-        <div class="card">
-            <a href="{{ url_for('tests') }}">
-                🧪 الاختبارات النفسية والشخصية
-                <p>اختبر ذاتك بسهولة</p>
-            </a>
-        </div>
-
-        <div class="card">
-            <a href="{{ url_for('cbt') }}">
-                💡 العلاج السلوكي المعرفي (CBT)
-                <p>خطط علاجية كاملة</p>
-            </a>
-        </div>
-
-        <div class="card">
-            <a href="{{ url_for('addiction') }}">
-                🚭 علاج الإدمان
-                <p>تشخيص وعلاج الإدمان</p>
-            </a>
-        </div>
-
-        <div class="card">
-            <a href="{{ url_for('request_doctor') }}">
-                👨‍⚕️ طلب الطبيب
-                <p>نموذج تحويل طبي</p>
-            </a>
-        </div>
-
-        <div class="card">
-            <a href="{{ url_for('request_specialist') }}">
-                👨‍💼 طلب الأخصائي النفسي
-                <p>نموذج طلب مختص</p>
-            </a>
-        </div>
-    </main>
-
-    <footer>
-        <p>تواصل معنا عبر: 
-            <a href="https://wa.me/966530565696" target="_blank">واتساب</a> | 
-            <a href="https://t.me/Mhfh1414" target="_blank">تلجرام</a>
-        </p>
-    </footer>
+  <footer>
+    <p>تواصل معنا عبر: 
+      <a href="https://wa.me/966530565696" target="_blank">واتساب</a> |
+      <a href="https://t.me/Mhfh1414" target="_blank">تلجرام</a>
+    </p>
+  </footer>
 </body>
 </html>
