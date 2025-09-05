@@ -1,53 +1,51 @@
-from flask import Flask, render_template, request, session, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for
+
 app = Flask(__name__)
-app.secret_key = "change-me"  # غيّرها
 
 @app.route("/")
-def index():
-    return render_template("index.html")  # صفحتك الرئيسية الحالية
+def home():
+    return render_template("index.html")
 
 @app.route("/case_study", methods=["GET", "POST"])
 def case_study():
     if request.method == "POST":
-        session["case"] = {
-            "name": request.form.get("name", "").strip(),
-            "age": request.form.get("age", "").strip(),
-            "gender": request.form.get("gender", ""),
-            "duration": request.form.get("duration", "").strip(),
-            "symptoms": request.form.get("symptoms", "").strip(),
-            "history": request.form.get("history", "").strip(),
+        # نجمع البيانات ونمررها لصفحة DSM (العرض والتحليل)
+        payload = {
+            "full_name": request.form.get("full_name",""),
+            "age": request.form.get("age",""),
+            "gender": request.form.get("gender",""),
+            "duration_days": request.form.get("duration_days",""),
+            "symptoms": request.form.get("symptoms","").strip(),
+            "history": request.form.get("history","").strip(),
         }
-        return redirect(url_for("dsm"))
+        # نرسلها إلى dsm.html لعرض التشخيص (DSM الكبير الحالي)
+        return render_template("dsm.html", **payload)
     return render_template("case_study.html")
 
 @app.route("/dsm")
 def dsm():
-    case = session.get("case", {})
-    # منطق بسيط مؤقّت (بدون محرّك): مجرّد أمثلة على النتيجة
-    results, flags = [], []
-    text = (case.get("symptoms","") + " " + case.get("history","")).lower()
+    # إبقاء كتالوج DSM كما هو (لا نحذف شيء)
+    return render_template("dsm.html")
 
-    if any(k in text for k in ["انتحار","أؤذي نفسي","قتل نفسي"]):
-        flags.append("⚠️ وجود مؤشرات خطورة على النفس — يلزم تدخل عاجل")
+@app.route("/tests")
+def tests():
+    return render_template("tests.html")
 
-    if text:
-        if any(k in text for k in ["قلق","توتر","أرق","خفقان"]):
-            results.append({
-                "name":"قلق معمّم","group":"القلق","score":0.78,
-                "met":4,"min_required":3,"duration_required":180,
-                "matched_keys":["توتر","أرق","تعب","قلق مفرط"],
-                "red_flags":[],"tips":["CBT وتمارين الاسترخاء"]
-            })
-        if any(k in text for k in ["حزن","كآبة","فقدان المتعة"]):
-            results.append({
-                "name":"نوبة اكتئابية كبرى","group":"المزاج","score":0.72,
-                "met":5,"min_required":5,"duration_required":14,
-                "matched_keys":["حزن","فقدان المتعة","أرق","ذنب","تشتت"],
-                "red_flags":["أفكار انتحار"] if "انتحار" in text else [],
-                "tips":["مراجعة مختص، وCBT"]
-            })
+@app.route("/cbt")
+def cbt():
+    return render_template("cbt.html")
 
-    return render_template("dsm.html", case=case, results=results, flags=flags)
+@app.route("/addiction")
+def addiction():
+    return render_template("addiction.html")
+
+@app.route("/request_doctor")
+def request_doctor():
+    return render_template("request_doctor.html")
+
+@app.route("/request_specialist")
+def request_specialist():
+    return render_template("request_specialist.html")
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000, debug=True)
+    app.run(host="0.0.0.0", port=10000)
