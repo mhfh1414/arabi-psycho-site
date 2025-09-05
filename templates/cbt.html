@@ -1,26 +1,16 @@
-{% extends "_shared/base.html" %}
-{% block title %}تشغيل اختبار{% endblock %}
-{% block content %}
-<h2 class="mb-3">تشغيل اختبار تجريبي</h2>
-
-<form method="post" action="{{ url_for('test_run') }}">
-  <div class="mb-3">
-    <label class="form-label">سؤال 1: هل تشعر بالقلق؟</label>
-    <select class="form-select" name="q1">
-      <option value="لا">لا</option>
-      <option value="نعم">نعم</option>
-    </select>
-  </div>
-
-  <div class="mb-3">
-    <label class="form-label">سؤال 2: هل تجد صعوبة في النوم؟</label>
-    <select class="form-select" name="q2">
-      <option value="لا">لا</option>
-      <option value="نعم">نعم</option>
-    </select>
-  </div>
-
-  <button type="submit" class="btn btn-success">إرسال</button>
-  <a class="btn btn-outline-secondary" href="{{ url_for('tests') }}">رجوع</a>
-</form>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>العلاج السلوكي المعرفي</title>
+</head>
+<body>
+  <h2>💡 العلاج السلوكي المعرفي (CBT)</h2>
+  <p>العلاج السلوكي المعرفي يساعدك على تغيير أنماط التفكير السلبية.</p>
+  <ul>
+    <li>التعرف على الأفكار السلبية</li>
+    <li>استبدالها بأفكار إيجابية</li>
+    <li>تدريب على مهارات التعامل مع القلق</li>
+  </ul>
+</body>
+</html>
