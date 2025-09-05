@@ -1,9 +1,0 @@
-{% extends "_shared/base.html" %}
-{% block title %}نتيجة اختبار الشخصية{% endblock %}
-
-{% block content %}
-<h2 class="mb-4">🧾 نتيجة اختبار الشخصية</h2>
-<p><strong>النتيجة:</strong> {{ result }}</p>
-<p><strong>التوصية:</strong> {{ recommendation }}</p>
-<a href="{{ url_for('personality_test_page') }}" class="btn btn-secondary mt-3">🔙 إعادة المحاولة</a>
-{% endblock %}
