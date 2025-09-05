@@ -1,83 +1,91 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>مركز عربي سايكو</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>عربي سايكو | الصفحة الرئيسية</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <style>
-    body {
-      font-family: "Tajawal", sans-serif;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-      background: linear-gradient(to bottom, #002B5B, #1A5F7A);
-      color: white;
-    }
-    header {
-      padding: 30px 10px;
-    }
-    header h1 {
-      font-size: 36px;
-      margin: 10px 0;
-      color: #FFD700;
-    }
-    header p {
-      font-size: 18px;
-      margin: 0;
-    }
-    nav ul {
-      list-style: none;
-      padding: 0;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
-      max-width: 900px;
-      margin: 40px auto;
-    }
-    nav li a {
-      display: block;
-      background: #004E89;
-      padding: 20px;
-      border-radius: 12px;
-      font-size: 18px;
-      color: white;
-      text-decoration: none;
-      transition: 0.3s;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-    }
-    nav li a:hover {
-      background: #FFD700;
-      color: black;
-    }
-    footer {
-      margin-top: 40px;
-      font-size: 14px;
-      color: #ccc;
-      padding: 10px;
-    }
+    .hero{max-width:1100px;margin:40px auto;padding:32px 24px;border-radius:18px;
+      background:linear-gradient(135deg,#0e3a8a 0%,#1d4ed8 50%,#0ea5e9 100%);
+      color:#fff;box-shadow:0 10px 30px rgba(0,0,0,.15)}
+    .hero h1{font-size:clamp(28px,5vw,40px);margin:0 0 10px}
+    .hero p{margin:6px 0 0;opacity:.9}
+    .grid{max-width:1100px;margin:22px auto;display:grid;gap:16px;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+    .card{background:#0b1220ee;color:#fff;border-radius:16px;padding:18px 16px;
+      box-shadow:0 10px 20px rgba(0,0,0,.12);transition:transform .15s ease,box-shadow .15s ease}
+    .card:hover{transform:translateY(-3px);box-shadow:0 16px 28px rgba(0,0,0,.18)}
+    .card a{display:block;color:#fff;text-decoration:none}
+    .title{font-weight:700;font-size:18px;margin-bottom:8px}
+    .sub{opacity:.85;font-size:14px}
+    .brand{display:flex;align-items:center;gap:12px;margin:8px auto 0;max-width:1100px}
+    .brand img{width:42px;height:42px;border-radius:10px;object-fit:cover}
+    .brand .name{font-weight:800;color:#fbbf24;font-size:22px}
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>🌿 مركز عربي سايكو يرحب بكم</h1>
-    <p>نخدمك أينما كنت | صديق الجميع</p>
-  </header>
+  <div class="brand">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="عربي سايكو">
+    <div class="name">عربي سايكو</div>
+  </div>
 
-  <nav>
-    <ul>
-      <li><a href="{{ url_for('case_study') }}">📝 دراسة حالة</a></li>
-      <li><a href="{{ url_for('dsm') }}">📖 الأمراض النفسية (DSM-5)</a></li>
-      <li><a href="{{ url_for('tests') }}">🧪 الاختبارات النفسية والشخصية</a></li>
-      <li><a href="{{ url_for('cbt') }}">💡 العلاج السلوكي المعرفي</a></li>
-      <li><a href="{{ url_for('addiction') }}">🚭 علاج الإدمان</a></li>
-      <li><a href="{{ url_for('request_doctor') }}">👨‍⚕️ طلب الطبيب</a></li>
-      <li><a href="{{ url_for('request_specialist') }}">👨‍💼 طلب الأخصائي النفسي</a></li>
-    </ul>
-  </nav>
+  <section class="hero">
+    <h1>مركز عربي سايكو يرحب بكم</h1>
+    <p>نخدمك أينما كنت • صديق الجميع</p>
+  </section>
 
-  <footer>
-    © 2025 جميع الحقوق محفوظة - عربي سايكو
-  </footer>
+  <section class="grid">
+    <div class="card">
+      <a href="{{ url_for('case_study') }}">
+        <div class="title">📝 دراسة حالة</div>
+        <div class="sub">صفحة مستقلة لتعبئة بياناتك والأعراض</div>
+      </a>
+    </div>
+
+    <div class="card">
+      <a href="{{ url_for('dsm') }}">
+        <div class="title">📖 الأمراض النفسية (DSM-5)</div>
+        <div class="sub">مراجعة تشخيصات ودلائل DSM-5</div>
+      </a>
+    </div>
+
+    <div class="card">
+      <a href="{{ url_for('tests') }}">
+        <div class="title">🧪 الاختبارات النفسية والشخصية</div>
+        <div class="sub">اختبارات معيارية ومقاييس مهنية</div>
+      </a>
+    </div>
+
+    <div class="card">
+      <a href="{{ url_for('cbt') }}">
+        <div class="title">💡 العلاج السلوكي المعرفي (CBT)</div>
+        <div class="sub">خطط علاجية مرتبطة بنتائج الاختبارات</div>
+      </a>
+    </div>
+
+    <div class="card">
+      <a href="{{ url_for('addiction') }}">
+        <div class="title">🚭 علاج الإدمان</div>
+        <div class="sub">برنامج متكامل للإدمان والمخدرات</div>
+      </a>
+    </div>
+
+    <div class="card">
+      <a href="{{ url_for('request_specialist') }}">
+        <div class="title">👨‍💼 طلب الأخصائي النفسي</div>
+        <div class="sub">حجز جلسة مع الأخصائي</div>
+      </a>
+    </div>
+
+    <div class="card">
+      <a href="{{ url_for('request_doctor') }}">
+        <div class="title">👨‍⚕️ طلب الطبيب</div>
+        <div class="sub">إحالة طبية عند الحاجة</div>
+      </a>
+    </div>
+  </section>
 
 </body>
 </html>
