@@ -4,81 +4,64 @@
   <meta charset="UTF-8">
   <title>📝 دراسة حالة</title>
   <style>
-    body { 
-      font-family: "Tajawal", sans-serif; 
-      background: linear-gradient(to bottom, #002B5B, #1A5F7A);
-      margin:0; padding:30px; color:white;
-      text-align:center;
+    body{
+      font-family:"Tajawal",sans-serif;background:linear-gradient(to bottom,#002B5B,#1A5F7A);
+      margin:0;padding:30px;color:#fff;text-align:center
     }
-    .form-box {
-      background: rgba(255,255,255,0.1);
-      padding: 25px;
-      border-radius: 14px;
-      max-width: 600px;
-      margin: auto;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      text-align: right;
+    .box{background:rgba(255,255,255,.1);max-width:760px;margin:auto;padding:24px;border-radius:16px;
+      box-shadow:0 6px 14px rgba(0,0,0,.35);text-align:right}
+    h1{color:#FFD700;margin:0 0 16px}
+    label{display:block;margin:10px 0 6px;font-weight:700}
+    input,select,textarea{
+      width:100%;padding:12px;border-radius:10px;border:none;font-size:16px;margin-bottom:12px
     }
-    h1 {
-      color: #FFD700;
-      margin-bottom: 20px;
+    textarea{min-height:100px;resize:vertical}
+    .grid{display:grid;gap:12px}
+    @media(min-width:820px){.grid{grid-template-columns:1fr 1fr}}
+    button{
+      width:100%;padding:14px;border:none;border-radius:10px;background:#FFD700;color:#000;
+      font-size:18px;font-weight:800;cursor:pointer;transition:.25s
     }
-    label {
-      display: block;
-      margin: 12px 0 6px;
-      font-weight: bold;
-    }
-    input, select, textarea {
-      width: 100%;
-      padding: 12px;
-      border-radius: 10px;
-      border: none;
-      font-size: 16px;
-      margin-bottom: 15px;
-    }
-    textarea { min-height: 80px; resize: vertical; }
-    button {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 10px;
-      background: #FFD700;
-      color: black;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    button:hover {
-      background: #FFA500;
-      color: white;
-    }
+    button:hover{background:#FFA500;color:#fff}
+    .hint{font-size:13px;opacity:.9;margin-top:8px}
   </style>
 </head>
 <body>
-  <div class="form-box">
-    <h1>📝 دراسة حالة</h1>
+  <div class="box">
+    <h1>📝 دراسة حالة — شخص نفسك</h1>
     <form method="POST" action="{{ url_for('case_study') }}">
-      <label>الاسم الكامل</label>
-      <input type="text" name="name" required>
+      <div class="grid">
+        <div>
+          <label>الاسم الكامل</label>
+          <input name="name" placeholder="اختياري">
+        </div>
+        <div>
+          <label>العمر</label>
+          <input name="age" type="number" min="1" placeholder="مثال: 30">
+        </div>
+        <div>
+          <label>الجنس</label>
+          <select name="gender">
+            <option value="">— اختر —</option>
+            <option value="ذكر">ذكر</option>
+            <option value="أنثى">أنثى</option>
+            <option value="آخر">آخر</option>
+          </select>
+        </div>
+        <div>
+          <label>مدّة الأعراض (بالأيام)</label>
+          <input name="duration_days" type="number" min="0" placeholder="مثال: 30">
+        </div>
+      </div>
 
-      <label>العمر</label>
-      <input type="number" name="age" min="1" max="100" required>
+      <label>الأعراض (وصف حر)</label>
+      <textarea name="symptoms" placeholder="مثال: حزن شديد، فقدان المتعة، أرق..."></textarea>
 
-      <label>الجنس</label>
-      <select name="gender" required>
-        <option value="">— اختر —</option>
-        <option value="ذكر">ذكر</option>
-        <option value="أنثى">أنثى</option>
-      </select>
+      <label>التاريخ الطبي/النفسي (اختياري)</label>
+      <textarea name="history" placeholder="أدوية حالية، أحداث صادمة، أمراض جسدية..."></textarea>
 
-      <label>الأعراض</label>
-      <textarea name="symptoms" placeholder="اشرح الأعراض التي تعاني منها..."></textarea>
-
-      <label>التاريخ الطبي والنفسي</label>
-      <textarea name="history" placeholder="اذكر أي أمراض سابقة أو علاجات..."></textarea>
-
-      <button type="submit">متابعة إلى DSM</button>
+      <button type="submit">متابعة إلى التشخيص (DSM)</button>
+      <div class="hint">⚠️ البيانات للتقييم المبدئي ولا تغني عن الاستشارة الطبية.</div>
     </form>
   </div>
 </body>
