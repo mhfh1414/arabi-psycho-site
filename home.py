@@ -2,9 +2,9 @@
 from flask import url_for, render_template_string
 
 # عدّل الروابط كما يناسبك
-WA_LINK = "https://wa.me/9665XXXXXXXX"       # رقم واتساب دولي
-TG_LINK = "https://t.me/USERNAME"            # يوزر تيليجرام
-EMAIL_LINK = "mailto:info@arabipsycho.com"   # بريدك
+WA_LINK = "https://wa.me/9665XXXXXXXX"        # رقم واتساب دولي
+TG_LINK = "https://t.me/USERNAME"             # يوزر تيليجرام
+EMAIL_LINK = "mailto:info@arabipsycho.com"    # بريدك
 
 def render_home():
     html = """
@@ -14,64 +14,77 @@ def render_home():
       <meta charset="utf-8">
       <title>عربي سايكو | الرئيسية</title>
       <meta name="viewport" content="width=device-width, initial-scale=1"/>
+      <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;800&display=swap" rel="stylesheet">
       <style>
-        body{margin:0;font-family:"Tajawal",system-ui,Segoe UI,Arial;-webkit-font-smoothing:antialiased;
-             background:radial-gradient(1200px 600px at 80% -10%, #1a4bbd22, transparent),
-             linear-gradient(135deg,#0b3b78 0%,#08244a 60%, #061a34 100%);color:#fff}
-        .wrap{max-width:1100px;margin:auto;padding:28px}
-        header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-        .brand{display:flex;gap:12px;align-items:center}
-        .brand h1{margin:0;font-size:28px}
-        .brand small{color:#cfe0ff}
+        :root{--bg1:#0b3a75;--bg2:#0a65b0;--gold:#f4b400;--white:#fff}
+        *{box-sizing:border-box}
+        body{margin:0;font-family:"Tajawal",system-ui;-webkit-font-smoothing:antialiased;
+             background:
+              radial-gradient(900px 480px at 85% -10%, #1a4bbd22, transparent),
+              linear-gradient(135deg,var(--bg1),var(--bg2)); color:var(--white)}
+        .wrap{max-width:1200px;margin:auto;padding:28px}
+        header{display:flex;align-items:center;justify-content:space-between;gap:16px}
+        .brand{display:flex;align-items:center;gap:14px}
+        .badge{width:52px;height:52px;border-radius:14px;background:#0d2c54;border:1px solid #ffffff33;display:grid;place-items:center;font-weight:800}
+        .title{margin:0;font-size:30px}
+        .subtitle{margin:0;color:#cfe0ff}
+        .actions a{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-weight:800;
+                   padding:10px 14px;border-radius:12px;border:1px solid #ffffff22;background:rgba(255,255,255,.06);color:#fff}
+        .actions a:hover{background:rgba(255,255,255,.12)}
+        .hero{margin:24px 0;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:18px;padding:24px}
+        .btn{display:inline-flex;align-items:center;gap:10px;background:var(--gold);color:#2b1b02;border-radius:14px;padding:14px 18px;text-decoration:none;font-weight:800}
+        .btn:hover{filter:brightness(1.05)}
         .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-        @media(max-width:900px){.grid{grid-template-columns:1fr}}
+        @media(max-width:980px){.grid{grid-template-columns:1fr}}
         .card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:18px;backdrop-filter:blur(6px)}
-        a.btn{display:inline-block;background:#f4b400;color:#2b1b02;border-radius:14px;padding:12px 16px;font-weight:800;text-decoration:none}
-        .links a{display:inline-block;margin-inline:6px;color:#ffe28a;text-decoration:none}
-        .hero{margin:18px 0 24px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:18px;padding:20px}
+        .card h3{margin:0 0 6px}
+        .card p{margin:0 0 12px;color:#dbe9ff}
+        .card a{display:inline-flex;align-items:center;gap:8px}
       </style>
     </head>
     <body>
       <div class="wrap">
         <header>
           <div class="brand">
-            <img src="https://dummyimage.com/44x44/0b3b78/ffffff&text=AS" alt="Arabipsycho" width="44" height="44" style="border-radius:10px;border:1px solid #ffffff33"/>
+            <div class="badge">AS</div>
             <div>
-              <h1>عربي سايكو</h1>
-              <small>مركز عربي سايكو يرحب بكم — نخدمك أينما كنت</small>
+              <h1 class="title">عربي سايكو</h1>
+              <p class="subtitle">مركز عربي سايكو يرحّب بكم — نخدمك أينما كنت</p>
             </div>
           </div>
-          <div class="links">
-            <a href="{{ url_for('contact_whatsapp') }}">واتساب</a> •
-            <a href="{{ url_for('contact_telegram') }}">تلجرام</a> •
-            <a href="{{ url_for('contact_email') }}">إيميل</a>
-          </div>
+          <nav class="actions">
+            <a href="{{ url_for('contact_whatsapp') }}">💬 واتساب</a>
+            <a href="{{ url_for('contact_telegram') }}">📨 تلجرام</a>
+            <a href="{{ url_for('contact_email') }}">✉️ إيميل</a>
+          </nav>
         </header>
 
         <section class="hero">
-          <p style="margin:0 0 12px">ابدأ هنا:</p>
-          <a class="btn" href="{{ url_for('dsm') }}">🗂️ دراسة حالة + تشخيص (DSM)</a>
-          <a class="btn" href="{{ url_for('cbt') }}">💡 العلاج السلوكي المعرفي + الاختبارات</a>
-          <a class="btn" href="{{ url_for('addiction') }}">🚭 علاج الإدمان</a>
+          <p style="margin:0 0 12px">ابدأ من هنا:</p>
+          <div style="display:flex;flex-wrap:wrap;gap:12px">
+            <a class="btn" href="{{ url_for('dsm') }}">🗂️ دراسة الحالة + التشخيص (DSM)</a>
+            <a class="btn" href="{{ url_for('cbt') }}">💡 العلاج السلوكي المعرفي + الاختبارات</a>
+            <a class="btn" href="{{ url_for('addiction') }}">🚭 علاج الإدمان</a>
+          </div>
         </section>
 
-        <div class="grid">
+        <section class="grid">
           <div class="card">
             <h3>📖 DSM-5</h3>
-            <p>قائمة اضطرابات + مطابقة كلمات لتشخيص مبدئي فوري.</p>
+            <p>قائمة اضطرابات موسّعة + مطابقة كلمات لنتيجة تقديرية فورية.</p>
             <a class="btn" href="{{ url_for('dsm') }}">ابدأ الآن</a>
           </div>
           <div class="card">
             <h3>🧪 الاختبارات</h3>
-            <p>PHQ-9 | GAD-7 | PCL-5 | BDI-II | Big Five وغيرها.</p>
+            <p>PHQ-9 | GAD-7 | PCL-5 | Big Five وغيرها — تُربط بـ CBT.</p>
             <a class="btn" href="{{ url_for('cbt') }}">افتح لوحة الاختبارات</a>
           </div>
           <div class="card">
             <h3>🚭 الإدمان</h3>
-            <p>تقييم أولي ومسارات علاجية وإحالة عند الحاجة.</p>
+            <p>تقييم أولي، خطة علاجية، وإحالة عند الحاجة.</p>
             <a class="btn" href="{{ url_for('addiction') }}">ابدأ التقييم</a>
           </div>
-        </div>
+        </section>
       </div>
     </body>
     </html>
