@@ -1,115 +1,320 @@
-<!-- templates/dsm.html -->
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>نتائج التشخيص (DSM) - عربي سايكو</title>
+  <title>DSM-5 — نتيجة تقديرية</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <style>
-    body{margin:0;font-family:"Tajawal",Tahoma,Arial,sans-serif;
-      background:linear-gradient(135deg,#0e3a8a,#1d4ed8);color:#fff}
-    .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
-    .title{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-    .title h1{margin:0;color:#FFD700;font-size:clamp(22px,3.4vw,30px)}
-    .card{background:#0b1220ee;border:1px solid rgba(255,255,255,.15);border-radius:16px;
-      box-shadow:0 10px 24px rgba(0,0,0,.25);padding:16px;margin:12px 0}
-    .subtle{color:#dbe5ff;opacity:.95}
-    .grid{display:grid;gap:10px}
-    @media(min-width:860px){.grid-2{grid-template-columns:1fr 1fr}}
-    table{width:100%;border-collapse:separate;border-spacing:0 8px}
-    th{color:#f1c40f;text-align:right;font-weight:800}
-    td,th{padding:8px 10px;background:rgba(255,255,255,.05);border-radius:10px}
-    .muted{color:#d0dcff;opacity:.9}
-    .warn{color:#f59e0b}.bad{color:#ff6b6b}.ok{color:#22c55e}
-    .pill{display:inline-block;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
-      color:#dbe6ff;border-radius:999px;padding:6px 10px;font-size:12px;margin:4px 6px 0 0}
-    .result{border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:12px;margin-top:10px;background:#0c1529}
-    .bar{height:10px;background:rgba(255,255,255,.18);border-radius:999px;overflow:hidden;margin-top:6px}
-    .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#22c55e,#f59e0b,#ef4444)}
-    .section-title{color:#f1c40f;margin:0 0 10px;font-size:18px}
-    .btns{display:flex;gap:10px;flex-wrap:wrap}
-    .btn{background:#FFD700;color:#063162;border:none;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}
-    .note{font-size:13px;color:#dbe6ff;opacity:.9}
-    a.link{color:#ffe082;text-decoration:none}
+    .result {background:#0b1437cc;color:#fff;border-radius:18px;padding:22px;margin:18px 0}
+    .badge{display:inline-block;padding:4px 10px;border-radius:999px;background:#17b169;margin-inline-start:8px;font-size:.8rem}
+    .weak {background:#777}
+    .ok {background:#0ea5e9}
+    .strong {background:#eab308;color:#222}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .pill{background:#101a4dcc;border:1px solid #2a3a86;padding:10px 14px;border-radius:12px}
+    .muted{opacity:.85}
+    .code{font-family:monospace;background:#0f1a47;padding:2px 6px;border-radius:6px}
+    .notes{line-height:1.9}
+    .list{margin:0;padding-inline-start:18px}
   </style>
 </head>
-<body>
-  <div class="wrap">
-
-    <div class="title">
-      <img src="{{ url_for('static', filename='logo.png') }}" alt="عربي سايكو" style="width:38px;height:38px;border-radius:8px">
-      <h1>نتائج التشخيص (DSM)</h1>
+<body class="hero">
+  <header class="brand center" style="margin-bottom:10px">
+    <img src="{{ url_for('static', filename='logo.png') }}" class="logo" alt="">
+    <div>
+      <h1>تقدير تشخيصي (DSM-5)</h1>
+      <p class="tag">هذه النتيجة تقديرية مبنية على المعلومات المعبأة — لا تُغني عن التقييم الإكلينيكي</p>
     </div>
+  </header>
 
-    <!-- بيانات الحالة -->
-    <div class="card">
-      <h3 class="section-title">📋 بيانات الحالة</h3>
-      <div class="grid grid-2">
-        <table>
-          <tr><th>الاسم</th><td>{{ (case.name if case and case.name else '—') }}</td></tr>
-          <tr><th>العمر</th><td>{{ (case.age if case and case.age else '—') }}</td></tr>
-          <tr><th>الجنس</th><td>{{ (case.gender if case and case.gender else '—') }}</td></tr>
-          <tr><th>مدة الأعراض</th><td>{{ (case.duration if case and case.duration else '—') }}</td></tr>
-        </table>
-        <table>
-          <tr><th>الأعراض</th><td>{{ (case.symptoms if case and case.symptoms else '—') }}</td></tr>
-          <tr><th>التاريخ الطبي/النفسي</th><td>{{ (case.history if case and case.history else '—') }}</td></tr>
-        </table>
-      </div>
-      <div class="btns" style="margin-top:10px">
-        <a class="link" href="{{ url_for('case_study') }}">↩︎ تعديل البيانات</a>
-      </div>
+  <section class="card">
+    <div class="grid-2">
+      <div class="pill"><b>الاسم:</b> {{ full_name or '—' }}</div>
+      <div class="pill"><b>العمر:</b> {{ age or '—' }}</div>
+      <div class="pill"><b>الجنس:</b> {{ gender or '—' }}</div>
+      <div class="pill"><b>مدة الأعراض (يوم):</b> {{ duration_days or '—' }}</div>
     </div>
-
-    <!-- أعلام حمراء (إن وجدت) -->
-    {% if flags and flags|length > 0 %}
-    <div class="card">
-      <h3 class="section-title">⚠️ تنبيهات طبية عاجلة</h3>
-      {% for f in flags %}
-        <div class="pill bad">{{ f }}</div>
-      {% endfor %}
-      <p class="note" style="margin-top:8px">عند وجود خطر على النفس أو الآخرين، يُنصح بطلب مساعدة فورية.</p>
-    </div>
+    <div class="pill" style="margin-top:12px"><b>الأعراض الموصوفة:</b> {{ symptoms or '—' }}</div>
+    {% if history %}
+      <div class="pill" style="margin-top:12px"><b>تاريخ طبي/نفسي:</b> {{ history }}</div>
     {% endif %}
+  </section>
 
-    <!-- النتائج -->
-    <div class="card">
-      <h3 class="section-title">🎯 أعلى التشخيصات المحتملة</h3>
-      {% if results and results|length > 0 %}
-        {% for r in results %}
+  <section id="out"></section>
+
+  <footer class="footer">
+    <a class="btn ghost" href="{{ url_for('home') }}">العودة للرئيسية</a>
+  </footer>
+
+  <script>
+    // ======  البيانات القادمة من دراسة الحالة  ======
+    const FORM = {
+      name: `{{ (full_name or '')|e }}`,
+      age: parseInt(`{{ (age or '0')|e }}`) || null,
+      gender: `{{ (gender or '')|e }}`.trim(),
+      duration: parseInt(`{{ (duration_days or '0')|e }}`) || 0,
+      symptoms: `{{ (symptoms or '')|e }}`.toLowerCase(),
+      history: `{{ (history or '')|e }}`.toLowerCase()
+    };
+
+    // ======  أدوات مساعدة  ======
+    const norm = s => s
+      .toLowerCase()
+      .replace(/[^\u0600-\u06FFa-z0-9\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const hasAny = (text, arr) => arr.some(k => text.includes(k));
+    const countHits = (text, arr) => arr.reduce((n,k)=> n + (text.includes(k)?1:0), 0);
+
+    // ======  فهرس موسّع (قابل للزيادة)  ======
+    // name: الاسم الظاهر
+    // aka: مرادفات/أسماء دارجة
+    // any: كلمات يكفي ظهور بعضها
+    // all: كلمات يُفضّل توفرها كلها
+    // exclude: كلمات تُنقص من التطابق
+    // minDays: أدنى مدة تقريبية لتقوية الترشيح
+    // tips: نقاط علاجية/ملاحظات
+    const CATALOG = [
+      {
+        code:"MDD", name:"الاكتئاب الشديد (MDD)",
+        aka:["اكتئاب","حزن شديد","مزاج منخفض"],
+        any:["حزن","مزاج منخفض","فقدان متعة","انعدام المتعة","توتر","بكاء","إرهاق","نوم زائد","أرق","إحباط","شعور بالذنب","انعدام قيمة","انتحار"],
+        all:[],
+        exclude:["هوس","نشوة مفرطة","أفكار عظمة"],
+        minDays:14,
+        tips:["تقييم أفكار انتحارية فورًا","SSRI/CBT","تنشيط سلوكي","نوم منتظم"]
+      },
+      {
+        code:"PDD", name:"الاكتئاب المستمر (الديسثيميا)",
+        any:["مزاج منخفض","حزن مزمن","طاقة منخفضة","نقص ثقة"],
+        minDays:365,
+        tips:["CBT طويل المدى","تنظيم نمط الحياة","مضادات اكتئاب عند الحاجة"]
+      },
+      {
+        code:"BP1", name:"اضطراب ثنائي القطب النوع الأول",
+        any:["نوبات هوس","هوس","نشوة مفرطة","انعدام نوم بدون تعب","أفكار عظمة","اندفاع"],
+        exclude:["حزن فقط"],
+        minDays:7,
+        tips:["إحالة لطبيب نفسي لتثبيت المزاج (ليثيوم/فالبروات)","تثقيف عائلي"]
+      },
+      {
+        code:"BP2", name:"ثنائي القطب النوع الثاني (هوس خفيف + اكتئاب)",
+        any:["هوس خفيف","طاقة عالية","قلة نوم","كلام سريع","أفكار كثيرة","اكتئاب"],
+        minDays:4,
+        tips:["تقييم تثبيت مزاج","تتبع النوم"]
+      },
+      {
+        code:"GAD", name:"قلق معمم (GAD)",
+        any:["قلق","توتر","تفكير زائد","شد عضلي","تعب سريع","صعوبة تركيز","أرق"],
+        minDays:180,
+        tips:["CBT للقلق","تمارين تنفس/استرخاء","SSRI/SNRI عند الحاجة"]
+      },
+      {
+        code:"PD", name:"نوبات هلع",
+        any:["نوبة هلع","خفقان","اختناق","دوخة","تعرّق","رجفة","خوف موت","خوف فقد السيطرة"],
+        minDays:0,
+        tips:["تثقيف حول الدائرة الفسيولوجية","تعريض حسي متدرّج","استبعاد أسباب طبية (غدة، قلب)"]
+      },
+      {
+        code:"Agoraphobia", name:"رهاب الميادين/الأماكن المفتوحة",
+        any:["خوف من الخروج","خوف من الأماكن المفتوحة","خوف من الازدحام","تجنّب المواصلات"],
+        minDays:180,
+        tips:["تعريض متدرج مع CBT","مرافقة داعمة"]
+      },
+      {
+        code:"SOC", name:"رهاب اجتماعي",
+        any:["خوف اجتماعي","خوف من تقييم الناس","احمرار خجل","تجنّب الاجتماعات"],
+        minDays:180,
+        tips:["CBT تركيز على المهارات الاجتماعية","تعريض للأداء","أحيانًا بروبرانولول للمواقف"]
+      },
+      {
+        code:"SP", name:"رُهاب محدد",
+        any:["خوف من العناكب","خوف من الطيران","خوف من الحقن","فوبيا"],
+        minDays:0,
+        tips:["تعريض ممنهج قصير المدى"]
+      },
+      {
+        code:"OCD", name:"الوسواس القهري",
+        any:["أفكار تسلطية","غسل متكرر","تفقد متكرر","طقوس","وسواس","تنظيم قهري","عدّ بالأرقام"],
+        minDays:90,
+        tips:["ERP (تعريض ومنع استجابة)","SSRI جرعات أعلى نسبيًا"]
+      },
+      {
+        code:"PTSD", name:"اضطراب ما بعد الصدمة (PTSD)",
+        any:["صدمة","كابوس","استرجاع الذكريات","تجنّب مواقف","يقظة مفرطة","فرط انتباه","خدر عاطفي"],
+        minDays:30,
+        tips:["علاج معرِّض للصدمات (TF-CBT/EMDR)","دعم اجتماعي"]
+      },
+      {
+        code:"ASD", name:"اضطراب الكرب الحاد",
+        any:["صدمة حديثة","كابوس","استرجاع","خدر"],
+        minDays:3,
+        tips:["دعم نفسي قصير المدى","متابعة لاحقة لتحوّل PTSD"]
+      },
+      {
+        code:"ADJ", name:"اضطراب تكيّف",
+        any:["حزن بعد حدث","قلق بعد حدث","صعوبة تكيّف","ضغوط حياتية"],
+        minDays:0,
+        tips:["علاج داعم قصير المدى","حل مشكلات"]
+      },
+      {
+        code:"SCHZ", name:"فصام",
+        any:["هلاوس سمعية","ضلالات","تفكك كلام","انسحاب اجتماعي","تبلد وجداني"],
+        minDays:180,
+        tips:["إحالة عاجلة لطبيب نفسي لأدوية مضادة للذهان","تأهيل اجتماعي معرفي"]
+      },
+      {
+        code:"BPDIS", name:"اضطراب ذهاني وجيز",
+        any:["هلاوس","ضلالات","تفكك","ضغط نفسي شديد"],
+        minDays:1,
+        tips:["تقييم خطر ذاتي/عدواني","مضاد ذهان قصير المدى","متابعة التحول لفصام"]
+      },
+      {
+        code:"ADHD", name:"اضطراب فرط الحركة وتشتت الانتباه (البالغين)",
+        any:["تشتت","نسيان","تأجيل","اندفاع","صعوبة تنظيم الوقت","كثرة نقر/حركة"],
+        minDays:180,
+        tips:["CBT للمهارات التنفيذية","تنظيم روتين","تقييم من اختصاصي لأدوية منبهة/بديلة"]
+      },
+      {
+        code:"INS", name:"اضطراب الأرق",
+        any:["أرق","صعوبة نوم","استيقاظ مبكر","نوم سطحي"],
+        minDays:90,
+        tips:["CBT-I","نظافة نوم","تقليل منبهات ومساء شاشة"]
+      },
+      {
+        code:"ANX", name:"فقدان الشهية العصبي",
+        any:["نقص وزن شديد","خوف من زيادة الوزن","صورة جسم مشوهة","تقييد أكل"],
+        minDays:90,
+        tips:["فريق متعدد التخصصات","خطة تغذية تدريجية","مراقبة مخاطر طبية"]
+      },
+      {
+        code:"BUL", name:"نهام عصبي",
+        any:["نهم أكل","تعويض بالقيء","ملينات","خجل من الأكل","تذبذب وزن"],
+        minDays:90,
+        tips:["CBT-E","متابعة كيمياء الدم (بوتاسيوم)"]
+      },
+      {
+        code:"BED", name:"نهم الطعام (Binge Eating)",
+        any:["أكل بكميات كبيرة","فقد السيطرة على الأكل","ندم بعد الأكل"],
+        minDays:90,
+        tips:["CBT-E","تعلم الأكل المنتظم"]
+      },
+      {
+        code:"SOM", name:"اضطراب أعراض بدنية",
+        any:["آلام متنقلة","أعراض جسدية كثيرة","فحوصات سليمة","انشغال بالصحة"],
+        minDays:180,
+        tips:["تقليل الفحوصات الزائدة","CBT للانشغال الصحي"]
+      },
+      {
+        code:"IAD", name:"قلق المرض (هيبوكوندريا)",
+        any:["خوف من المرض","تفقد جسدي مستمر","قراءة طبية مفرطة"],
+        minDays:180,
+        tips:["CBT للانشغال المرضي","اتفاق متابعة واحدة"]
+      },
+      {
+        code:"BDD", name:"اضطراب تشوه صورة الجسم",
+        any:["انشغال بعيب شكلي","تفقد المرآة","إخفاء ملامح"],
+        minDays:90,
+        tips:["CBT مع ERP","تجنّب جراحات تجميل غير لازمة"]
+      },
+      {
+        code:"DID", name:"اضطراب الهوية التفارقي",
+        any:["هويات متعددة","فجوات ذاكرة","انفصال"],
+        minDays:0,
+        tips:["إحالة اختصاصي صدمات/تفارقي"]
+      },
+      {
+        code:"DPDR", name:"اختلال الآنية/اختلال الواقع",
+        any:["شعور باللاواقعية","انفصال عن الذات","ضبابية العالم"],
+        minDays:30,
+        tips:["تقنيات تأريض","علاج قلق/اكتئاب مرافق"]
+      },
+      {
+        code:"AUD", name:"اضطراب تعاطي الكحول",
+        any:["شرب مفرط","انسحاب","رغبة قوية","فقد السيطرة","مشاكل عمل"],
+        minDays:0,
+        tips:["خطة تقليل/إيقاف","دعم أسري","أدوية مساعدة (نالتريكسون)"]
+      },
+      {
+        code:"CUD", name:"اضطراب تعاطي الحشيش",
+        any:["حشيش","قنب","استخدام يومي","نسيان","قلق/ذهان نادر"],
+        minDays:0,
+        tips:["خطة إيقاف تدريجي","CBT للإدمان"]
+      },
+      {
+        code:"OUD", name:"اضطراب تعاطي الأفيونات",
+        any:["مسكنات أفيونية","هيروين","انسحاب","تحمل"],
+        minDays:0,
+        tips:["إحالة عاجلة لبرنامج علاج دوائي (بوبرينورفين/ميثادون)"]
+      },
+      {
+        code:"STIM", name:"تعاطي المنبهات (أمفيتامين/كوكايين)",
+        any:["كبت شهية","سهر طويل","هلاوس لمسية","بارانويا","كوكايين","كبتاجون"],
+        minDays:0,
+        tips:["إيقاف ودعم انتكاس","علاج ذهاني حاد إن وجد"]
+      }
+    ];
+
+    // ======  حساب التطابق  ======
+    const text = norm(FORM.symptoms + ' ' + FORM.history);
+    const dur = FORM.duration || 0;
+
+    const scored = CATALOG.map(d => {
+      const base = 0
+        + countHits(text, d.aka?.map(norm) || [])
+        + 2*countHits(text, (d.all||[]).map(norm))
+        + countHits(text, (d.any||[]).map(norm));
+
+      let score = base;
+      if (d.exclude && hasAny(text, d.exclude.map(norm))) score -= 2;
+      if (d.minDays && dur >= d.minDays) score += 2;
+      // تطبيع بسيط
+      if (score < 0) score = 0;
+
+      const level = score >= 8 ? "strong" : score >= 4 ? "ok" : score>0 ? "weak" : "weak";
+      return { ...d, score, level };
+    })
+    .filter(x => x.score>0)
+    .sort((a,b)=> b.score - a.score)
+    .slice(0, 6);
+
+    const out = document.getElementById('out');
+    if (!scored.length) {
+      out.innerHTML = `
+        <div class="result">
+          <h3>لا توجد مؤشرات كافية لتشخيص محدد.</h3>
+          <p class="notes">جرب وصف الأعراض بمزيد من التفاصيل (المدة، الشدة، المواقف، المحفزات)،
+          أو أعد المحاولة بعد استشارة متخصّص.</p>
+        </div>`;
+    } else {
+      out.innerHTML = '<h2 style="margin:10px 0">أقرب الترشيحات</h2>' +
+        scored.map(d => `
           <div class="result">
-            <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
-              <div><b>{{ r.name }}</b> <span class="muted">({{ r.group }})</span></div>
-              <div class="muted">درجة الثقة</div>
-            </div>
-            <div class="bar"><i style="width: {{ (r.score * 100)|round(0) }}%"></i></div>
-            <div class="muted" style="margin-top:6px">
-              أعراض مطابقة: {{ r.met }} • الحد الأدنى: {{ r.min_required }}
-              {% if r.duration_required %} • المدة الموصى بها ≥ {{ r.duration_required }} يوم{% endif %}
-            </div>
-            {% if r.matched_keys and r.matched_keys|length > 0 %}
-              <div style="margin-top:6px">
-                {% for k in r.matched_keys[:8] %}
-                  <span class="pill">{{ k }}</span>
-                {% endfor %}
-              </div>
-            {% endif %}
-            {% if r.red_flags and r.red_flags|length > 0 %}
-              <div class="warn" style="margin-top:6px">⚠️ مؤشرات خطورة: {{ r.red_flags|join("، ") }}</div>
-            {% endif %}
-            {% if r.tips and r.tips|length > 0 %}
-              <div class="note" style="margin-top:6px">اقتراحات: {{ r.tips|join(" — ") }}</div>
-            {% endif %}
+            <h3>${d.name}
+              <span class="badge ${d.level}">
+                ${d.level==='strong'?'تطابق قوي': d.level==='ok'?'متوسط':'ضعيف'}
+              </span>
+              <span class="badge">الدرجة: ${d.score}</span>
+            </h3>
+            ${d.aka?.length? `<div class="muted">مرادفات: <span class="code">${d.aka.join('، ')}</span></div>`:''}
+            ${d.minDays? `<div class="muted">تقوى الشبهة إذا استمرت الأعراض ≥ ${d.minDays} يومًا.</div>`:''}
+            ${d.tips?.length? `<div class="notes"><b>مقترحات أولية:</b><ul class="list">
+               ${d.tips.map(t=>`<li>${t}</li>`).join('')}
+            </ul></div>`:''}
           </div>
-        {% endfor %}
-      {% else %}
-        <div class="subtle">لا توجد أعراض كافية لإظهار تشخيص محتمل. يرجى توضيح الأعراض بشكل أكبر.</div>
-      {% endif %}
-      <p class="note" style="margin-top:10px">
-        هذه النتائج إرشادية وفق قواعد سريرية مبسطة، ولا تغني عن التقييم الطبي المتخصص.
-      </p>
-    </div>
+        `).join('');
+    }
 
-  </div>
+    // ملاحظة نهائية
+    out.insertAdjacentHTML('beforeend', `
+      <div class="pill muted" style="margin-top:8px">
+        ⚠️ هذه نتيجة آلية تقريبية مبنية على مطابقة الكلمات والمدة؛ لا تُعد تشخيصًا نهائيًا.
+        للتأكيد، يُفضّل مقابلة طبيب/أخصائي. يمكن ربط النتائج مع
+        <a href="{{ url_for('cbt') }}" class="btn ghost" style="margin-inline:6px">CBT</a>
+        أو إجراء <a href="{{ url_for('tests') }}" class="btn ghost" style="margin-inline:6px">اختبارات مساندة</a>.
+      </div>
+    `);
+  </script>
 </body>
 </html>
