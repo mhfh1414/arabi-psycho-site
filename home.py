@@ -1,155 +1,474 @@
-# -*- coding: utf-8 -*-
-from flask import url_for, render_template_string
-
-# حدّث روابط التواصل:
-WA_LINK   = "https://wa.me/9665XXXXXXXX"         # رقم واتساب بصيغة دولية
-TG_LINK   = "https://t.me/USERNAME"              # يوزر تيليجرام
-EMAIL_LINK= "mailto:info@arabipsycho.com"        # بريد إلكتروني
-
-def render_home():
-    html = """
-    <!doctype html>
-    <html lang="ar" dir="rtl">
-    <head>
-      <meta charset="utf-8">
-      <title>عربي سايكو | الرئيسية</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1"/>
-      <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;800&display=swap" rel="stylesheet">
-      <style>
-        :root{
-          --bg1:#0b3a75; --bg2:#0a65b0; --gold:#f4b400; --ink:#0a1330; --muted:#cfe0ff; --glass:rgba(255,255,255,.06);
-        }
-        *{box-sizing:border-box}
-        body{
-          margin:0; font-family:"Tajawal",system-ui; -webkit-font-smoothing:antialiased;
-          background:
-            radial-gradient(1200px 600px at 80% -10%, #1a4bbd22, transparent),
-            linear-gradient(135deg,var(--bg1),var(--bg2));
-          color:#fff;
-        }
-        .wrap{max-width:1240px; margin:auto; padding:28px 20px}
-        header{
-          display:flex; align-items:center; justify-content:space-between; gap:16px;
-          position:sticky; top:0; z-index:10; backdrop-filter:blur(6px);
-          background:linear-gradient(180deg, rgba(7,19,56,.35), transparent 80%);
-          padding-bottom:8px;
-        }
-        .brand{display:flex; align-items:center; gap:14px}
-        .badge{
-          width:56px; height:56px; border-radius:16px; background:#0d2c54;
-          border:1px solid #ffffff33; display:grid; place-items:center; font-weight:800; letter-spacing:.5px;
-          box-shadow:0 8px 24px rgba(0,0,0,.25), inset 0 0 0 1px #ffffff22;
-        }
-        .title{margin:0; font-size:32px; line-height:1}
-        .subtitle{margin:.25rem 0 0; color:var(--muted)}
-        .actions{display:flex; align-items:center; gap:10px}
-        .iconbtn{
-          display:inline-flex; align-items:center; justify-content:center; gap:8px;
-          text-decoration:none; color:#fff; padding:10px 12px; border-radius:12px;
-          border:1px solid #ffffff22; background:var(--glass);
-          transition:.2s ease; min-width:44px;
-        }
-        .iconbtn:hover{background:rgba(255,255,255,.12); transform:translateY(-1px)}
-        .ico{width:18px; height:18px; display:inline-block; vertical-align:middle}
-        .hero{
-          margin:22px 0 26px; padding:22px;
-          background:var(--glass); border:1px solid #ffffff22; border-radius:18px; backdrop-filter:blur(6px);
-        }
-        .btn{
-          display:inline-flex; align-items:center; gap:10px; text-decoration:none; font-weight:800;
-          background:linear-gradient(180deg,#ffd86a,#f4b400); color:#2b1b02;
-          padding:14px 18px; border-radius:14px; box-shadow:0 6px 18px rgba(244,180,0,.28);
-          transition:.2s ease;
-        }
-        .btn:hover{filter:brightness(1.04); transform:translateY(-1px)}
-        .btn--alt{
-          background:linear-gradient(180deg,#9cc5ff,#63a4ff); color:#04122c; box-shadow:0 6px 18px rgba(60,130,255,.28);
-        }
-        .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
-        @media (max-width:1020px){ .grid{grid-template-columns:1fr} }
-        .card{
-          background:var(--glass); border:1px solid #ffffff22; border-radius:16px; padding:18px;
-          backdrop-filter:blur(6px); box-shadow:0 10px 26px rgba(0,0,0,.18);
-        }
-        .card h3{margin:0 0 8px}
-        .card p{margin:0 0 12px; color:#dbe9ff}
-        footer{
-          margin-top:26px; display:flex; justify-content:space-between; gap:12px; color:#cfe0ff; opacity:.9;
-          border-top:1px dashed #ffffff2a; padding-top:14px; font-size:.95rem;
-        }
-        .right-align{ text-align:right }
-      </style>
-    </head>
-    <body>
-      <div class="wrap">
-        <!-- الهيدر: الشعار على اليمين + أيقونات التواصل -->
-        <header>
-          <div class="brand right-align">
-            <div class="badge">AS</div>
-            <div>
-              <h1 class="title">عربي سايكو</h1>
-              <p class="subtitle">مركز عربي سايكو يرحّب بكم — نخدمك أينما كنت</p>
-            </div>
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>عربي سايكو | المركز العربي للصحة النفسية</title>
+  <meta name="description" content="مركز عربي سايكو للصحة النفسية - نقدم خدمات التشخيص، العلاج السلوكي المعرفي، وعلاج الإدمان بأعلى معايير الجودة">
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-blue: #0a3a75;
+      --secondary-blue: #0a65b0;
+      --dark-blue: #0a1330;
+      --gold: #f4b400;
+      --light-gold: #ffd86a;
+      --light-blue: #cfe0ff;
+      --white: #ffffff;
+      --glass: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --transition: all 0.3s ease;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Tajawal', sans-serif;
+      background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+      color: var(--white);
+      line-height: 1.6;
+      overflow-x: hidden;
+      background-attachment: fixed;
+    }
+    
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    
+    /* تحسين الهيدر */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+      background: rgba(7, 19, 56, 0.7);
+      padding: 15px 0;
+      border-bottom: 1px solid var(--glass-border);
+    }
+    
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .logo-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 15px;
+      background: linear-gradient(145deg, var(--dark-blue), var(--primary-blue));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 24px;
+      color: var(--gold);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--glass-border);
+    }
+    
+    .logo-text h1 {
+      font-size: 28px;
+      margin-bottom: 5px;
+      background: linear-gradient(to right, var(--light-gold), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .logo-text p {
+      font-size: 14px;
+      color: var(--light-blue);
+      margin: 0;
+    }
+    
+    /* تحسين قائمة التنقل */
+    .nav-links {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: var(--white);
+      padding: 10px 18px;
+      border-radius: 12px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      transition: var(--transition);
+      font-weight: 500;
+    }
+    
+    .nav-link:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .nav-link i {
+      font-size: 18px;
+    }
+    
+    /* تحسين قسم الهيرو */
+    .hero {
+      padding: 60px 0;
+      text-align: center;
+    }
+    
+    .hero-content {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .hero h2 {
+      font-size: 2.8rem;
+      margin-bottom: 20px;
+      line-height: 1.3;
+    }
+    
+    .hero p {
+      font-size: 1.2rem;
+      color: var(--light-blue);
+      margin-bottom: 40px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .cta-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      font-weight: 700;
+      padding: 16px 28px;
+      border-radius: 14px;
+      transition: var(--transition);
+      font-size: 1.1rem;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(145deg, var(--light-gold), var(--gold));
+      color: #2b1b02;
+      box-shadow: 0 6px 20px rgba(244, 180, 0, 0.3);
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(244, 180, 0, 0.4);
+    }
+    
+    .btn-secondary {
+      background: linear-gradient(145deg, #9cc5ff, #63a4ff);
+      color: #04122c;
+      box-shadow: 0 6px 20px rgba(60, 130, 255, 0.3);
+    }
+    
+    .btn-secondary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(60, 130, 255, 0.4);
+    }
+    
+    /* تحسين البطاقات */
+    .features {
+      padding: 60px 0;
+    }
+    
+    .section-title {
+      text-align: center;
+      font-size: 2.2rem;
+      margin-bottom: 50px;
+      position: relative;
+      padding-bottom: 15px;
+    }
+    
+    .section-title:after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 50%;
+      transform: translateX(50%);
+      width: 80px;
+      height: 4px;
+      background: linear-gradient(to right, var(--light-gold), var(--gold));
+      border-radius: 2px;
+    }
+    
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+    }
+    
+    .card {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      padding: 25px;
+      backdrop-filter: blur(6px);
+      transition: var(--transition);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .card-icon {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      color: var(--gold);
+    }
+    
+    .card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+    }
+    
+    .card p {
+      color: var(--light-blue);
+      margin-bottom: 20px;
+      flex-grow: 1;
+    }
+    
+    .card .btn {
+      align-self: flex-start;
+      margin-top: auto;
+    }
+    
+    /* قسم الخدمات */
+    .services {
+      padding: 60px 0;
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 30px;
+      margin: 40px 0;
+    }
+    
+    /* الفوتر */
+    footer {
+      background: rgba(7, 19, 56, 0.8);
+      padding: 40px 0 20px;
+      margin-top: 60px;
+      border-top: 1px solid var(--glass-border);
+    }
+    
+    .footer-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    
+    .copyright {
+      color: var(--light-blue);
+    }
+    
+    .design-credit {
+      color: var(--light-blue);
+      font-size: 0.9rem;
+    }
+    
+    /* تأثيرات للعناصر */
+    .floating {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+    
+    /* responsiveness */
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        gap: 20px;
+      }
+      
+      .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .hero h2 {
+        font-size: 2rem;
+      }
+      
+      .hero p {
+        font-size: 1rem;
+      }
+      
+      .cta-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .footer-content {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">
+          <div class="logo-icon">AS</div>
+          <div class="logo-text">
+            <h1>عربي سايكو</h1>
+            <p>المركز العربي للصحة النفسية</p>
           </div>
-          <nav class="actions">
-            <a class="iconbtn" href="{{ url_for('contact_whatsapp') }}" title="واتساب">
-              <!-- WhatsApp SVG -->
-              <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M20 3.9A10 10 0 0 0 3.5 17.4L3 21l3.7-.9A10 10 0 1 0 20 3.9Zm-8 17a8.4 8.4 0 0 1-4.3-1.2l-.3-.2-2.5.6.5-2.4-.2-.3A8.5 8.5 0 1 1 12 20.9Zm4.7-6.3-.6-.3c-.3-.1-1.8-.9-2-.9s-.5-.1-.7.3-.8.9-.9 1-.3.2-.6.1a7 7 0 0 1-2-1.2 7.4 7.4 0 0 1-1.4-1.7c-.1-.2 0-.4.2-.5l.5-.6.2-.3v-.3l-.1-.3-1-2c-.2-.6-.5-.5-.7-.5h-.6l-.3.1a1.4 1.4 0 0 0-.4 1.1 4.9 4.9 0 0 0 1 2.4 11.2 11.2 0 0 0 4.3 4 4.8 4.8 0 0 0 2.8.9c.6 0 1.2 0 1.7-.3a3.8 3.8 0 0 0 1.3-1 .9.9 0 0 0 .2-1c-.1-.2-.5-.3-.8-.5Z"/>
-              </svg>
-              <span>واتساب</span>
-            </a>
-            <a class="iconbtn" href="{{ url_for('contact_telegram') }}" title="تلجرام">
-              <!-- Telegram SVG -->
-              <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M9.1 16.3 8.9 20c.4 0 .6-.2.9-.4l2.1-2 4.3 3.1c.8.5 1.4.3 1.6-.8l2.9-13.4c.3-1.2-.4-1.7-1.2-1.4L2.8 9.7c-1.1.4-1.1 1.1-.2 1.4l4.3 1.3 10-6.3c.5-.3.9-.1.5.2l-8.1 7- .2 0Z"/>
-              </svg>
-              <span>تلجرام</span>
-            </a>
-            <a class="iconbtn" href="{{ url_for('contact_email') }}" title="إيميل">
-              <!-- Mail SVG -->
-              <svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5v2Z"/>
-              </svg>
-              <span>إيميل</span>
-            </a>
-          </nav>
-        </header>
-
-        <!-- هيرو: أزرار كبيرة واضحة للأقسام -->
-        <section class="hero">
-          <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:flex-start">
-            <a class="btn" href="{{ url_for('dsm') }}">🗂️ دراسة الحالة + التشخيص (DSM)</a>
-            <a class="btn btn--alt" href="{{ url_for('cbt') }}">💡 العلاج السلوكي المعرفي + الاختبارات</a>
-            <a class="btn" href="{{ url_for('addiction') }}">🚭 علاج الإدمان</a>
-          </div>
-        </section>
-
-        <!-- بطاقات تعريفية -->
-        <section class="grid">
-          <div class="card">
-            <h3>📖 DSM-5</h3>
-            <p>قاعدة اضطرابات موسّعة + مطابقة كلمات لنتيجة تقديرية فورية عبر دراسة حالة.</p>
-            <a class="btn" href="{{ url_for('dsm') }}">ابدأ الآن</a>
-          </div>
-          <div class="card">
-            <h3>🧪 الاختبارات + CBT</h3>
-            <p>PHQ-9 | GAD-7 | PCL-5 | Big Five — تُسند خطة CBT الأولية بناءً على النتائج.</p>
-            <a class="btn btn--alt" href="{{ url_for('cbt') }}">افتح لوحة الاختبارات</a>
-          </div>
-          <div class="card">
-            <h3>🚭 علاج الإدمان</h3>
-            <p>تقييم أولي لمسار آمن + خطة علاجية وإحالة طبية عند الحاجة.</p>
-            <a class="btn" href="{{ url_for('addiction') }}">ابدأ التقييم</a>
-          </div>
-        </section>
-
-        <footer>
-          <div>© {{ year }} عربي سايكو — جميع الحقوق محفوظة</div>
-          <div>واجهة مُحسّنة بأزرق/ذهبي — تصميم رشيق يمنح هيبة وثقة</div>
-        </footer>
+        </div>
+        
+        <nav class="nav-links">
+          <a href="{{ url_for('contact_whatsapp') }}" class="nav-link">
+            <i class="fab fa-whatsapp"></i>
+            <span>واتساب</span>
+          </a>
+          <a href="{{ url_for('contact_telegram') }}" class="nav-link">
+            <i class="fab fa-telegram"></i>
+            <span>تلجرام</span>
+          </a>
+          <a href="{{ url_for('contact_email') }}" class="nav-link">
+            <i class="far fa-envelope"></i>
+            <span>إيميل</span>
+          </a>
+        </nav>
       </div>
-    </body>
-    </html>
-    """
-    return render_template_string(html, year=2025)
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <div class="hero-content">
+          <h2>رعاية نفسية متكاملة <br>بمعايير عالمية وبلغة عربية</h2>
+          <p>نقدم خدمات التشخيص الدقيق، العلاج السلوكي المعرفي، وبرامج علاج الإدمان بأعلى معايير الجودة والسرية</p>
+          
+          <div class="cta-buttons">
+            <a href="{{ url_for('dsm') }}" class="btn btn-primary">
+              <i class="fas fa-book-medical"></i>
+              ابدأ التشخيص الآن
+            </a>
+            <a href="{{ url_for('contact_whatsapp') }}" class="btn btn-secondary">
+              <i class="fas fa-headset"></i>
+              احجز استشارة
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="features">
+      <div class="container">
+        <h2 class="section-title">خدماتنا المتخصصة</h2>
+        
+        <div class="cards-grid">
+          <div class="card floating">
+            <div class="card-icon">📖</div>
+            <h3>التشخيص وفق DSM-5</h3>
+            <p>نظام متكامل للتشخيص الدقيق وفق الدليل التشخيصي والإحصائي للاضطرابات النفسية، مع تحليل شامل للحالة وتقديم تقرير مفصل.</p>
+            <a href="{{ url_for('dsm') }}" class="btn btn-primary">ابدأ التشخيص</a>
+          </div>
+          
+          <div class="card floating" style="animation-delay: 0.5s;">
+            <div class="card-icon">🧠</div>
+            <h3>العلاج السلوكي المعرفي</h3>
+            <p>برامج علاجية متكاملة تشمل الاختبارات النفسية المعتمدة (PHQ-9, GAD-7, PCL-5) وتقنيات CBT المبنية على الأدلة العلمية.</p>
+            <a href="{{ url_for('cbt') }}" class="btn btn-primary">اكتشف المزيد</a>
+          </div>
+          
+          <div class="card floating" style="animation-delay: 1s;">
+            <div class="card-icon">🚭</div>
+            <h3>علاج الإدمان</h3>
+            <p>برامج متخصصة للتقييم والعلاج والتأهيل من الإدمان، مع خطط فردية ومتابعة مستمرة لضمان التعافي المستدام.</p>
+            <a href="{{ url_for('addiction') }}" class="btn btn-primary">ابدأ التقييم</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="services">
+      <div class="container">
+        <h2 class="section-title">لماذا تختار عربي سايكو؟</h2>
+        
+        <div class="cards-grid">
+          <div class="card">
+            <i class="fas fa-shield-alt card-icon"></i>
+            <h3>سرية تامة</h3>
+            <p>نضمن حماية كاملة لبياناتك وجلساتك بمعايير أمنية عالية المستوى.</p>
+          </div>
+          
+          <div class="card">
+            <i class="fas fa-certificate card-icon"></i>
+            <h3>كفاءة علمية</h3>
+            <p>فريق مختص من الأطباء والمعالجين النفسيين معتمد وذو خبرة واسعة.</p>
+          </div>
+          
+          <div class="card">
+            <i class="fas fa-globe card-icon"></i>
+            <h3>خدمة عن بعد</h3>
+            <p>احصل على خدماتنا من أي مكان في العالم عبر منصات التواصل الآمن.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="copyright">© {{ year }} عربي سايكو — جميع الحقوق محفوظة</div>
+        <div class="design-credit">تصميم يوحّد بين الأصالة العربية والحداثة — لرعاية نفسية بأعلى معايير الجودة</div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // تأثيرات تفاعلية بسيطة
+    document.addEventListener('DOMContentLoaded', function() {
+      const cards = document.querySelectorAll('.card');
+      
+      cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+          this.style.transform = 'translateY(-10px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+          this.style.transform = 'translateY(0)';
+        });
+      });
+    });
+  </script>
+</body>
+</html>
