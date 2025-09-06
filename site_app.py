@@ -1,50 +1,66 @@
-from flask import Flask, render_template, request, redirect, url_for
+body {
+  font-family: 'Tajawal', sans-serif;
+  background: linear-gradient(135deg, #0b1437, #1e2a78);
+  color: white;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
 
-app = Flask(__name__)
+header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+}
 
-@app.route("/")
-def home():
-    return render_template("index.html")
+.logo {
+  height: 60px;
+}
 
-# المسار الموحد لدراسة الحالة + DSM
-@app.route("/case_dsm", methods=["GET","POST"])
-def case_dsm():
-    if request.method == "POST":
-        payload = {
-            "full_name": request.form.get("full_name",""),
-            "age": request.form.get("age",""),
-            "gender": request.form.get("gender",""),
-            "duration_days": request.form.get("duration_days",""),
-            "symptoms": request.form.get("symptoms",""),
-            "history": request.form.get("history",""),
-        }
-        return render_template("case_dsm.html", **payload)
-    return render_template("case_dsm.html")
+h1 {
+  margin: 0;
+  font-size: 32px;
+  color: gold;
+}
 
-# تحويل قديم لو حاول أحد يدخل /case_study
-@app.route("/case_study", methods=["GET","POST"])
-def case_study_legacy():
-    return redirect(url_for("case_dsm"), code=301)
+.tag {
+  font-size: 14px;
+  opacity: 0.9;
+}
 
-@app.route("/tests")
-def tests():
-    return render_template("tests.html")
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+  margin: 30px;
+}
 
-@app.route("/cbt")
-def cbt():
-    return render_template("cbt.html")
+.tile {
+  background: #1e2a78;
+  padding: 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #fff;
+  font-weight: bold;
+  transition: transform 0.2s, background 0.2s;
+}
 
-@app.route("/addiction")
-def addiction():
-    return render_template("addiction.html")
+.tile:hover {
+  transform: translateY(-5px);
+  background: #2d3a9c;
+}
 
-@app.route("/request_doctor")
-def request_doctor():
-    return render_template("request_doctor.html")
+.tile.gold {
+  background: gold;
+  color: #222;
+}
 
-@app.route("/request_specialist")
-def request_specialist():
-    return render_template("request_specialist.html")
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+.footer {
+  margin-top: 40px;
+  padding: 15px;
+  font-size: 14px;
+  background: #0b1437;
+  opacity: .9;
+}
