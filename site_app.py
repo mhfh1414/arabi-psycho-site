@@ -6,23 +6,25 @@ app = Flask(__name__)
 def home():
     return render_template("index.html")
 
-@app.route("/case_study", methods=["GET", "POST"])
-def case_study():
+# المسار الموحد لدراسة الحالة + DSM
+@app.route("/case_dsm", methods=["GET","POST"])
+def case_dsm():
     if request.method == "POST":
         payload = {
-            "full_name": request.form.get("full_name","").strip(),
-            "age": request.form.get("age","").strip(),
-            "gender": request.form.get("gender","").strip(),
-            "duration_days": request.form.get("duration_days","").strip(),
-            "symptoms": request.form.get("symptoms","").strip(),
-            "history": request.form.get("history","").strip(),
+            "full_name": request.form.get("full_name",""),
+            "age": request.form.get("age",""),
+            "gender": request.form.get("gender",""),
+            "duration_days": request.form.get("duration_days",""),
+            "symptoms": request.form.get("symptoms",""),
+            "history": request.form.get("history",""),
         }
-        return render_template("dsm.html", **payload)
-    return render_template("case_study.html")
+        return render_template("case_dsm.html", **payload)
+    return render_template("case_dsm.html")
 
-@app.route("/dsm")
-def dsm():
-    return render_template("dsm.html")
+# تحويل قديم لو حاول أحد يدخل /case_study
+@app.route("/case_study", methods=["GET","POST"])
+def case_study_legacy():
+    return redirect(url_for("case_dsm"), code=301)
 
 @app.route("/tests")
 def tests():
