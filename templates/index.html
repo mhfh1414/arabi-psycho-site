@@ -1,31 +1,33 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>مركز عربي سايكو</title>
+  <meta charset="UTF-8" />
+  <title>عربي سايكو</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
-<body class="bg">
-  <header class="hero">
-    <div class="brand">
-      <img src="{{ url_for('static', filename='logo.png') }}" alt="ArabiPsycho" class="logo">
+<body class="hero">
+  <header class="brand">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Arabipsycho" class="logo">
+    <div>
       <h1>عربي سايكو</h1>
-      <p>مركز عربي سايكو يرحّب بكم • نخدمك أينما كنت</p>
+      <p class="tag">مركز عربي سايكو يرحّب بكم — نخدمك أينما كنت</p>
     </div>
   </header>
 
   <main class="grid">
-    <a class="card gold" href="{{ url_for('case_study') }}">📝 دراسة حالة</a>
-    <a class="card" href="{{ url_for('dsm') }}">📖 الأمراض النفسية (DSM-5)</a>
-    <a class="card" href="{{ url_for('tests') }}">🧪 الاختبارات النفسية والشخصية</a>
-    <a class="card" href="{{ url_for('cbt') }}">💡 العلاج السلوكي المعرفي (CBT)</a>
-    <a class="card" href="{{ url_for('addiction') }}">🚭 علاج الإدمان</a>
-    <a class="card" href="{{ url_for('request_specialist') }}">👨‍💼 طلب الأخصائي النفسي</a>
-    <a class="card" href="{{ url_for('request_doctor') }}">👨‍⚕️ طلب الطبيب</a>
+    <a class="tile gold" href="{{ url_for('case_study') }}">📝 دراسة حالة</a>
+    <a class="tile" href="{{ url_for('dsm') }}">📖 الأمراض النفسية (DSM-5)</a>
+    <a class="tile" href="{{ url_for('tests') }}">🧪 الاختبارات النفسية والشخصية</a>
+    <a class="tile" href="{{ url_for('cbt') }}">💡 العلاج السلوكي المعرفي (CBT)</a>
+    <a class="tile" href="{{ url_for('addiction') }}">🚭 علاج الإدمان</a>
+    <a class="tile" href="{{ url_for('request_doctor') }}">👨‍⚕️ طلب الطبيب</a>
+    <a class="tile" href="{{ url_for('request_specialist') }}">👨‍💼 طلب الأخصائي النفسي</a>
   </main>
 
-  <footer class="foot">
-    <span>تواصل معنا: واتساب | تليجرام</span>
+  <footer class="footer">
+    <span>تواصل معنا: </span>
+    <a href="https://t.me/arabipsycho" target="_blank" rel="noopener">تلغرام</a> ·
+    <a href="https://wa.me/0000000000" target="_blank" rel="noopener">واتساب</a>
   </footer>
 </body>
 </html>
