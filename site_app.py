@@ -9,22 +9,19 @@ def home():
 @app.route("/case_study", methods=["GET", "POST"])
 def case_study():
     if request.method == "POST":
-        # نجمع البيانات ونمررها لصفحة DSM (العرض والتحليل)
         payload = {
-            "full_name": request.form.get("full_name",""),
-            "age": request.form.get("age",""),
-            "gender": request.form.get("gender",""),
-            "duration_days": request.form.get("duration_days",""),
+            "full_name": request.form.get("full_name","").strip(),
+            "age": request.form.get("age","").strip(),
+            "gender": request.form.get("gender","").strip(),
+            "duration_days": request.form.get("duration_days","").strip(),
             "symptoms": request.form.get("symptoms","").strip(),
             "history": request.form.get("history","").strip(),
         }
-        # نرسلها إلى dsm.html لعرض التشخيص (DSM الكبير الحالي)
         return render_template("dsm.html", **payload)
     return render_template("case_study.html")
 
 @app.route("/dsm")
 def dsm():
-    # إبقاء كتالوج DSM كما هو (لا نحذف شيء)
     return render_template("dsm.html")
 
 @app.route("/tests")
@@ -48,4 +45,4 @@ def request_specialist():
     return render_template("request_specialist.html")
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    app.run(host="0.0.0.0", port=5000)
