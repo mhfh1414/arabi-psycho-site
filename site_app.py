@@ -1,9 +1,9 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 import re
 
 app = Flask(__name__)
 
-# ===== قاعدة DSM مبسطة وموسعة (يمكن إضافة كلمات بلا حد) =====
+# ===================== قاعدة DSM المبسّطة/الموسّعة =====================
 DSM_DB = {
     # اضطرابات المزاج
     "اضطراب اكتئابي جسيم": [
@@ -81,15 +81,16 @@ DSM_DB = {
     "توريت/عرّات": ["عرات","حركات لا إرادية","أصوات لا إرادية","تفريغ توتر"]
 }
 
-# تبسيط نص عربي (اختياري وخفيف)
 def normalize(s: str) -> str:
+    """تبسيط خفيف للنص العربي ليتحمل اختلافات الكتابة."""
     s = s.strip()
     s = re.sub(r"[ًٌٍَُِّْـ]", "", s)   # حذف الحركات
     s = s.replace("أ","ا").replace("إ","ا").replace("آ","ا").replace("ة","ه").replace("ى","ي")
     return s
 
 def score_diagnoses(symptoms_text: str):
-    text = normalize(symptoms_text)
+    """تحويل وصف الأعراض إلى قائمة تشخيصات مرتّبة حسب التطابق."""
+    text = normalize(symptoms_text or "")
     scores = {}
     for disorder, keywords in DSM_DB.items():
         sc = 0
@@ -98,43 +99,79 @@ def score_diagnoses(symptoms_text: str):
                 sc += 1
         if sc:
             scores[disorder] = sc
-    ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-    return ranked
+    return sorted(scores.items(), key=lambda x: x[1], reverse=True)
 
-# ===== المسارات =====
+# =========================== المسارات ===========================
 @app.route("/")
-def home():
-    # واجهة بسيطة تقود إلى الصفحة الموحدة
+@app.route("/index")
+def index():
+    """الواجهة الرئيسية الأزرق/ذهبي."""
     return render_template("index.html")
 
+# صفحة موحّدة: نموذج دراسة حالة + تشخيص DSM
 @app.route("/dsm", methods=["GET", "POST"])
 def dsm():
     if request.method == "POST":
-        name     = request.form.get("name","")
-        age      = request.form.get("age","")
-        gender   = request.form.get("gender","")
-        duration = request.form.get("duration","")
-        symptoms = request.form.get("symptoms","")
-        history  = request.form.get("history","")
+        name     = request.form.get("name","").strip()
+        age      = request.form.get("age","").strip()
+        gender   = request.form.get("gender","").strip()
+        duration = request.form.get("duration","").strip()
+        symptoms = request.form.get("symptoms","").strip()
+        history  = request.form.get("history","").strip()
 
         ranked = score_diagnoses(symptoms)
         if ranked:
-            # أفضل 3
             top = [f"{d} <span class='badge ok'>مطابقة تقريبية ({pts})</span>" for d, pts in ranked[:3]]
-            details = "<br>".join(top)
-            diagnosis = f"<strong>أقرب التشخيصات:</strong><br>{details}"
+            diagnosis_html = "<strong>أقرب التشخيصات:</strong><br>" + "<br>".join(top)
         else:
-            diagnosis = "<span class='badge warn'>لا توجد أعراض كافية للتشخيص وفق القاموس المبسّط.</span>"
+            diagnosis_html = "<span class='badge warn'>لا توجد أعراض كافية للتشخيص وفق القاموس المبسّط.</span>"
 
-        return render_template("dsm.html",
-                               name=name, age=age, gender=gender, duration=duration,
-                               symptoms=symptoms, history=history, diagnosis=diagnosis)
+        return render_template(
+            "dsm.html",
+            name=name, age=age, gender=gender, duration=duration,
+            symptoms=symptoms, history=history, diagnosis=diagnosis_html
+        )
+    # GET: عرض النموذج
     return render_template("dsm.html")
 
-# واجهة رئيسية جميلة (أزرق/ذهبي) تربط DSM
-@app.route("/index")
-def index_alias():
-    return render_template("index.html")
+# توافق خلفي: أي روابط قديمة
+@app.route("/case_study")
+@app.route("/case_dsm")
+@app.route("/dsm.html")
+def legacy_to_dsm():
+    return redirect(url_for("dsm"))
 
+# بقية الصفحات (لمنع BuildError في الروابط)
+@app.route("/tests")
+def tests():
+    return render_template("tests.html")
+
+@app.route("/cbt")
+def cbt():
+    return render_template("cbt.html")
+
+@app.route("/addiction")
+def addiction():
+    return render_template("addiction.html")
+
+@app.route("/request_doctor")
+def request_doctor():
+    return render_template("request_doctor.html")
+
+@app.route("/request_specialist")
+def request_specialist():
+    return render_template("request_specialist.html")
+
+# ======================== معالجات الأخطاء ========================
+@app.errorhandler(404)
+def not_found(e):
+    return render_template("error.html", code=404, message="الصفحة غير موجودة."), 404
+
+@app.errorhandler(500)
+def server_error(e):
+    return render_template("error.html", code=500, message="خطأ داخلي في الخادم."), 500
+
+# =========================== التشغيل ===========================
 if __name__ == "__main__":
+    # في Render سيُستخدم gunicorn؛ هذا فقط للتجربة محليًا
     app.run(host="0.0.0.0", port=10000)
