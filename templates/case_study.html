@@ -5,47 +5,45 @@
   <title>دراسة حالة — شخص نفسك</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
-<body class="bg">
-  <header class="hero small">
-    <h2>🧾 دراسة حالة — شخص نفسك</h2>
-    <p>املأ الحقول بدقّة، وسيقوم النظام بربط حالتك بـ DSM-5 وعرض التشخيص المحتمل.</p>
+<body class="hero">
+  <header class="center">
+    <h2>🗂️ دراسة حالة — شخص نفسك</h2>
+    <p class="sub">املأ البيانات التالية ليقوم النظام بتحليل حالتك وربطها مع DSM-5</p>
   </header>
 
-  <main class="form-wrap">
-    <form method="post" class="form">
-      <label>الاسم الكامل:
-        <input name="full_name" placeholder="مثال: أحمد محمد">
-      </label>
+  <form action="{{ url_for('case_study') }}" method="post" class="card small">
+    <label>الاسم الكامل:
+      <input name="full_name" placeholder="مثال: خالد أحمد محمد">
+    </label>
 
-      <div class="row">
-        <label>العمر:
-          <input name="age" placeholder="مثال: 30">
-        </label>
-        <label>الجنس:
-          <select name="gender">
-            <option value="">— اختر —</option>
-            <option>ذكر</option>
-            <option>أنثى</option>
-          </select>
-        </label>
-        <label>مدة الأعراض (بالأيام):
-          <input name="duration_days" placeholder="مثال: 30">
-        </label>
-      </div>
+    <label>العمر:
+      <input name="age" type="number" min="1" max="120" placeholder="مثال: 30">
+    </label>
 
-      <label>الأعراض (أضِف بدقّة):
-        <textarea name="symptoms" rows="5" placeholder="مثال: قلق مفرط، نوبات هلع، أفكار سلبية..."></textarea>
-      </label>
+    <label>الجنس:
+      <select name="gender">
+        <option value="" selected>— اختر —</option>
+        <option>ذكر</option>
+        <option>أنثى</option>
+      </select>
+    </label>
 
-      <label>التاريخ الطبي/النَّفسي (اختياري):
-        <textarea name="history" rows="4" placeholder="عمليات سابقة، أدوية، حساسيّات، إصابات، أحداث صادمة..."></textarea>
-      </label>
+    <label>مدة الأعراض (بالأيام):
+      <input name="duration_days" type="number" min="0" placeholder="مثال: 30">
+    </label>
 
-      <div class="actions">
-        <a class="btn ghost" href="{{ url_for('home') }}">الرجوع للرئيسية</a>
-        <button class="btn primary" type="submit">متابعة إلى DSM-5</button>
-      </div>
-    </form>
-  </main>
+    <label>الأعراض (أضف بدقّة):
+      <textarea name="symptoms" rows="5" placeholder="مثال: حزن، قلق، نوبات هلع، أفكار سلبية..."></textarea>
+    </label>
+
+    <label>التاريخ الطبي/النفسي (اختياري):
+      <textarea name="history" rows="4" placeholder="أدوية حالية، عمليات سابقة، أمراض مزمنة..."></textarea>
+    </label>
+
+    <div class="actions">
+      <a class="btn ghost" href="{{ url_for('home') }}">العودة للرئيسية</a>
+      <button class="btn" type="submit">متابعة إلى DSM</button>
+    </div>
+  </form>
 </body>
 </html>
