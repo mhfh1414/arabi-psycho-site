@@ -1,39 +1,22 @@
 # -*- coding: utf-8 -*-
-# site_app.py — ملف التشغيل الرئيسي لمشروع عربي سايكو
+# site_app.py — ملف التشغيل الرئيسي
 
-from flask import Flask, redirect
-
-# استيراد الوحدات (كل وحدة لها ملف خاص)
-import home                   # الواجهة الرئيسية
-import dsm_suite as dsm       # DSM (دراسة الحالة والتشخيص)
-import cbt_suite as cbt       # CBT (الاختبارات والعلاج السلوكي المعرفي)
-import addiction_suite as addiction  # الإدمان
+from flask import Flask
+from home import home_bp
+from dsm_suite import dsm_bp
+from cbt_suite import cbt_bp
+from addiction_suite import addiction_bp
 
 def create_app():
     app = Flask(__name__)
-
-    # ربط البلوبرنتس
-    app.register_blueprint(home.bp)        # /
-    app.register_blueprint(dsm.bp)         # /dsm
-    app.register_blueprint(cbt.bp)         # /cbt
-    app.register_blueprint(addiction.bp)   # /addiction
-
-    # روابط التواصل
-    @app.route("/contact/whatsapp")
-    def contact_whatsapp():
-        return redirect("https://wa.me/9665XXXXXXXX", code=302)
-
-    @app.route("/contact/telegram")
-    def contact_telegram():
-        return redirect("https://t.me/USERNAME", code=302)
-
-    @app.route("/contact/email")
-    def contact_email():
-        return redirect("mailto:info@arabipsycho.com", code=302)
-
+    # تسجيل البلوبريـنتس
+    app.register_blueprint(home_bp)        # /
+    app.register_blueprint(dsm_bp)         # /dsm
+    app.register_blueprint(cbt_bp)         # /cbt
+    app.register_blueprint(addiction_bp)   # /addiction
     return app
 
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000, debug=True)
+    app.run(host="0.0.0.0", port=10000)
