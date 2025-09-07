@@ -3,33 +3,37 @@
 
 from flask import Flask, redirect
 
-# استيراد الصفحات الأساسية
-import dsm       # دراسة الحالة + التشخيص
-import cbt       # العلاج السلوكي المعرفي + الاختبارات
-import home      # الواجهة الرئيسية
-import addiction # علاج الإدمان
+# استيراد الوحدات (كل وحدة لها ملف خاص)
+import home                   # الواجهة الرئيسية
+import dsm_suite as dsm       # DSM (دراسة الحالة والتشخيص)
+import cbt_suite as cbt       # CBT (الاختبارات والعلاج السلوكي المعرفي)
+import addiction_suite as addiction  # الإدمان
 
-app = Flask(__name__)
+def create_app():
+    app = Flask(__name__)
 
-# ربط البلوبرنتس من الملفات المستقلة
-app.register_blueprint(home.bp)
-app.register_blueprint(dsm.bp)
-app.register_blueprint(cbt.bp)
-app.register_blueprint(addiction.bp)
+    # ربط البلوبرنتس
+    app.register_blueprint(home.bp)        # /
+    app.register_blueprint(dsm.bp)         # /dsm
+    app.register_blueprint(cbt.bp)         # /cbt
+    app.register_blueprint(addiction.bp)   # /addiction
 
-# روابط التواصل (ثابتة)
-@app.route("/contact/whatsapp")
-def contact_whatsapp():
-    return redirect("https://wa.me/9665XXXXXXXX", code=302)
+    # روابط التواصل
+    @app.route("/contact/whatsapp")
+    def contact_whatsapp():
+        return redirect("https://wa.me/9665XXXXXXXX", code=302)
 
-@app.route("/contact/telegram")
-def contact_telegram():
-    return redirect("https://t.me/USERNAME", code=302)
+    @app.route("/contact/telegram")
+    def contact_telegram():
+        return redirect("https://t.me/USERNAME", code=302)
 
-@app.route("/contact/email")
-def contact_email():
-    return redirect("mailto:info@arabipsycho.com", code=302)
+    @app.route("/contact/email")
+    def contact_email():
+        return redirect("mailto:info@arabipsycho.com", code=302)
 
-# تشغيل
+    return app
+
+app = create_app()
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000, debug=True)
