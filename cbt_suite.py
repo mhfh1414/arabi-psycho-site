@@ -1,207 +1,336 @@
-<!-- home.html | واجهة عربي سايكو (مستقل) -->
-<!doctype html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="utf-8">
-  <title>عربي سايكو | المركز العربي للصحة النفسية</title>
-  <meta name="description" content="مركز عربي سايكو للصحة النفسية - نقدم خدمات التشخيص، العلاج السلوكي المعرفي، وعلاج الإدمان بأعلى معايير الجودة">
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    :root {
-      --primary-blue: #0a3a75;
-      --secondary-blue: #0a65b0;
-      --dark-blue: #0a1330;
-      --gold: #f4b400;
-      --light-gold: #ffd86a;
-      --light-blue: #cfe0ff;
-      --white: #ffffff;
-      --glass: rgba(255, 255, 255, 0.08);
-      --glass-border: rgba(255, 255, 255, 0.12);
-      --transition: all 0.3s ease;
-    }
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{
-      font-family:'Tajawal',sans-serif;
-      background:linear-gradient(135deg,var(--primary-blue),var(--secondary-blue));
-      color:var(--white);line-height:1.6;overflow-x:hidden;background-attachment:fixed
-    }
-    .container{max-width:1280px;margin:0 auto;padding:0 20px}
-    header{position:sticky;top:0;z-index:1000;backdrop-filter:blur(10px);
-      background:rgba(7,19,56,.7);padding:15px 0;border-bottom:1px solid var(--glass-border)}
-    .header-content{display:flex;justify-content:space-between;align-items:center}
-    .logo{display:flex;align-items:center;gap:15px}
-    .logo-icon{
-      width:60px;height:60px;border-radius:15px;
-      background:linear-gradient(145deg,var(--dark-blue),var(--primary-blue));
-      display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;color:var(--gold);
-      box-shadow:0 5px 15px rgba(0,0,0,.2);border:1px solid var(--glass-border)
-    }
-    .logo-text h1{
-      font-size:28px;margin-bottom:5px;
-      background:linear-gradient(to right,var(--light-gold),var(--gold));
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent
-    }
-    .logo-text p{font-size:14px;color:var(--light-blue);margin:0}
-    .nav-links{display:flex;gap:10px;flex-wrap:wrap}
-    .nav-link{
-      display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--white);
-      padding:10px 18px;border-radius:12px;background:var(--glass);border:1px solid var(--glass-border);
-      transition:var(--transition);font-weight:500
-    }
-    .nav-link:hover{background:rgba(255,255,255,.15);transform:translateY(-2px);
-      box-shadow:0 5px 15px rgba(0,0,0,.1)}
-    .nav-link i{font-size:18px}
-    .hero{padding:60px 0;text-align:center}
-    .hero-content{max-width:800px;margin:0 auto}
-    .hero h2{font-size:2.8rem;margin-bottom:20px;line-height:1.3}
-    .hero p{font-size:1.2rem;color:var(--light-blue);margin-bottom:40px;max-width:600px;margin-inline:auto}
-    .cta-buttons{display:flex;justify-content:center;gap:20px;flex-wrap:wrap}
-    .btn{
-      display:inline-flex;align-items:center;gap:10px;text-decoration:none;font-weight:700;
-      padding:16px 28px;border-radius:14px;transition:var(--transition);font-size:1.1rem
-    }
-    .btn-primary{background:linear-gradient(145deg,var(--light-gold),var(--gold));color:#2b1b02;
-      box-shadow:0 6px 20px rgba(244,180,0,.3)}
-    .btn-primary:hover{transform:translateY(-3px);box-shadow:0 8px 25px rgba(244,180,0,.4)}
-    .btn-secondary{background:linear-gradient(145deg,#9cc5ff,#63a4ff);color:#04122c;
-      box-shadow:0 6px 20px rgba(60,130,255,.3)}
-    .btn-secondary:hover{transform:translateY(-3px);box-shadow:0 8px 25px rgba(60,130,255,.4)}
-    .features{padding:60px 0}
-    .section-title{
-      text-align:center;font-size:2.2rem;margin-bottom:50px;position:relative;padding-bottom:15px}
-    .section-title:after{
-      content:'';position:absolute;bottom:0;right:50%;transform:translateX(50%);
-      width:80px;height:4px;background:linear-gradient(to right,var(--light-gold),var(--gold));border-radius:2px}
-    .cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:25px}
-    .card{
-      background:var(--glass);border:1px solid var(--glass-border);border-radius:18px;
-      padding:25px;backdrop-filter:blur(6px);transition:var(--transition);height:100%;display:flex;flex-direction:column
-    }
-    .card:hover{transform:translateY(-5px);box-shadow:0 15px 30px rgba(0,0,0,.2);
-      border-color:rgba(255,255,255,.2)}
-    .card-icon{font-size:2.5rem;margin-bottom:20px;color:var(--gold)}
-    .card h3{font-size:1.5rem;margin-bottom:15px}
-    .card p{color:var(--light-blue);margin-bottom:20px;flex-grow:1}
-    .card .btn{align-self:flex-start;margin-top:auto}
-    .services{padding:60px 0;background:rgba(0,0,0,.1);border-radius:30px;margin:40px 0}
-    footer{background:rgba(7,19,56,.8);padding:40px 0 20px;margin-top:60px;border-top:1px solid var(--glass-border)}
-    .footer-content{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px}
-    .copyright,.design-credit{color:var(--light-blue)}
-    .floating{animation:float 6s ease-in-out infinite}
-    @keyframes float{0%{transform:translateY(0)}50%{transform:translateY(-10px)}100%{transform:translateY(0)}}
-    @media (max-width:768px){
-      .header-content{flex-direction:column;gap:20px}
-      .nav-links{flex-wrap:wrap;justify-content:center}
-      .hero h2{font-size:2rem}
-      .hero p{font-size:1rem}
-      .cta-buttons{flex-direction:column;align-items:center}
-      .footer-content{flex-direction:column;text-align:center}
-    }
-  </style>
-</head>
-<body>
-  <!-- هيدر -->
-  <header>
-    <div class="container">
-      <div class="header-content">
-        <div class="logo">
-          <div class="logo-icon">AS</div>
-          <div class="logo-text">
-            <h1>عربي سايكو</h1>
-            <p>المركز العربي للصحة النفسية</p>
-          </div>
+# -*- coding: utf-8 -*-
+# cbt_suite.py — حزمة CBT + اختبارات نفسية في ملف واحد (بدون مجلدات/قوالب)
+
+from flask import Blueprint, request, render_template_string
+
+cbt_bp = Blueprint("cbt", __name__)
+
+# ========================= إعداد عام للاختبارات =========================
+TESTS = {
+    # ---------------- PHQ-9 (الاكتئاب) ----------------
+    "phq9": {
+        "title": "PHQ-9 — فحص أعراض الاكتئاب",
+        "about": "يقدّر شدة أعراض الاكتئاب خلال آخر أسبوعين.",
+        "scale": {0: "أبدًا", 1: "عدة أيام", 2: "أكثر من نصف الأيام", 3: "تقريبًا كل يوم"},
+        "questions": [
+            "قلة الاهتمام أو المتعة في فعل الأشياء",
+            "الشعور بالحزن أو الاكتئاب أو اليأس",
+            "صعوبة النوم أو النوم المفرط",
+            "الشعور بالتعب أو قلة الطاقة",
+            "ضعف الشهية أو فرط الأكل",
+            "الشعور بسوء تجاه نفسك أو أنك فاشل",
+            "صعوبة التركيز (كالقراءة أو التلفاز)",
+            "التحرك/الكلام ببطء شديد أو العكس بتوتر زائد",
+            "أفكار أنك ستموت أو إيذاء النفس"
+        ],
+        "max": 27,
+        "severity": [
+            (4,  "خفيف جدًا",  "#2e7d32"),
+            (9,  "خفيف",      "#558b2f"),
+            (14, "متوسط",     "#f9a825"),
+            (19, "متوسط-شديد","#f57c00"),
+            (27, "شديد",      "#c62828"),
+        ],
+        "suicide_index": 8,  # بند الانتحار للتنبيه
+    },
+
+    # ---------------- GAD-7 (القلق) ----------------
+    "gad7": {
+        "title": "GAD-7 — فحص القلق العام",
+        "about": "يقدّر شدة القلق خلال آخر أسبوعين.",
+        "scale": {0: "أبدًا", 1: "عدة أيام", 2: "أكثر من نصف الأيام", 3: "تقريبًا كل يوم"},
+        "questions": [
+            "الشعور بالعصبية أو التوتر أو على الحافة",
+            "عدم القدرة على إيقاف القلق أو التحكم فيه",
+            "القلق المفرط بشأن أشياء مختلفة",
+            "صعوبة الاسترخاء",
+            "التململ لدرجة صعوبة الجلوس هادئًا",
+            "الانزعاج بسهولة أو التهيّج",
+            "الخوف من أن يحدث شيء فظيع"
+        ],
+        "max": 21,
+        "severity": [
+            (4,  "خفيف جدًا", "#2e7d32"),
+            (9,  "خفيف",     "#558b2f"),
+            (14, "متوسط",    "#f9a825"),
+            (21, "شديد",     "#c62828"),
+        ],
+    },
+
+    # ---------------- PCL-5 (الصدمة) — مختصر 12 بند (0-4) ----------------
+    "pcl5": {
+        "title": "PCL-5 — مؤشر أعراض ما بعد الصدمة (مختصر 12 بندًا)",
+        "about": "نسخة مختصرة لتقدير أعراض ما بعد الصدمة المرتبطة بحدث صادم.",
+        "scale": {0: "لا شيء", 1: "قليل", 2: "متوسط", 3: "شديد", 4: "شديد جدًا"},
+        "questions": [
+            "ذكريات متطفّلة للحدث الصادم",
+            "أحلام مزعجة مرتبطة بالحدث",
+            "ردود فعل تشبه إعادة المعايشة",
+            "انزعاج شديد عند المثيرات المرتبطة",
+            "تجنّب الأفكار والذكريات المرتبطة",
+            "تجنّب الأماكن/الأشخاص المرتبطين",
+            "صعوبات تذكّر جوانب مهمة من الحدث",
+            "معتقدات سلبية مستمرة عن الذات/العالم",
+            "مشاعر سلبية قوية (خوف/غضب/ذنب/خجل)",
+            "فقدان الاهتمام بالأنشطة",
+            "اليقظة المفرطة وسهولة الفزع",
+            "مشكلات في النوم والتركيز"
+        ],
+        "max": 48,
+        "severity": [
+            (12, "خفيف",    "#2e7d32"),
+            (24, "متوسط",   "#f9a825"),
+            (48, "شديد",    "#c62828"),
+        ],
+    },
+
+    # ---------------- Y-BOCS (وسواس قهري) — مختصر 10 بنود (0-4) ----------------
+    "y_bocs": {
+        "title": "Y-BOCS — مؤشر شدة الوسواس القهري (مختصر)",
+        "about": "يقدّر شدة الانشغالات والطقوس القهرية خلال الأسبوع الماضي.",
+        "scale": {0: "لا شيء", 1: "خفيف", 2: "متوسط", 3: "شديد", 4: "شديد جدًا"},
+        "questions": [
+            "الوقت المستغرق في الأفكار الوسواسية",
+            "الضيق الناتج عن الوساوس",
+            "قدرة مقاومة الوساوس",
+            "التحكم في الوساوس",
+            "تأثير الوساوس على الأداء",
+            "الوقت المستغرق في الطقوس القهرية",
+            "الضيق الناتج عن الطقوس",
+            "قدرة مقاومة الطقوس",
+            "التحكم في الطقوس",
+            "تأثير الطقوس على الأداء"
+        ],
+        "max": 40,
+        "severity": [
+            (7,  "خفيف جدًا", "#2e7d32"),
+            (15, "خفيف",      "#558b2f"),
+            (23, "متوسط",     "#f9a825"),
+            (31, "شديد",      "#f57c00"),
+            (40, "شديد جدًا", "#c62828"),
+        ],
+    },
+
+    # ---------------- ASRS (بالغين ADHD) — القسم A (6 بنود) ----------------
+    "asrs": {
+        "title": "ASRS — مؤشر نقص الانتباه/فرط الحركة (بالغين) — القسم A",
+        "about": "مؤشر سريع لاشتباه ADHD لدى البالغين.",
+        "scale": {0: "أبدًا", 1: "نادرًا", 2: "أحيانًا", 3: "غالبًا", 4: "دائمًا"},
+        "questions": [
+            "صعوبة إنهاء التفاصيل بعد مهمة طويلة",
+            "صعوبة ترتيب الأمور عند أداء مهمة",
+            "مشكلات تذكّر المواعيد/الالتزامات",
+            "تجنّب/تأجيل المهام التي تتطلب جهدًا ذهنيًا",
+            "التململ والحركة أثناء الجلوس الطويل",
+            "الاندفاعية/مقاطعة الآخرين"
+        ],
+        "max": 24,
+        "severity": [
+            (9,  "مؤشرات قليلة", "#2e7d32"),
+            (14, "اشتباه متوسط", "#f9a825"),
+            (24, "اشتباه مرتفع", "#c62828"),
+        ],
+    },
+
+    # ---------------- اختبار شخصية (خماسي مختصر 10 بنود) ----------------
+    "bfi10": {
+        "title": "BFI-10 — لمحة خماسية عن السمات الشخصية (مختصر)",
+        "about": "مؤشر مختصر (10 بنود) لخمسة أبعاد: الانبساط، التوافقية، الضمير، الاستقرار العاطفي، الانفتاح.",
+        "scale": {1: "أعارض بشدّة", 2: "أعارض", 3: "محايد", 4: "أوافق", 5: "أوافق بشدّة"},
+        "questions": [
+            "أرى نفسي منفتحًا واجتماعيًا (انبساط)",
+            "أرى نفسي متعاطفًا ومراعياً للآخرين (توافقية)",
+            "أرى نفسي منظّمًا وذا انضباط (ضمير)",
+            "أرى نفسي هادئًا ومستقرًا عاطفيًا (استقرار)",
+            "أرى نفسي واسع الخيال ومبتكرًا (انفتاح)",
+            "أرى نفسي قليل الانفتاح على الآخرين (انعزال) [عكسي]",
+            "أرى نفسي يميل إلى الجدال/الخشونة [عكسي]",
+            "أرى نفسي يميل إلى الإهمال [عكسي]",
+            "أرى نفسي متقلب المزاج/قلق [عكسي]",
+            "أرى نفسي تقليديًا قليل الفضول [عكسي]"
+        ],
+        "max": 50,
+        "personality": True  # معالجة خاصة لإخراج 5 درجات فرعية
+    },
+}
+
+# ========================= صفحات HTML العامة (inline) =========================
+BASE_CSS = """
+:root{--bg:#0a3a75;--bg2:#0a65b0;--gold:#f4b400;--pane:rgba(255,255,255,.08);--border:rgba(255,255,255,.14)}
+*{box-sizing:border-box}body{margin:0;font-family:'Tajawal',system-ui;background:linear-gradient(135deg,var(--bg),var(--bg2));color:#fff}
+.wrap{max-width:1000px;margin:36px auto;padding:0 16px}
+.card{background:var(--pane);border:1px solid var(--border);border-radius:16px;padding:18px}
+.btn{display:inline-block;background:linear-gradient(145deg,#ffd86a,var(--gold));color:#2b1b02;padding:10px 16px;border-radius:12px;text-decoration:none;font-weight:800;border:none;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.badge{display:inline-block;padding:4px 10px;border-radius:10px;margin-inline:6px}
+"""
+
+HUB_HTML = f"""
+<!doctype html><html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>CBT — مركز الاختبارات</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>{BASE_CSS}</style></head><body>
+<div class="wrap">
+  <h1>🧠 العلاج السلوكي المعرفي — مركز الاختبارات</h1>
+  <div class="grid" style="margin-top:18px">
+    {{% for tid, t in tests.items() %}}
+      <div class="card">
+        <h3>{{{{ t['title'] }}}}</h3>
+        <p style="opacity:.9">{{{{ t['about'] }}}}</p>
+        <a class="btn" href="/cbt/{{{{ tid }}}}">ابدأ</a>
+      </div>
+    {{% endfor %}}
+  </div>
+  <p style="margin-top:16px"><a class="btn" href="/">الرجوع للرئيسية</a></p>
+</div>
+</body></html>
+"""
+
+FORM_HTML = f"""
+<!doctype html><html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>{{{{ T['title'] }}}}</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>{BASE_CSS}
+label{{display:block;margin:.6rem 0 .3rem;font-weight:700}}
+.opt{{display:flex;gap:10px;flex-wrap:wrap}}
+.opt label{{background:var(--pane);border:1px solid var(--border);padding:8px 10px;border-radius:10px;cursor:pointer}}
+.opt input{{display:none}}
+.opt input:checked+span{{background:linear-gradient(145deg,#ffd86a,var(--gold));color:#2b1b02;font-weight:800}}
+</style></head><body>
+<div class="wrap">
+  <h2>{{{{ T['title'] }}}}</h2>
+  <p style="opacity:.9">{{{{ T['about'] }}}}</p>
+  <form class="card" method="post">
+    {{% for q in T['questions'] %}}
+      <div class="q">
+        <label>({{{{ loop.index }}}}) {{{{ q }}}}</label>
+        <div class="opt">
+          {{% for val,txt in T['scale'].items() %}}
+            <label><input type="radio" name="q{{{{loop.index}}}}" value="{{{{val}}}}" required><span>{{{{txt}}}}</span></label>
+          {{% endfor %}}
         </div>
-        <nav class="nav-links">
-          <a href="https://wa.me/9665XXXXXXXX" class="nav-link" target="_blank" rel="noopener">
-            <i class="fab fa-whatsapp"></i><span>واتساب</span>
-          </a>
-          <a href="https://t.me/USERNAME" class="nav-link" target="_blank" rel="noopener">
-            <i class="fab fa-telegram"></i><span>تلجرام</span>
-          </a>
-          <a href="mailto:info@arabipsycho.com" class="nav-link">
-            <i class="far fa-envelope"></i><span>إيميل</span>
-          </a>
-        </nav>
       </div>
-    </div>
-  </header>
+    {{% endfor %}}
+    <button class="btn" type="submit">احسب النتيجة</button>
+    <a class="btn" href="/cbt" style="margin-inline-start:8px">رجوع</a>
+  </form>
+</div>
+</body></html>
+"""
 
-  <!-- هيرو -->
-  <main>
-    <section class="hero">
-      <div class="container">
-        <div class="hero-content">
-          <h2>رعاية نفسية متكاملة <br>بمعايير عالمية وبلغة عربية</h2>
-          <p>نقدم خدمات التشخيص الدقيق، العلاج السلوكي المعرفي، وبرامج علاج الإدمان بأعلى معايير الجودة والسرية</p>
-          <div class="cta-buttons">
-            <a href="/dsm" class="btn btn-primary"><i class="fas fa-book-medical"></i>ابدأ التشخيص الآن</a>
-            <a href="https://wa.me/9665XXXXXXXX" class="btn btn-secondary" target="_blank" rel="noopener">
-              <i class="fas fa-headset"></i>احجز استشارة
-            </a>
-          </div>
+RESULT_HTML = f"""
+<!doctype html><html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>نتيجة — {{{{ T['title'] }}}}</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>{BASE_CSS}.bar{{height:12px;background:#263238;border-radius:8px;overflow:hidden}}
+.fill{{height:100%;background:#f4b400}}
+</style></head><body>
+<div class="wrap">
+  <h2>نتيجة — {{{{ T['title'] }}}}</h2>
+  <div class="card">
+    <p>الدرجة: <b>{{{{ score }}}}</b> / {{{{ T['max'] }}}}
+      <span class="badge" style="background: {{{{ color }}}}; color:#000">{{{{ label }}}}</span>
+    </p>
+    <div class="bar"><div class="fill" style="width: {{{{ percent }}}}%"></div></div>
+    {{{{ extra_html|safe }}}}
+    <p style="margin-top:12px"><a class="btn" href="/cbt">عودة لمركز الاختبارات</a></p>
+  </div>
+</div>
+</body></html>
+"""
+
+# ========================= دوال مساعدة =========================
+def _pct(score, mx):
+    try:
+        return round((score / float(mx)) * 100, 1)
+    except ZeroDivisionError:
+        return 0.0
+
+def _severity(sev_table, score):
+    for mx, label, color in sev_table:
+        if score <= mx:
+            return label, color
+    return sev_table[-1][1], sev_table[-1][2]
+
+def _render_form(test_id):
+    T = TESTS[test_id]
+    return render_template_string(FORM_HTML, T=T)
+
+def _render_result(test_id, answers):
+    T = TESTS[test_id]
+    score = sum(answers)
+    label, color = _severity(T["severity"], score)
+    percent = _pct(score, T["max"])
+
+    extra_html = ""
+    # تنبيه بند الانتحار في PHQ-9
+    if test_id == "phq9" and T.get("suicide_index") is not None:
+        try:
+            si = T["suicide_index"]
+            if answers[si] >= 1:
+                extra_html += "<p style='color:#ffccbc;margin-top:10px'>⚠️ أشرت إلى أفكار إيذاء النفس. إن كان لديك خطر فوري، تواصل مع الطوارئ أو مختص فورًا.</p>"
+        except Exception:
+            pass
+
+    # استخراج الخمسة أبعاد في BFI-10 (بشكل مبسّط)
+    if test_id == "bfi10" and T.get("personality"):
+        # البنود (1,6) للانبساط مع عكسي، (2,7) توافقية، (3,8) ضمير، (4,9) استقرار، (5,10) انفتاح
+        # البنود العكسية تُقلب: 6,7,8,9,10
+        def flip(x): return 6 - x  # 1↔5, 2↔4, 3↔3
+        E = answers[0] + flip(answers[5])
+        A = answers[1] + flip(answers[6])
+        C = answers[2] + flip(answers[7])
+        N = answers[3] + flip(answers[8])  # هنا N = الاستقرار (العكس للاندفاع/العصابية)
+        O = answers[4] + flip(answers[9])
+        extra_html += f"""
+        <div class="card" style="margin-top:12px">
+          <h3>الأبعاد الخمسة (مجموع/10):</h3>
+          <ul>
+            <li>الانبساط: <b>{E}</b> / 10</li>
+            <li>التوافقية: <b>{A}</b> / 10</li>
+            <li>الضمير: <b>{C}</b> / 10</li>
+            <li>الاستقرار العاطفي: <b>{N}</b> / 10</li>
+            <li>الانفتاح: <b>{O}</b> / 10</li>
+          </ul>
         </div>
-      </div>
-    </section>
+        """
 
-    <!-- مميزات -->
-    <section class="features">
-      <div class="container">
-        <h2 class="section-title">خدماتنا المتخصصة</h2>
-        <div class="cards-grid">
-          <div class="card floating">
-            <div class="card-icon">📖</div>
-            <h3>التشخيص وفق DSM-5</h3>
-            <p>نظام متكامل للتشخيص الدقيق وفق الدليل التشخيصي والإحصائي للاضطرابات النفسية، مع تحليل شامل للحالة وتقديم تقرير مفصل.</p>
-            <a href="/dsm" class="btn btn-primary">ابدأ التشخيص</a>
-          </div>
-          <div class="card floating" style="animation-delay:.5s">
-            <div class="card-icon">🧠</div>
-            <h3>العلاج السلوكي المعرفي</h3>
-            <p>برامج علاجية تشمل الاختبارات النفسية المعتمدة (PHQ-9, GAD-7, PCL-5) وتقنيات CBT المبنية على الأدلة.</p>
-            <a href="/cbt" class="btn btn-primary">اكتشف المزيد</a>
-          </div>
-          <div class="card floating" style="animation-delay:1s">
-            <div class="card-icon">🚭</div>
-            <h3>علاج الإدمان</h3>
-            <p>تقييم وعلاج وتأهيل ببرامج فردية ومتابعة مستمرة لضمان التعافي المستدام.</p>
-            <a href="/addiction" class="btn btn-primary">ابدأ التقييم</a>
-          </div>
-        </div>
-      </div>
-    </section>
+    return render_template_string(
+        RESULT_HTML,
+        T=T, score=score, percent=percent, label=label, color=color,
+        extra_html=extra_html
+    )
 
-    <!-- لماذا نحن -->
-    <section class="services">
-      <div class="container">
-        <h2 class="section-title">لماذا تختار عربي سايكو؟</h2>
-        <div class="cards-grid">
-          <div class="card"><i class="fas fa-shield-alt card-icon"></i><h3>سرية تامة</h3><p>حماية كاملة لبياناتك وجلساتك بمعايير أمنية عالية.</p></div>
-          <div class="card"><i class="fas fa-certificate card-icon"></i><h3>كفاءة علمية</h3><p>فريق مختص من الأطباء والمعالجين النفسيين ذوي خبرة.</p></div>
-          <div class="card"><i class="fas fa-globe card-icon"></i><h3>خدمة عن بعد</h3><p>خدماتنا متاحة من أي مكان عبر منصات تواصل آمنة.</p></div>
-        </div>
-      </div>
-    </section>
-  </main>
+# ========================= المسارات =========================
+@cbt_bp.route("/")
+def cbt_home():
+    # صفحة مركزية تسرد كل الاختبارات
+    return render_template_string(HUB_HTML, tests=TESTS)
 
-  <!-- فوتر -->
-  <footer>
-    <div class="container">
-      <div class="footer-content">
-        <div class="copyright">© <span id="year"></span> عربي سايكو — جميع الحقوق محفوظة</div>
-        <div class="design-credit">تصميم يوحّد بين الأصالة العربية والحداثة — لرعاية نفسية بأعلى معايير الجودة</div>
-      </div>
-    </div>
-  </footer>
+@cbt_bp.route("/<test_id>", methods=["GET", "POST"])
+def cbt_router(test_id):
+    if test_id not in TESTS:
+        # رجوع للصفحة المركزية إن كان الاسم غير صحيح
+        return render_template_string(HUB_HTML, tests=TESTS)
 
-  <script>
-    // سنة الفوتر + تأثير بسيط على البطاقات
-    document.getElementById('year').textContent = new Date().getFullYear();
-    document.querySelectorAll('.card').forEach(c=>{
-      c.addEventListener('mouseenter',()=>c.style.transform='translateY(-10px)');
-      c.addEventListener('mouseleave',()=>c.style.transform='translateY(0)');
-    });
-  </script>
-</body>
-</html>
+    if request.method == "POST":
+        T = TESTS[test_id]
+        answers = []
+        for i in range(1, len(T["questions"]) + 1):
+            try:
+                val = int(request.form.get(f"q{i}", "0"))
+            except ValueError:
+                val = 0
+            # تأكيد أن القيمة ضمن السلم
+            if test_id == "bfi10":
+                val = min(max(val, 1), 5)
+            else:
+                val = min(max(val, min(T["scale"].keys())), max(T["scale"].keys()))
+            answers.append(val)
+        return _render_result(test_id, answers)
+
+    # GET → عرض النموذج
+    return _render_form(test_id)
