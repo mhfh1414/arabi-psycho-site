@@ -1,32 +1,23 @@
 # -*- coding: utf-8 -*-
-# site_app.py — الملف الرئيسي لتشغيل موقع عربي سايكو
+# site_app.py — ملف التشغيل الرئيسي لمشروع عربي سايكو
 
-from flask import Flask, render_template, redirect
+from flask import Flask, redirect
+
+# استيراد الصفحات الأساسية
+import dsm       # دراسة الحالة + التشخيص
+import cbt       # العلاج السلوكي المعرفي + الاختبارات
+import home      # الواجهة الرئيسية
+import addiction # علاج الإدمان
 
 app = Flask(__name__)
 
-# ================= صفحات رئيسية =================
-@app.route("/")
-def home():
-    return render_template("home.html")
+# ربط البلوبرنتس من الملفات المستقلة
+app.register_blueprint(home.bp)
+app.register_blueprint(dsm.bp)
+app.register_blueprint(cbt.bp)
+app.register_blueprint(addiction.bp)
 
-# ربط DSM
-@app.route("/dsm")
-def dsm():
-    # يحوّل إلى ملف DSM المستقل
-    return redirect("/run_dsm", code=302)
-
-# ربط CBT
-@app.route("/cbt")
-def cbt():
-    return redirect("/run_cbt", code=302)
-
-# ربط علاج الإدمان
-@app.route("/addiction")
-def addiction():
-    return redirect("/run_addiction", code=302)
-
-# ================= روابط التواصل =================
+# روابط التواصل (ثابتة)
 @app.route("/contact/whatsapp")
 def contact_whatsapp():
     return redirect("https://wa.me/9665XXXXXXXX", code=302)
@@ -39,6 +30,6 @@ def contact_telegram():
 def contact_email():
     return redirect("mailto:info@arabipsycho.com", code=302)
 
-# ================= تشغيل =================
+# تشغيل
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000, debug=True)
