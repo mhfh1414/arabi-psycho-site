@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# dsm_suite.py — DSM التشخيص ودراسة الحالة (Blueprint واحد)
+# dsm_suite.py — DSM التشخيص ودراسة الحالة (Blueprint واحد محسّن)
 
 from flask import Blueprint, request, render_template_string, redirect
 import re
@@ -22,12 +22,46 @@ def normalize(s: str) -> str:
     s = re.sub(r"\s+", " ", s)
     return s.lower()
 
-def tokenize(s: str): return normalize(s).split()
+def tokenize(s: str): 
+    return normalize(s).split()
 
 def similarity(text: str, phrase: str) -> float:
     """تشابه بسيط على مستوى الكلمات"""
     t = set(tokenize(text)); p = set(tokenize(phrase))
     return 0.0 if not p else len(t & p)/len(p)
+
+def ngrams(s, n=3):
+    s = normalize(s)
+    if len(s) < n: 
+        return {s} if s else set()
+    return { s[i:i+n] for i in range(len(s)-n+1) }
+
+def jaccard(a: set, b: set) -> float:
+    if not a or not b: return 0.0
+    inter = len(a & b); uni = len(a | b)
+    return inter/uni if uni else 0.0
+
+def kw_hit(text_norm: str, kw_norm: str) -> float:
+    """درجة مطابقة بين 0 و 1:
+       - 1.0: موجودة حرفيًا
+       - 0.7: تداخل كلمات ≥ 2
+       - 0.5/0.35: عبر 3-gram Jaccard
+    """
+    if not kw_norm: 
+        return 0.0
+    if kw_norm in text_norm:
+        return 1.0
+    # تداخل كلمات
+    tset, kset = set(text_norm.split()), set(kw_norm.split())
+    if len(tset & kset) >= 2:
+        return 0.7
+    # 3-gram Jaccard
+    j = jaccard(ngrams(text_norm, 3), ngrams(kw_norm, 3))
+    if j >= 0.42:
+        return 0.5
+    if j >= 0.28:
+        return 0.35
+    return 0.0
 
 # ========================= مرادفات لتعزيز المطابقة =========================
 SYNONYMS = {
@@ -37,19 +71,20 @@ SYNONYMS = {
     "اضطراب نوم": ["قلة نوم","كثرة نوم","ارق","نوم متقطع","استيقاظ مبكر","كوابيس","نعاس نهاري"],
     "شهية منخفضة": ["قلة اكل","سدت نفسي","فقدان شهية","ما ليا نفس"],
     "شهية زائدة": ["نهم","اكل بكثره","اكل عاطفي"],
-    "انسحاب اجتماعي": ["انعزال","انطواء","تجنب اجتماعي","ما اطلع"],
+    "انسحاب اجتماعي": ["انعزال","انطواء","تجنب اجتماعي","ما اطلع","ابتعدت عن الناس"],
     "تفكير انتحاري": ["افكار انتحار","تمني الموت","رغبه بالموت"],
     "قلق": ["توتر","توجس","على اعصابي","ترقب","خوف مستمر"],
-    "نوبة هلع": ["خفقان","اختناق","ضيق نفس","ذعر","رجفه","تعرق","دوخه"],
-    "خوف اجتماعي": ["رهبه مواجهه","خجل مفرط","قلق اداء"],
+    "نوبة هلع": ["خفقان","اختناق","ضيق نفس","ذعر","رجفه","تعرق","دوخه","خوف موت مفاجئ"],
+    "خوف اجتماعي": ["رهبه مواجهه","خجل مفرط","قلق اداء","اخاف اتكلم قدام ناس"],
     "خوف محدد": ["فوبيا","خوف طيران","خوف المرتفعات","خوف الظلام","خوف حقن","خوف حشرات","خوف دم"],
-    "وسواس": ["افكار متسلطه","اقتحاميه","هواجس"],
-    "سلوك قهري": ["طقوس","تفقد متكرر","عد قهري","غسل متكرر","تنظيم مفرط"],
+    "وسواس": ["افكار متسلطه","اقتحاميه","هواجس","افكار مزعجه"],
+    "سلوك قهري": ["طقوس","تفقد متكرر","عد قهري","غسل متكرر","تنظيم مفرط","اعاده متكرره"],
     "حدث صادم": ["حادث شديد","اعتداء","كارثه","حرب","فقد عزيز","تنمر قاس"],
     "استرجاع الحدث": ["فلاش باك","ذكريات مؤلمه","كوابيس","فرط تيقظ"],
-    "هلوسة": ["هلاوس سمعيه","هلاوس بصريه","اسمع اصوات","اشوف اشياء"],
-    "اوهام": ["ضلالات","اعتقادات وهميه","اضطهاد","عظمه","غيره وهاميه"],
-    "تشتت": ["عدم تركيز","سهو","شرود","نسيان"],
+    # ذهان (عامي ورسمي)
+    "هلوسة": ["هلاوس سمعيه","هلاوس بصريه","اسمع اصوات","اشوف اشياء","اصوات براسي","اشياء تتحرك","يهذري","يكلم نفسه"],
+    "اوهام": ["ضلالات","اعتقادات وهميه","احس ناس تراقبني","متجسسين علي","احد يبي يضرني","غيرة وهاميه","اشك بكل شي","شك مرضي"],
+    "تشتت": ["عدم تركيز","سهو","شرود","نسيان","تطاير افكار"],
     "فرط حركة": ["نشاط زائد","اندفاع","مقاطعه","ملل سريع"],
     "تواصل اجتماعي ضعيف": ["صعوبه تواصل","تواصل غير لفظي ضعيف","قله تواصل بصري"],
     "اهتمامات مقيدة": ["روتين صارم","حساسيات صوت/ضوء","سلوك نمطي"],
@@ -61,7 +96,7 @@ SYNONYMS = {
     "انشغال بالتفاصيل": ["كماليه","صرامه","جمود","قواعد صارمه"],
 }
 
-# ========================= قاعدة DSM (مختارة) =========================
+# ========================= قاعدة DSM (مختارة وقابلة للتوسعة) =========================
 DSM_DB = {
     # نمائي/عصبي
     "اضطراب طيف التوحد": {
@@ -232,28 +267,27 @@ def score(symptoms: str, duration_days: str="", history: str=""):
     red_flags = []
     if "تفكير انتحاري" in text or "انتحار" in text:
         red_flags.append("⚠️ خطر انتحاري")
-    if "هلوسه" in text or "هلوسة" in text or "اوهام" in text or "ضلالات" in text:
+    if any(k in text for k in ["هلوسه","هلوسة","اوهام","ضلالات"]):
         red_flags.append("⚠️ أعراض ذهانية")
 
     for dx, meta in DSM.items():
-        # تحقق المطلوبات
+        # تحقق المطلوبات (أقل صرامة باستخدام kw_hit)
         req = meta["req"]
-        if req and not all((r in text) or (similarity(text, r)>=0.6) for r in req):
+        if req and not all((r in text) or (kw_hit(text, r) >= 0.5) for r in req):
             continue
 
         sc = 0.0; hits=[]
         for raw_kw, kw in zip(meta["kwr"], meta["kwn"]):
-            if kw in text:
+            hit = kw_hit(text, kw)
+            if hit >= 1.0:
                 w = 1.0
                 if kw in [normalize("تفكير انتحاري"), normalize("نوبة هلع"), normalize("هلوسة"), normalize("اوهام")]:
                     w = 1.8
                 sc += w; hits.append(raw_kw)
-            else:
-                sim = similarity(text, kw)
-                if sim >= 0.66:
-                    sc += 0.8; hits.append(raw_kw+"~")
-                elif sim >= 0.4:
-                    sc += 0.4
+            elif hit >= 0.5:
+                sc += 0.8; hits.append(raw_kw+"~")
+            elif hit >= 0.35:
+                sc += 0.45
 
         if sc == 0:
             continue
@@ -274,8 +308,8 @@ BASE_HTML = """
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-    :root{--blue:#0b3a75;--gold:#f4b400}
-    body{font-family:"Tajawal",system-ui;background:linear-gradient(135deg,#0b3a75,#0a65b0) fixed;color:#fff;margin:0}
+    :root{--blue:#0b3a75;--blue2:#0a65b0;--gold:#f4b400}
+    body{font-family:"Tajawal",system-ui;background:linear-gradient(135deg,var(--blue),var(--blue2)) fixed;color:#fff;margin:0}
     .wrap{max-width:1180px;margin:28px auto;padding:16px}
     .card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:18px}
     a.btn,button.btn{display:inline-block;background:var(--gold);color:#2b1b02;border-radius:14px;padding:12px 16px;text-decoration:none;font-weight:800;border:none;cursor:pointer}
@@ -291,6 +325,7 @@ BASE_HTML = """
     table{width:100%;border-collapse:collapse;margin-top:8px}
     th,td{border-bottom:1px solid rgba(255,255,255,.15);padding:8px 6px;text-align:right}
     th{color:#ffe28a}
+    pre{white-space:pre-wrap}
   </style>
 </head>
 <body>
@@ -361,6 +396,17 @@ def result_page(form):
         </div>
         """
 
+    # صندوق Debug اختياري
+    debug_box = ""
+    if (request.args.get("debug") == "1"):
+        debug_box = f"""
+        <div class='result' style="margin-top:12px">
+          <h4>Debug</h4>
+          <p><b>Normalized:</b></p>
+          <pre>{normalize(symptoms)}</pre>
+        </div>
+        """
+
     body = f"""
     <div class="grid">
       <section class="card">
@@ -389,6 +435,7 @@ def result_page(form):
       </section>
       {res_html}
     </div>
+    {debug_box}
     """
     return render_template_string(BASE_HTML, body=body)
 
@@ -400,7 +447,6 @@ def dsm_page():
         return result_page(request.form)
     return form_page()
 
-# اختصار: إعادة توجيه /diagnose إلى /dsm (اختياري)
 @dsm_bp.route("/diagnose")
 def dsm_alias():
     return redirect("/dsm", code=302)
