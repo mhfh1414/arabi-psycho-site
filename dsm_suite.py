@@ -1,131 +1,271 @@
-# ------------------------ إعدادات القرار الدقيق (تحديث) ------------------------
-CRITICAL_SYM = { normalize("هلوسة"), normalize("اوهام"), normalize("نوبة هلع"), normalize("تفكير انتحاري") }
+# -*- coding: utf-8 -*-
+# dsm_suite.py — بلوبرنت DSM موسّع (تشخيص واحد أدق)
 
-# عتبات أخف عشان نحسم أسرع عند وضوح الصورة
-MIN_OK   = 1.90   # كان 2.2
-MARGIN   = 0.35   # كان 0.60
+from flask import Blueprint, render_template_string, request
+import re
+from difflib import SequenceMatcher
 
-# مرادفات إضافية (الهذيان يُستعمل عاميًّا كـ"ضلالات")
-SYNONYMS["اوهام"] = list(set(SYNONYMS.get("اوهام", []) + ["هذيان"]))
+dsm_bp = Blueprint("dsm", __name__, url_prefix="/dsm")
 
-PSYCHOSIS_HINTS = { normalize("هلوسة"), normalize("اوهام"), normalize("ضلالات"), normalize("هذيان") }
-PANIC_HINTS     = { normalize("نوبة هلع"), normalize("خفقان"), normalize("اختناق") }
-OCD_HINTS       = { normalize("وسواس"), normalize("سلوك قهري"), normalize("تفقد متكرر"), normalize("غسل متكرر") }
-MOOD_HINTS      = { normalize("اكتئاب"), normalize("حزن"), normalize("نوبة هوس"), normalize("هوس"),
-                    normalize("طاقة عالية"), normalize("اندفاع"), normalize("قلة نوم") }
+# ------------------ أدوات نص عربية ------------------
+_AR_DIAC = r"[ًٌٍَُِّْـ]"
+_AR_PUNCT = r"[.,،;؛!?؟()\[\]{}\"'<>:/\\|*_+=-]"
 
-def _gate_candidates(text_norm: str):
-    has_psy   = any(h in text_norm for h in PSYCHOSIS_HINTS)
-    has_panic = any(h in text_norm for h in PANIC_HINTS)
-    has_ocd   = any(h in text_norm for h in OCD_HINTS)
+def normalize(text: str) -> str:
+    if not text: return ""
+    t = text.strip().lower()
+    t = re.sub(_AR_DIAC, "", t)
+    t = re.sub(_AR_PUNCT, " ", t)
+    t = (t.replace("أ","ا").replace("إ","ا").replace("آ","ا")
+           .replace("ة","ه").replace("ى","ي").replace("ؤ","و").replace("ئ","ي"))
+    t = re.sub(r"\s+", " ", t)
+    return t
 
-    if has_psy:
-        # مبدئيًا نسمح بالذهانيات الأساسية فقط — ونستثني الفصامي-العاطفي إذا ما فيه دلائل مزاجية
-        allow = {"فصام", "اضطراب فصامي عاطفي"}
-        return {k:v for k,v in DSM.items() if k in allow}
+def sim(a: str, b: str) -> float:
+    return SequenceMatcher(None, a, b).ratio()
 
-    if has_panic:
-        allow = {"اضطراب الهلع","رهاب الساحة","اضطراب القلق العام","رهاب اجتماعي","رهاب محدد"}
-        return {k:v for k,v in DSM.items() if k in allow}
+# ------------------ مرادفات بسيطة لتعزيز المطابقة ------------------
+SYN = {
+    "حزن": ["كابه","ضيقه","تعاسه","زعل"],
+    "انعدام المتعه": ["فقدان المتعه","فقدان الاهتمام","ما عاد يفرحني شي"],
+    "قلق": ["توتر","توجس","على اعصابي"],
+    "نوبه هلع": ["هلع","ذعر","فجعه"],
+    "هلوسه": ["هلاوس","اسمع اصوات","اشوف اشياء"],
+    "اوهام": ["ضلالات","افكار وهاميه","بارانويا","اضطهاد"],
+    "رهاب اجتماعي": ["خوف اجتماعي","خجل شديد","قلق اداء"],
+    "وسواس": ["افكار متسلطه","اقتحاميه","هواجس"],
+    "سلوك قهري": ["طقوس","غسل متكرر","تفقد متكرر","عد قهري"],
+    "تشتت": ["عدم تركيز","نسيان","سهو"],
+    "فرط حركه": ["نشاط زائد","اندفاع","مقاطعه"],
+    "شهية منخفضه": ["سدت نفسي","قلة اكل"],
+    "نهم": ["شراهه","اكل كثير","نوبات اكل"],
+    "تطهير": ["استفراغ متعمد","ملينات","صيام تعويضي"],
+}
 
-    if has_ocd:
-        allow = {"اضطراب الوسواس القهري","تشوه صورة الجسد","اكتناز"}
-        return {k:v for k,v in DSM.items() if k in allow}
+def expand_with_syn(text: str) -> str:
+    base = normalize(text)
+    bag = [base]
+    for k, vs in SYN.items():
+        k_n = normalize(k)
+        if k_n in base or any(normalize(v) in base for v in vs):
+            bag += [k_n] + [normalize(v) for v in vs]
+    return " ".join(bag)
 
-    return DSM
+# ------------------ قاعدة DSM موسعة (مختارة) ------------------
+# لكل اضطراب: required (يجب توفرها)، keywords (تحسب نقاط)، weight (ترجيح)
+DSM = {
+    "اضطراب اكتئابي جسيم": {
+        "required": ["حزن", "انعدام المتعه"],
+        "keywords": ["قلة نوم","كثرة نوم","تعب","بطء نفسي حركي","شعور بالذنب","ياس","تفكير انتحاري","شهية منخفضه"],
+        "weight": 1.7
+    },
+    "اكتئاب مستمر (عسر المزاج)": {
+        "required": ["حزن"],
+        "keywords": ["مزمن","سنتين","قلة طاقه","قله تركيز","نوم سيء","ثقه منخفضه"],
+        "weight": 1.3
+    },
+    "اضطراب ثنائي القطب (نوبة هوس)": {
+        "required": ["طاقة عاليه","قليل نوم"],
+        "keywords": ["اندفاع","افكار سباق","طلاقة الكلام","عظمه","تهور","مشاكل قانونيه"],
+        "weight": 1.8
+    },
+    "اضطراب القلق العام": {
+        "required": ["قلق"],
+        "keywords": ["شد عضلي","صعوبه تركيز","ارق","تعب","قابليه استفزاز","قلق مفرط"],
+        "weight": 1.4
+    },
+    "اضطراب الهلع": {
+        "required": ["نوبه هلع"],
+        "keywords": ["خفقان","ضيق نفس","اختناق","رجفه","تعرق","خوف الموت"],
+        "weight": 1.6
+    },
+    "رهاب اجتماعي": {
+        "required": ["رهاب اجتماعي"],
+        "keywords": ["تجنب اجتماعي","احمرار","رجفه","خوف تقييم"],
+        "weight": 1.35
+    },
+    "رهاب محدد": {
+        "required": ["خوف شديد"],
+        "keywords": ["فوبيا","حشرات","طيران","مرتفعات","حقن","دم","ظلام"],
+        "weight": 1.2
+    },
+    "رهاب الساحه": {
+        "required": ["خوف من الاماكن المفتوحه"],
+        "keywords": ["مواصلات","تجمعات","تجنب الخروج وحيدا"],
+        "weight": 1.3
+    },
+    "اضطراب الوسواس القهري": {
+        "required": ["وسواس","سلوك قهري"],
+        "keywords": ["غسل متكرر","تفقد","عد","تنظيم","تدنيس","خوف تلوث"],
+        "weight": 1.7
+    },
+    "اضطراب ما بعد الصدمة": {
+        "required": ["حدث صادم","استرجاع"],
+        "keywords": ["كوابيس","يقظه مفرطه","تجنب","خدر عاطفي","ذنب الناجي"],
+        "weight": 1.7
+    },
+    "فصام": {
+        "required": ["هلوسه","اوهام"],
+        "keywords": ["تفكير غير منظم","انسحاب اجتماعي","تسطح وجداني"],
+        "weight": 1.9
+    },
+    "اضطراب فصامي عاطفي": {
+        "required": ["هلوسه"],
+        "keywords": ["نوبات اكتئاب","نوبات هوس","تذبذب مزاج"],
+        "weight": 1.6
+    },
+    "نهم عصبي (نهام)": {
+        "required": ["نهم","تطهير"],
+        "keywords": ["ذنب بعد الاكل","اختلال وزن"],
+        "weight": 1.5
+    },
+    "قهم عصبي": {
+        "required": ["نقص وزن شديد","خوف من زياده الوزن"],
+        "keywords": ["تقييد طعام","صورة جسد سلبيه"],
+        "weight": 1.6
+    },
+    "اضطراب نهم الطعام": {
+        "required": ["نهم"],
+        "keywords": ["فقدان تحكم","اكل سرا","زياده وزن"],
+        "weight": 1.4
+    },
+    "اعراض جسديه (Somatic)": {
+        "required": ["الم غير مفسر"],
+        "keywords": ["زياره اطباء كثيره","انشغال صحي"],
+        "weight": 1.3
+    },
+    "اضطراب نقص الانتباه وفرط الحركه": {
+        "required": ["تشتت","فرط حركه"],
+        "keywords": ["اندفاع","نسيان","تنظيم ضعيف"],
+        "weight": 1.25
+    },
+    "شخصية حدّيه": {
+        "required": ["تقلب عاطفي"],
+        "keywords": ["اندفاع","خوف هجر","ايذاء ذاتي","فراغ مزمن"],
+        "weight": 1.2
+    },
+}
 
-def _boost_text_with_synonyms(text_norm: str) -> str:
-    out = [text_norm]
-    for base, syns in SYNONYMS.items():
-        nb = normalize(base)
-        if nb in text_norm or any(normalize(s) in text_norm for s in syns):
-            out.append(" ".join(normalize(s) for s in ([base] + syns)))
-    return " ".join(out)
+# حوّل كل required/keywords إلى نسخ مطبّعة لسرعة المطابقة
+DSM_IDX = {}
+for name, meta in DSM.items():
+    DSM_IDX[name] = {
+        "required": [normalize(x) for x in meta["required"]],
+        "keywords": [normalize(x) for x in meta["keywords"]],
+        "weight": float(meta.get("weight", 1.0)),
+    }
 
-def _severity_multipliers(duration_days: str, history: str):
-    try: dur = float(duration_days or 0)
-    except: dur = 0.0
-    durB = 1.25 if dur>=365 else 1.15 if dur>=90 else 1.08 if dur>=30 else 1.0
-    fxB  = 1.10 if any(k in normalize(history or "") for k in
-            ["مشاكل عمل","مشاكل زواج","طلاق","تعثر دراسي","غياب متكرر","قضيه"]) else 1.0
-    return durB, fxB
+# ------------------ محرك التشخيص (يعيد تشخيص واحد) ------------------
+def diagnose(symptoms: str, duration_days: int = 0) -> tuple[str, float, list]:
+    text = expand_with_syn(symptoms)
+    durB = 1.0
+    if duration_days >= 365: durB = 1.2
+    elif duration_days >= 90: durB = 1.12
+    elif duration_days >= 30: durB = 1.06
 
-def _contradiction_penalty(text_norm: str, dx_name: str) -> float:
-    if dx_name == "قهم عصبي":
-        if normalize("نقص وزن شديد") not in text_norm and normalize("خوف من زياده الوزن") not in text_norm:
-            return 0.85
-    return 1.0
+    best_name, best_score, best_hits = None, 0.0, []
 
-def diagnose_one(symptoms: str, age: str="", gender: str="", duration_days: str="", history: str=""):
-    base_text = normalize(symptoms or "")
-    if not base_text or len(base_text) < 3:
-        return None, {"reason":"النص فارغ أو قصير جدًا","hints":["اكتب أعراضًا صريحة مثل: هلوسة/ضلالات/نوبة هلع/وسواس/أرق/نهم..."]}
-
-    text = _boost_text_with_synonyms(base_text)
-    durB, fxB = _severity_multipliers(duration_days, history)
-
-    # 1) قاعدة حسم مبكرة للفصام:
-    has_hall = normalize("هلوسة") in text or "هلاوس" in text
-    has_del  = normalize("اوهام") in text or normalize("ضلالات") in text or normalize("هذيان") in text
-    has_mood = any(h in text for h in MOOD_HINTS)
-    try: dur = float(duration_days or 0)
-    except: dur = 0.0
-
-    if has_hall and has_del and dur >= 30 and not has_mood:
-        return {
-            "name":"فصام",
-            "confidence":0.92,
-            "score":3.10,
-            "hits":["هلوسة","أوهام/ضلالات","مدة ≥ 30 يوم","لا دلائل مزاجية واضحة"]
-        }, None
-
-    # 2) باقي الحالات: نمر عبر التسجيل + البوابة
-    candidates = _gate_candidates(text)
-
-    scored = []
-    for dx, meta in candidates.items():
-        # لو الذهان حاضر بدون مزاج، امنع الفصامي-العاطفي
-        if dx == "اضطراب فصامي عاطفي" and (has_hall or has_del) and not has_mood:
+    for name, meta in DSM_IDX.items():
+        # تحقّق المطلوبات
+        if meta["required"] and not all(r in text or sim(text, r) >= 0.72 for r in meta["required"]):
             continue
 
-        req = meta["req"]
-        if req and not all((r in text) or (similarity(text, r)>=0.65) for r in req):
-            continue
-
-        s = 0.0; hits=[]
-        for raw_kw, kw in zip(meta["kwr"], meta["kwn"]):
+        sc = 0.0
+        hits = []
+        for kw in meta["keywords"] + meta["required"]:
             if kw in text:
                 w = 1.0
-                if kw in CRITICAL_SYM:
-                    w = 1.9
-                s += w; hits.append(raw_kw)
+                if kw in ("هلوسه","اوهام","تفكير انتحاري","نوبه هلع"): w = 1.6
+                sc += w; hits.append(kw)
             else:
-                sim = similarity(text, kw)
-                if sim >= 0.70:
-                    s += 0.85; hits.append(raw_kw+"~")
-                elif sim >= 0.45:
-                    s += 0.45
+                s = sim(text, kw)
+                if s >= 0.72:
+                    sc += 0.7; hits.append(kw+"~")
+                elif s >= 0.5:
+                    sc += 0.35
 
-        if s == 0:
-            continue
+        # ترجيحات عامة
+        sc *= meta["weight"]
+        sc *= durB
 
-        s *= meta["w"]
-        s *= durB * fxB
-        s *= _contradiction_penalty(text, dx)
+        if sc > best_score:
+            best_name, best_score, best_hits = name, sc, hits
 
-        scored.append({"name": dx, "score": round(s,3), "hits": hits[:14]})
+    return best_name, round(best_score, 2), best_hits
 
-    if not scored:
-        return None, {"reason":"لا توجد مطابقة كافية","hints":["زد مفردات حاسمة (هلوسة/أوهام/نوبة هلع/وسواس...) + المدة + الأثر الوظيفي."]}
+# ------------------ واجهة HTML ------------------
+PAGE = """
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>DSM-5 | دراسة حالة وتشخيص أدق</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+  <style>
+    body{margin:0;font-family:'Tajawal',system-ui;background:linear-gradient(135deg,#0b3a75,#0a65b0);color:#fff}
+    .wrap{max-width:1100px;margin:24px auto;padding:16px}
+    .card{background:rgba(255,255,255,.08);border:1px solid #ffffff22;border-radius:16px;padding:18px}
+    label{color:#ffd86a;margin:8px 0 6px;display:block}
+    input,textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #ffffff33;background:rgba(255,255,255,.12);color:#fff}
+    textarea{min-height:130px;resize:vertical}
+    button{margin-top:12px;background:#f4b400;color:#2b1b02;border:none;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer}
+    .result{margin-top:16px;padding:14px;border-radius:14px;background:#fff;color:#111}
+    .hits span{display:inline-block;margin:3px 6px 0 0;padding:4px 8px;border-radius:999px;background:#eef}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h2>🗂️ دراسة حالة + تشخيص (DSM)</h2>
+      <form method="post">
+        <label>الأعراض (اكتب وصفًا حرًا)</label>
+        <textarea name="symptoms" placeholder="مثال: هلوسه سمعيه، اوهام اضطهاد، انسحاب عن الناس...">{{ symptoms or "" }}</textarea>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label>مدة الأعراض (بالأيام)</label>
+            <input name="duration" value="{{ duration or "" }}" placeholder="90">
+          </div>
+          <div>
+            <label>الاسم (اختياري)</label>
+            <input name="name" value="{{ name or "" }}" placeholder="الاسم">
+          </div>
+        </div>
+        <button type="submit">تشخيص أدق</button>
+      </form>
 
-    scored.sort(key=lambda x: x["score"], reverse=True)
-    best = scored[0]
-    second = scored[1]["score"] if len(scored)>1 else 0.0
+      {% if dx %}
+        <div class="result">
+          <h3>📋 التشخيص الأدق: {{ dx }}</h3>
+          <p>الدرجة الكلية: <b>{{ score }}</b></p>
+          <div class="hits">
+            <small>مطابقات:</small>
+            {% for h in hits %}<span>{{ h }}</span>{% endfor %}
+          </div>
+          <p style="opacity:.75;margin-top:8px">⚠️ هذه نتيجة مساعدة وليست بديلاً عن التقييم الإكلينيكي.</p>
+        </div>
+      {% elif tried %}
+        <div class="result"><b>❌ لا توجد مطابقة كافية.</b> أضف مفردات أدق (مثلاً: هلوسه/اوهام/وسواس/نوبه هلع/رهاب/نهم/تطهير/انعدام المتعه...).</div>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>
+"""
 
-    if best["score"] >= MIN_OK and (best["score"] - second) >= MARGIN:
-        conf = min(0.99, 0.55 + 0.15*(best["score"]-MIN_OK))
-        return {"name":best["name"],"confidence":round(conf,2),"score":best["score"],"hits":best["hits"]}, None
-
-    tips = [f"اقترب من: {scored[0]['name']} (درجة {scored[0]['score']})",
-            f"والثاني: {scored[1]['name'] if len(scored)>1 else '—'}"]
-    return None, {"reason":"الفارق بين الاحتمالات صغير","hints":tips}
+# ------------------ المسار ------------------
+@dsm_bp.route("/", methods=["GET","POST"])
+def dsm_hub():
+    ctx = {"dx": None, "score": None, "hits": [], "tried": False,
+           "symptoms":"", "duration":"", "name":""}
+    if request.method == "POST":
+        ctx["tried"] = True
+        raw_symptoms = request.form.get("symptoms","")
+        ctx["symptoms"] = raw_symptoms
+        dur_raw = request.form.get("duration","")
+        ctx["duration"] = dur_raw
+        try: dur = int(dur_raw or 0)
+        except: dur = 0
+        dx, score, hits = diagnose(raw_symptoms, duration_days=dur)
+        ctx.update({"dx": dx, "score": score, "hits": hits})
+    return render_template_string(PAGE, **ctx)
