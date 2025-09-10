@@ -1,128 +1,223 @@
 # -*- coding: utf-8 -*-
+# home.py — الواجهة الرئيسية (Landing Page) لمنصة عربي سايكو
+
 from flask import Blueprint, render_template_string
+
 home_bp = Blueprint("home", __name__)
 
 HOME_HTML = """
-<!doctype html><html lang="ar" dir="rtl"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>عربي سايكو | الرئيسية</title>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;800&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg1:#0b1437; --bg2:#112e6b; --accent:#f4b400; --accent2:#ffd86a; --ink:#0a0f1f; --w:#fff;
-  --glass:rgba(255,255,255,.08); --brd:#ffffff26; --muted:#cfe0ff; --ok:#22c55e;
-}
-*{box-sizing:border-box} body{margin:0;font-family:"Tajawal",system-ui;color:var(--w);
-  background:radial-gradient(1000px 600px at 90% -10%, #1a4bbd22, transparent),
-             linear-gradient(120deg,var(--bg1),var(--bg2))}
-.wrap{max-width:1200px;margin:auto;padding:28px 16px}
-header{display:flex;align-items:center;justify-content:space-between;gap:16px}
-.brand{display:flex;align-items:center;gap:14px}
-.logo{width:76px;height:76px;border-radius:22px;background:linear-gradient(180deg,#0f2658,#1a4aa0);
-  border:1px solid var(--brd);display:grid;place-items:center;box-shadow:0 12px 28px rgba(0,0,0,.28)}
-.logo svg{width:46px;height:46px;color:var(--accent2)}
-.title{margin:0;font-size:36px;font-weight:800}
-.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
-.badge{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;
-  background:#0e2554;border:1px solid var(--brd);font-size:13.5px}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}
-.contactbar{display:flex;gap:10px;flex-wrap:wrap}
-.link{color:var(--w);text-decoration:none;padding:10px 12px;border-radius:12px;background:var(--glass);border:1px solid var(--brd)}
-.hero{margin-top:18px;display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
-@media(max-width:1000px){.hero{grid-template-columns:1fr}}
-.panel{background:var(--glass);border:1px solid var(--brd);border-radius:22px;padding:18px}
-.cta{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}
-@media(max-width:980px){.cta{grid-template-columns:1fr}}
-.btn{display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;border:0;cursor:pointer;
-  font-weight:800;color:#1b1200;padding:16px 18px;border-radius:14px;
-  background:linear-gradient(180deg,var(--accent2),var(--accent));box-shadow:0 8px 20px rgba(244,180,0,.28)}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-@media(max-width:980px){.grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:620px){.grid{grid-template-columns:1fr}}
-.tile{aspect-ratio:1/1;background:linear-gradient(180deg,#102b5f,#133a82);
-  border:1px solid var(--brd);border-radius:22px;padding:16px;display:flex;flex-direction:column;justify-content:space-between;
-  box-shadow:0 12px 24px rgba(0,0,0,.22)}
-.head{display:flex;align-items:center;gap:10px}
-.ico{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.12);border:1px solid var(--brd)}
-.tile h3{margin:6px 0 2px;font-size:20px}
-.tile p{margin:0;color:var(--muted);font-size:14px}
-.ghost{display:inline-flex;gap:8px;align-items:center;text-decoration:none;color:#fff;
-  padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.12);border:1px solid var(--brd)}
-footer{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:18px;color:var(--muted)}
-</style>
-</head><body><div class="wrap">
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>عربي سايكو | منصة نفسية تخدم الجميع</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg1:#0b143a; --bg2:#0a3a75; --bg3:#0a65b0;
+      --ink:#0b1020; --w:#fff; --muted:#cfe0ff;
+      --gold:#ffd86a; --amber:#f4b400; --mint:#38f6c6; --rose:#ff7aa8;
+      --glass: rgba(255,255,255,.10);
+      --border: rgba(255,255,255,.14);
+      --glow: 0 8px 30px rgba(0,200,255,.25), 0 0 0 1px rgba(255,255,255,.06) inset;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:"Tajawal",system-ui; color:var(--w);
+      background:
+        radial-gradient(1200px 600px at 80% -10%, #1a4bbd33, transparent),
+        radial-gradient(900px 420px at -10% 10%, #00ffd51a, transparent),
+        linear-gradient(135deg,var(--bg1),var(--bg2) 45%, var(--bg3));
+      min-height:100dvh;
+      display:flex; align-items:stretch;
+    }
+    .wrap{width:100%; max-width:1220px; margin:auto; padding:28px 18px}
+    header{display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:18px}
+    .brand{display:flex; align-items:center; gap:14px}
+    .logo{
+      width:64px; height:64px; border-radius:18px;
+      display:grid; place-items:center;
+      background:linear-gradient(180deg,#0e204f,#173a87); border:1px solid var(--border);
+      box-shadow: var(--glow);
+      font-weight:800; letter-spacing:.5px;
+    }
+    .brand h1{margin:0; font-size:30px}
+    .tag{margin:.25rem 0 0; color:var(--muted); font-weight:600}
+    .badges{display:flex; gap:8px; flex-wrap:wrap; margin-top:6px}
+    .badge{
+      display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px;
+      background:rgba(255,255,255,.08); border:1px solid var(--border); color:#e8f0ff; font-size:.9rem
+    }
+    .hero{
+      display:grid; grid-template-columns: 1.1fr .9fr; gap:16px; margin:18px 0 22px;
+    }
+    @media(max-width:992px){ .hero{grid-template-columns:1fr} }
 
-<header>
-  <div class="brand">
-    <div class="logo" aria-label="Arabi Psycho">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
-        <path d="M12 21s-7-4.6-7-10a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 5.4-7 10-7 10Z" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M5.8 11c3.2-1.6 9.2-1.6 12.4 0" stroke-linecap="round"/>
-      </svg>
-    </div>
-    <div>
-      <h1 class="title">عربي سايكو</h1>
-      <div class="meta">
-        <span class="badge"><span class="dot"></span> خصوصية وسرّية كاملة</span>
-        <span class="badge">استشارات عن بُعد</span>
-        <span class="badge">تقارير مهنية</span>
+    .card{
+      background:var(--glass); border:1px solid var(--border); border-radius:18px; padding:18px;
+      box-shadow: var(--glow);
+    }
+    .headline{font-size:22px; margin:0 0 8px}
+    .lead{color:#d7e6ff; margin:0}
+    .cta-grid{
+      display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:14px;
+    }
+    @media(max-width:992px){ .cta-grid{grid-template-columns:1fr} }
+
+    .tile{
+      position:relative; overflow:hidden; border-radius:18px; padding:16px; isolation:isolate;
+      background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      border:1px solid var(--border); min-height:132px; display:flex; flex-direction:column; justify-content:space-between;
+      transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+    .tile::after{
+      content:""; position:absolute; inset:-20%; background: radial-gradient(600px 160px at 60% -30%, rgba(255,216,106,.3), transparent);
+      opacity:.55; pointer-events:none; z-index:0;
+    }
+    .tile:hover{ transform: translateY(-2px); box-shadow: 0 10px 36px rgba(0,0,0,.25), 0 0 0 1px rgba(255,255,255,.08) inset; }
+    .tile h3{margin:0 0 6px; font-size:20px}
+    .tile p{margin:0; color:#e9f2ff; opacity:.9}
+    .tile .actions{display:flex; gap:10px; margin-top:12px; z-index:1}
+    .btn{
+      text-decoration:none; font-weight:800; cursor:pointer; border:none; outline:none;
+      padding:12px 14px; border-radius:12px; display:inline-flex; align-items:center; gap:8px;
+      color:#1a1300; background:linear-gradient(180deg,var(--gold),var(--amber));
+      box-shadow:0 10px 26px rgba(244,180,0,.32);
+    }
+    .btn.glow{
+      color:#021a1a; background:linear-gradient(180deg,#8dffe7,#38f6c6);
+      box-shadow:0 10px 26px rgba(56,246,198,.36);
+    }
+    .btn.rose{
+      color:#2c0011; background:linear-gradient(180deg,#ffc1d5,#ff7aa8);
+      box-shadow:0 10px 26px rgba(255,122,168,.35);
+    }
+    .nav{
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+    .icon{
+      width:18px; height:18px; display:inline-block;
+    }
+    .links{
+      display:flex; flex-direction:column; gap:10px;
+    }
+    .contact{
+      display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;
+    }
+    footer{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:18px}
+    .muted{color:#cfe0ff}
+    .list{margin:0; padding-left:1rem; opacity:.95}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo">AS</div>
+        <div>
+          <h1>عربي سايكو</h1>
+          <div class="tag">منصة نفسية عربية — تشخيص ذكي، اختبارات معيارية، علاج معرفي سلوكي، بسرية تامة</div>
+          <div class="badges">
+            <span class="badge">🔒 خصوصية و سرّية</span>
+            <span class="badge">🔬 إعتماد أدلة DSM-5</span>
+            <span class="badge">⚡ نتائج فورية</span>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-  <div class="contactbar">
-    <a class="link" href="/contact/telegram">✈️ تلجرام</a>
-    <a class="link" href="/contact/email">✉️ إيميل</a>
-  </div>
-</header>
+      <nav class="contact">
+        <a class="btn glow" href="/contact/telegram">
+          <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M9.1 16.3 8.9 20c.4 0 .6-.2.9-.4l2.1-2 4.3 3.1c.8.5 1.4.3 1.6-.8l2.9-13.4c.3-1.2-.4-1.7-1.2-1.4L2.8 9.7c-1.1.4-1.1 1.1-.2 1.4l4.3 1.3 10-6.3c.5-.3.9-.1.5.2l-8.1 7Z"/></svg>
+          تلجرام
+        </a>
+        <a class="btn rose" href="/contact/email">
+          <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5v2Z"/></svg>
+          إيميل
+        </a>
+      </nav>
+    </header>
 
-<section class="hero">
-  <div class="panel">
-    <div class="cta">
-      <a class="btn" href="/dsm">📋 التشخيص + دراسة حالة (DSM)</a>
-      <a class="btn" href="/cbt">🧪 الاختبارات + CBT</a>
-      <a class="btn" href="/addiction">🚭 برنامج الإدمان والتعافي</a>
-    </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <a class="link" href="/contact/whatsapp">واتساب</a>
-      <a class="link" href="/contact/telegram">تلجرام</a>
-      <a class="link" href="/contact/email">إيميل</a>
-    </div>
-  </div>
+    <section class="hero">
+      <div class="card">
+        <h2 class="headline">ابدأ هنا</h2>
+        <p class="lead">اختر خدمتك، كلها تعمل فوريًا داخل الموقع:</p>
 
-  <div class="grid">
-    <div class="tile">
-      <div>
-        <div class="head"><div class="ico">📋</div><h3>تشخيص DSM-5</h3></div>
-        <p>مطابقة ذكية للأعراض العربية + دراسة حالة مُحكمة</p>
+        <div class="cta-grid">
+          <!-- DSM -->
+          <div class="tile">
+            <div>
+              <h3>التشخيص + دراسة حالة (DSM)</h3>
+              <p>قارئ ذكي للأعراض بالعربية مع مرادفات ولهجات، يعطي تشخيصًا مرجّحًا مع المطابقات.</p>
+            </div>
+            <div class="actions">
+              <a class="btn" href="/dsm">اذهب إلى DSM</a>
+            </div>
+          </div>
+
+          <!-- CBT -->
+          <div class="tile">
+            <div>
+              <h3>العلاج السلوكي المعرفي + اختبارات</h3>
+              <p>لوحة تمارين CBT ونماذج واجبات، مع مقاييس PHQ-9 / GAD-7 / OCI وغيرها.</p>
+            </div>
+            <div class="actions">
+              <a class="btn glow" href="/cbt">ابدأ العلاج والاختبارات</a>
+            </div>
+          </div>
+
+          <!-- ADDICTION -->
+          <div class="tile">
+            <div>
+              <h3>برنامج الإدمان والتعافي</h3>
+              <p>تقييم أولي، خطة 12 خطوة، متابعة انتكاسة، وإحالات متخصصة عند الحاجة.</p>
+            </div>
+            <div class="actions">
+              <a class="btn rose" href="/addiction">الدخول إلى برنامج التعافي</a>
+            </div>
+          </div>
+        </div>
       </div>
-      <a class="ghost" href="/dsm">ابدأ التشخيص</a>
-    </div>
-    <div class="tile">
-      <div>
-        <div class="head"><div class="ico">🧪</div><h3>اختبارات + CBT</h3></div>
-        <p>PHQ-9 / GAD-7 / BDI / OCI وتمارين علاج سلوكي معرفي</p>
+
+      <aside class="card">
+        <h2 class="headline">لماذا عربي سايكو؟</h2>
+        <ul class="list">
+          <li>لغة عربية طبيّة + فهم العامية مباشرة.</li>
+          <li>نموذج تشخيصي مبني على كلمات DSM ومرادفات دقيقة.</li>
+          <li>تمارين CBT عملية قابلة للطباعة والمتابعة.</li>
+          <li>سياسة خصوصية صارمة، ولا تُحفظ أي معلومات حساسة بدون موافقة.</li>
+        </ul>
+        <div class="links" style="margin-top:14px">
+          <a class="btn" href="/dsm">ابدأ التشخيص الآن</a>
+          <a class="btn glow" href="/cbt">انتقل للتمارين والاختبارات</a>
+          <a class="btn rose" href="/addiction">برنامج الإدمان</a>
+        </div>
+      </aside>
+    </section>
+
+    <footer>
+      <div class="muted">© {{year}} عربي سايكو — منصة نفسية عربية</div>
+      <div class="badges">
+        <span class="badge">🔐 تشفير اتصال HTTPS</span>
+        <span class="badge">🛡️ لا نشارك بياناتك مع طرف ثالث</span>
       </div>
-      <a class="ghost" href="/cbt">ابدأ الآن</a>
-    </div>
-    <div class="tile">
-      <div>
-        <div class="head"><div class="ico">🚭</div><h3>الإدمان والتعافي</h3></div>
-        <p>تقييم أولي وخطة إقلاع مع متابعة سرية ومقاييس تقدّم</p>
-      </div>
-      <a class="ghost" href="/addiction">للتقييم السريع</a>
-    </div>
+    </footer>
   </div>
-</section>
-
-<footer>
-  <div>© {{year}} عربي سايكو</div>
-  <div>سياسة الخصوصية • شروط الاستخدام</div>
-</footer>
-
-</div></body></html>
+</body>
+</html>
 """
 
 @home_bp.route("/")
-def home():
-    import datetime
-    return render_template_string(HOME_HTML, year=datetime.datetime.utcnow().year)
+def hub():
+    from datetime import datetime
+    return render_template_string(HOME_HTML, year=datetime.utcnow().year)
+
+# روابط تواصل (إعادة توجيه بسيطة — يمكنك تعديلها لاحقًا)
+@home_bp.route("/contact/telegram")
+def contact_telegram():
+    from flask import redirect
+    return redirect("https://t.me/USERNAME", code=302)
+
+@home_bp.route("/contact/email")
+def contact_email():
+    from flask import redirect
+    return redirect("mailto:info@arabipsycho.com", code=302)
