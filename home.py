@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# home.py — الواجهة الرئيسية للموقع
+# home.py — صفحة ترحيب وروابط
 
 from flask import Blueprint, render_template_string, redirect
 
@@ -9,61 +9,54 @@ HOME_HTML = """
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <title>عربي سايكو</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;800&display=swap" rel="stylesheet">
-  <style>
-    :root{--bg1:#0b3a75;--bg2:#0a65b0;--gold:#f4b400;--ink:#04122c}
-    *{box-sizing:border-box}
-    body{margin:0;font-family:"Tajawal",system-ui;background:
-      radial-gradient(900px 480px at 85% -10%, #1a4bbd22, transparent),
-      linear-gradient(135deg,var(--bg1),var(--bg2)); color:#fff;}
-    .wrap{max-width:980px;margin:auto;padding:28px 16px}
-    header{display:flex;justify-content:space-between;align-items:center}
-    .brand{display:flex;gap:12px;align-items:center}
-    .badge{width:54px;height:54px;border-radius:16px;background:#0d2c54;border:1px solid #ffffff2a;display:grid;place-items:center;font-weight:800}
-    h1{margin:.2rem 0 .1rem}
-    .subtitle{margin:0;color:#cfe0ff}
-    .grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:22px}
-    .card{background:rgba(255,255,255,.08);border:1px solid #ffffff22;border-radius:16px;padding:16px}
-    .btn{display:block;width:100%;text-decoration:none;text-align:center;
-         background:var(--gold);color:var(--ink);padding:14px;border-radius:12px;
-         font-weight:800;box-shadow:0 6px 18px rgba(244,180,0,.28)}
-    .btn.ghost{background:rgba(255,255,255,.1);color:#fff;border:1px solid #ffffff2a;box-shadow:none}
-    footer{opacity:.8;margin-top:18px;font-size:.9rem}
-  </style>
+<meta charset="utf-8">
+<title>عربي سايكو | الواجهة</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{--b1:#0e2a47;--b2:#0f5fa4;--w:#fff;--g:#ffd54a}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Tajawal",system-ui;background:linear-gradient(135deg,var(--b1),var(--b2));color:var(--w)}
+  .wrap{max-width:860px;margin:48px auto;padding:16px}
+  h1{margin:0 0 6px}
+  p.sub{opacity:.9;margin:.2rem 0 1.2rem}
+  .grid{display:grid;gap:12px}
+  a.btn{display:block;text-decoration:none;text-align:center;font-weight:800;
+        background:linear-gradient(180deg,#ffe27a,var(--g));color:#1f1402;
+        padding:14px;border-radius:14px;border:1px solid #fff2}
+  a.btn.secondary{background:#ffffff22;color:#fff;border-color:#ffffff33}
+  .links{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .chip{background:#ffffff22;border:1px solid #ffffff33;color:#fff;padding:8px 10px;border-radius:999px;text-decoration:none}
+</style>
 </head>
 <body>
   <div class="wrap">
-    <header>
-      <div class="brand">
-        <div class="badge">AS</div>
-        <div>
-          <h1>عربي سايكو</h1>
-          <p class="subtitle">خدمة تشخيص مبدئي + CBT + برامج التعافي</p>
-        </div>
-      </div>
-    </header>
+    <h1>مرحبًا بك في موقع <b>عربي سايكو</b></h1>
+    <p class="sub">خدمة عربية موثوقة: تشخيص مبدئي (DSM) + اختبارات وCBT + أدوات للإدمان</p>
 
     <div class="grid">
-      <a class="btn" href="/dsm">🗂️ التشخيص + دراسة حالة (DSM)</a>
-      <a class="btn ghost" href="/cbt">🧠 العلاج السلوكي المعرفي (CBT)</a>
-      <a class="btn ghost" href="/addiction">🚭 الإدمان والتعافي</a>
-      <a class="btn ghost" href="/contact/telegram">✉️ تواصل عبر التلجرام</a>
+      <a class="btn" href="/dsm">📋 التشخيص + دراسة حالة (DSM)</a>
+      <a class="btn secondary" href="/cbt">🧠 العلاج السلوكي المعرفي + الاختبارات</a>
+      <a class="btn secondary" href="/addiction">🚭 الإدمان والتعافي</a>
     </div>
 
-    <footer>⚠️ التنبيه: النتائج تقديرية للمساعدة ولا تُعد تشخيصًا نهائيًا.</footer>
+    <div class="links">
+      <a class="chip" href="/contact/telegram">تلجرام</a>
+      <a class="chip" href="/contact/email">إيميل</a>
+    </div>
   </div>
 </body>
 </html>
 """
 
 @home_bp.route("/")
-def index():
+def root():
     return render_template_string(HOME_HTML)
 
-# روابط تواصل
 @home_bp.route("/contact/telegram")
 def contact_telegram():
     return redirect("https://t.me/USERNAME", code=302)
+
+@home_bp.route("/contact/email")
+def contact_email():
+    return redirect("mailto:info@arabipsycho.com", code=302)
