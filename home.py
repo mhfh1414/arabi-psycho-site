@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-# واجهة رئيسية محسّنة لهوية "عربي سايكو"
-from flask import Blueprint, render_template_string, redirect
+# home.py — واجهة عربية سايكو (هيدر + مربعات كبيرة + خصوصية)
+
+from flask import Blueprint, render_template_string
 
 home_bp = Blueprint("home", __name__)
 
@@ -9,145 +10,176 @@ HOME_HTML = """
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <title>عربي سايكو | منصّة نفسية عربية</title>
+  <title>عربي سايكو | الرئيسية</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg1:#0b3a75; --bg2:#0a65b0; --bg3:#091b33;
-      --gold:#f4b400; --ink:#071321; --card:rgba(255,255,255,.07); --line:rgba(255,255,255,.16);
-      --pill:#0f2f60; --text-2:#cfe0ff;
+      --bg1:#0b3a75; --bg2:#0a65b0; --ink:#0c1426;
+      --tile:#0f2d6b; --tile2:#13408a; --gold:#f4b400; --sky:#9bd5ff; --w:#fff
     }
     *{box-sizing:border-box}
-    html,body{margin:0;height:100%;font-family:"Tajawal",system-ui}
     body{
-      color:#fff;
+      margin:0; font-family:"Tajawal",system-ui;
       background:
-        radial-gradient(1200px 700px at 100% -10%, #2b6fff22, transparent),
-        linear-gradient(140deg,var(--bg1),var(--bg2) 55%, var(--bg3));
+        radial-gradient(1100px 520px at 85% -10%, #1a4bbd22, transparent),
+        linear-gradient(135deg,var(--bg1),var(--bg2));
+      color:var(--w)
     }
-    .wrap{max-width:1180px;margin:auto;padding:26px 16px}
-    header{display:flex;align-items:center;justify-content:space-between;gap:14px}
-    .brand{display:flex;align-items:center;gap:14px}
+    .wrap{max-width:1180px; margin:auto; padding:28px 16px}
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:18px
+    }
+    .brand{display:flex; align-items:center; gap:14px}
     .logo{
-      width:70px;height:70px;border-radius:18px;background:#0d2c54;
-      border:1px solid #ffffff2a;display:grid;place-items:center;box-shadow:0 10px 26px rgba(0,0,0,.35)
+      width:64px; height:64px; border-radius:18px;
+      background:linear-gradient(180deg,#10285a,#143e8a);
+      border:1px solid #ffffff40; display:grid; place-items:center;
+      box-shadow:0 10px 28px rgba(0,0,0,.25)
     }
-    .logo svg{width:48px;height:48px}
-    .title{margin:0;font-size:34px;letter-spacing:.4px}
-    .subtitle{margin:.25rem 0 0;color:var(--text-2)}
-    .pill{padding:8px 12px;border-radius:999px;background:var(--pill);border:1px solid #ffffff22;color:#fff;font-weight:700}
+    .logo svg{width:38px; height:38px; color:#ffd86a}
+    .title{margin:0; font-size:32px; font-weight:800}
+    .sub{margin:4px 0 0; color:#cfe0ff}
+    .badges{display:flex; gap:8px; flex-wrap:wrap}
+    .badge{
+      display:inline-flex; align-items:center; gap:8px; font-size:14px;
+      padding:6px 10px; border-radius:999px; background:#0d2c54; border:1px solid #ffffff33
+    }
+    .badge .dot{width:8px; height:8px; border-radius:50%; background:#22c55e}
+
+    /* Hero */
     .hero{
-      margin:22px 0 20px;padding:22px;border:1px solid var(--line);border-radius:22px;background:var(--card)
+      display:grid; grid-template-columns:1.1fr .9fr; gap:16px;
+      background:rgba(255,255,255,.06); border:1px solid #ffffff22; border-radius:18px;
+      padding:18px; margin-bottom:18px
     }
-    .hero h2{margin:0 0 6px;font-size:28px}
-    .hero p{margin:0;color:#d9e6ff}
-    .cta{display:flex;flex-wrap:wrap;gap:14px;margin-top:16px}
-    a.btn{
-      display:inline-flex;align-items:center;justify-content:center;gap:10px;min-width:260px;
-      text-decoration:none;font-weight:800;padding:14px 18px;border-radius:16px;border:1px solid #e7b000;
-      color:#2b1b02;background:linear-gradient(180deg,#ffe07c,#f4b400);
-      box-shadow:0 10px 24px rgba(244,180,0,.28);
-      transition:transform .08s ease, box-shadow .2s ease;
+    @media(max-width:1000px){.hero{grid-template-columns:1fr}}
+
+    /* CTA column (vertical buttons) */
+    .cta{display:flex; flex-direction:column; gap:12px}
+    .cta .btn{
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      padding:14px 16px; border-radius:14px; text-decoration:none; font-weight:800;
+      background:linear-gradient(180deg,#ffd86a,#f4b400); color:#2b1b02;
+      box-shadow:0 6px 18px rgba(244,180,0,.28)
     }
-    a.btn:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(244,180,0,.35)}
-    .btn.outline{
-      color:#fff;background:rgba(255,255,255,.08);border-color:#ffffff2a;box-shadow:none
+
+    /* Square tiles grid */
+    .tiles{
+      display:grid; grid-template-columns:repeat(3, 1fr); gap:14px
     }
-    .btn.outline:hover{background:rgba(255,255,255,.14)}
-    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:14px}
-    @media(max-width:980px){.grid{grid-template-columns:1fr}}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
-    .card h3{margin:0 0 6px}
-    .feats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
-    @media(max-width:980px){.feats{grid-template-columns:1fr}}
-    .feat{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:14px;padding:12px}
-    .feat b{display:block;margin-bottom:4px}
-    footer{margin:26px 0 10px;color:#cfe0ff;opacity:.9;text-align:center}
-    .icon{width:18px;height:18px}
-    .links{display:flex;gap:10px;flex-wrap:wrap}
+    @media(max-width:980px){.tiles{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:620px){.tiles{grid-template-columns:1fr}}
+
+    .tile{
+      aspect-ratio:1 / 1; /* مربع حقيقي */
+      background:linear-gradient(180deg,var(--tile),var(--tile2));
+      border:1px solid #ffffff22; border-radius:20px;
+      padding:16px; display:flex; flex-direction:column; justify-content:space-between;
+      box-shadow:0 10px 22px rgba(0,0,0,.22)
+    }
+    .tile .ico{
+      width:40px; height:40px; display:grid; place-items:center;
+      border-radius:12px; background:rgba(255,255,255,.10); border:1px solid #ffffff33
+    }
+    .tile h3{margin:10px 0 6px; font-size:20px}
+    .tile p{margin:0; color:#cfe0ff; font-size:14px}
+    .tile a{
+      margin-top:10px; display:inline-flex; align-items:center; justify-content:center;
+      gap:8px; padding:10px 12px; border-radius:12px; text-decoration:none;
+      font-weight:800; background:rgba(255,255,255,.12); color:#fff; border:1px solid #ffffff33
+    }
+    .tile a:hover{background:rgba(255,255,255,.18)}
+    .tile .cta{flex-direction:row}
+
+    /* Footer contacts */
+    .contacts{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+    .contact{
+      text-decoration:none; color:var(--w);
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid #ffffff22; background:rgba(255,255,255,.08);
+      padding:10px 12px; border-radius:12px
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
+
+    <!-- Header -->
     <header>
       <div class="brand">
-        <div class="logo" aria-label="شعار عربي سايكو">
-          <!-- شعار بسيط (SVG أحرف عربية) -->
-          <svg viewBox="0 0 64 64" fill="#f4b400" aria-hidden="true">
-            <circle cx="32" cy="32" r="28" fill="#0a2a57"/>
-            <path d="M18 38q6-10 14-10t14 10q-6 8-14 8t-14-8Z" fill="#f4b400"/>
-            <path d="M23 28q0-6 9-6t9 6" stroke="#f4b400" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <div class="logo" aria-label="Arabi Psycho logo">
+          <!-- قلب + موجة دماغ -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 5.5-7 10-7 10Z" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6 11c3-1.5 9-1.5 12 0" stroke-linecap="round"/>
           </svg>
         </div>
         <div>
           <h1 class="title">عربي سايكو</h1>
-          <p class="subtitle">خدمات نفسية متكاملة بالعربية: تشخيص مبدئي، اختبارات، علاج سلوكي معرفي</p>
+          <p class="sub">خدمات نفسية عربية متكاملة: تشخيص دقيق، اختبارات، علاج سلوكي معرفي، وتعافٍ من الإدمان</p>
+          <div class="badges">
+            <span class="badge"><span class="dot"></span> خصوصية وسرّية كاملة</span>
+            <span class="badge">استشارات عن بُعد</span>
+            <span class="badge">تقارير جاهزة للطباعة</span>
+          </div>
         </div>
       </div>
-      <div class="links">
-        <span class="pill">خصوصية وسريّة</span>
-        <a class="btn outline" href="/contact/telegram" title="تلجرام">
-          <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M9.1 16.3 8.9 20c.4 0 .6-.2.9-.4l2.1-2 4.3 3.1c.8.5 1.4.3 1.6-.8l2.9-13.4c.3-1.2-.4-1.7-1.2-1.4L2.8 9.7c-1.1.4-1.1 1.1-.2 1.4l4.3 1.3 10-6.3c.5-.3.9-.1.5.2l-8.1 7Z"/></svg>
-          تلجرام
-        </a>
-        <a class="btn outline" href="/contact/email" title="إيميل">
-          <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5v2Z"/></svg>
-          إيميل
-        </a>
+
+      <div class="badges">
+        <a class="contact" href="/contact/telegram" title="تلجرام">✈️ تلجرام</a>
+        <a class="contact" href="/contact/email" title="إيميل">✉️ إيميل</a>
       </div>
     </header>
 
+    <!-- Hero: left column vertical CTA + right tiles -->
     <section class="hero">
-      <h2>مرحباً بك 👋</h2>
-      <p>ابدأ بالتشخيص المبدئي (DSM) أو اختبارات القلق والاكتئاب وغيرها، ثم احصل على خطة علاج سلوكي معرفي (CBT) مبسطة.</p>
       <div class="cta">
         <a class="btn" href="/dsm">📋 التشخيص + دراسة حالة (DSM)</a>
         <a class="btn" href="/cbt">🧪 الاختبارات + CBT</a>
         <a class="btn" href="/addiction">🚭 برنامج الإدمان والتعافي</a>
       </div>
+
+      <div class="tiles">
+        <div class="tile">
+          <div class="ico">📋</div>
+          <div>
+            <h3>تشخيص DSM-5</h3>
+            <p>مطابقة ذكية للأعراض العربية + دراسة حالة منسقة</p>
+          </div>
+          <a href="/dsm">ابدأ التشخيص</a>
+        </div>
+        <div class="tile">
+          <div class="ico">🧪</div>
+          <div>
+            <h3>اختبارات + CBT</h3>
+            <p>PHQ-9 / GAD-7 / OCI / BDI ودفتر تمارين علاجي</p>
+          </div>
+          <a href="/cbt">ابدأ الآن</a>
+        </div>
+        <div class="tile">
+          <div class="ico">🚭</div>
+          <div>
+            <h3>برنامج الإدمان</h3>
+            <p>تقييم أولي وخطة تعافٍ مع متابعة سرية</p>
+          </div>
+          <a href="/addiction">للتقييم السريع</a>
+        </div>
+      </div>
     </section>
 
-    <section class="feats">
-      <div class="feat"><b>دقّة عملية</b>مطابقة كلمات عاميّة ومرادفات + مدة الأعراض + الأثر الوظيفي لإخراج تشخيص مرجّح واحد.</div>
-      <div class="feat"><b>اختبارات معيارية</b>PHQ-9 للاكتئاب، GAD-7 للقلق، PCL-5 للصدمة… بنتائج فورية وتفسير مبسّط.</div>
-      <div class="feat"><b>CBT خطوة بخطوة</b>تمارين أفكار/سلوك/تعرض، متابعة أسبوعية، وتوصيات عملية قابلة للتطبيق.</div>
-    </section>
+    <!-- Extra contacts (optional) -->
+    <div class="contacts">
+      <a class="contact" href="/contact/whatsapp">واتساب</a>
+      <a class="contact" href="/contact/telegram">تلجرام</a>
+      <a class="contact" href="/contact/email">إيميل</a>
+    </div>
 
-    <section class="grid">
-      <div class="card">
-        <h3>📖 DSM-5</h3>
-        <p>تحليل الأعراض بالعربية (فصحى/عامية)، رصد “رايات حمراء”، ونتيجة مرجّحة واضحة قابلة للطباعة.</p>
-        <a class="btn outline" href="/dsm">ابدأ التشخيص</a>
-      </div>
-      <div class="card">
-        <h3>🧠 العلاج السلوكي المعرفي</h3>
-        <p>مخططات سجلات أفكار، التعرض، جدول أنشطة ممتعة، وخطة أهداف أسبوعية.</p>
-        <a class="btn outline" href="/cbt">انتقل إلى التمارين</a>
-      </div>
-      <div class="card">
-        <h3>🚭 الإدمان</h3>
-        <p>تقييم شدة التعاطي، محفّزات الانتكاس، وبناء خطة تعافٍ تدريجية مع روابط دعم.</p>
-        <a class="btn outline" href="/addiction">ابدأ برنامج التعافي</a>
-      </div>
-    </section>
-
-    <footer>© {{year}} عربي سايكو — أداة مساعدة لا تُغني عن التقييم السريري المباشر</footer>
   </div>
 </body>
 </html>
 """
 
-@home_bp.route("/", methods=["GET"])
+@home_bp.route("/")
 def home():
-    import datetime
-    return render_template_string(HOME_HTML, year=datetime.datetime.utcnow().year)
-
-# تحويلات تواصل
-@home_bp.route("/contact/telegram")
-def contact_telegram():
-    return redirect("https://t.me/USERNAME", code=302)
-
-@home_bp.route("/contact/email")
-def contact_email():
-    return redirect("mailto:info@arabipsycho.com", code=302)
+    return render_template_string(HOME_HTML)
