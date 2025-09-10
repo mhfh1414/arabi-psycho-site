@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# site_app.py — ملف التشغيل الرئيسي للموقع
+# site_app.py — ملف التشغيل الرئيسي لموقع عربي سايكو
+
 from flask import Flask
 from home import home_bp
 from dsm_suite import dsm_bp
@@ -9,15 +10,15 @@ from addiction_suite import addiction_bp
 def create_app():
     app = Flask(__name__)
 
-    # تسجيل البلوبرنتس
-    app.register_blueprint(home_bp)         # /
-    app.register_blueprint(dsm_bp, url_prefix="")   # /dsm
-    app.register_blueprint(cbt_bp, url_prefix="")   # /cbt
-    app.register_blueprint(addiction_bp, url_prefix="")  # /addiction
+    # تسجيل جميع البلوبرنتس
+    app.register_blueprint(home_bp, url_prefix="/")          # الصفحة الرئيسية
+    app.register_blueprint(dsm_bp, url_prefix="/dsm")        # DSM
+    app.register_blueprint(cbt_bp, url_prefix="/cbt")        # CBT
+    app.register_blueprint(addiction_bp, url_prefix="/addiction")  # الإدمان
 
     return app
 
-# التشغيل
+# هذا هو التطبيق الأساسي
 app = create_app()
 
 if __name__ == "__main__":
