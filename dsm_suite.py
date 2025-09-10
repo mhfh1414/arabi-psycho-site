@@ -1,271 +1,368 @@
 # -*- coding: utf-8 -*-
-# dsm_suite.py — بلوبرنت DSM موسّع (تشخيص واحد أدق)
-
-from flask import Blueprint, render_template_string, request
+# dsm_suite.py — DSM تشخيص مبدئي (تشخيص واحد مرجّح) + نموذج دراسة حالة
+from __future__ import annotations
+from flask import Blueprint, request, render_template_string
 import re
-from difflib import SequenceMatcher
 
-dsm_bp = Blueprint("dsm", __name__, url_prefix="/dsm")
+# --------------------------- إعدادات عامة ---------------------------
+dsm_bp = Blueprint("dsm", __name__)
 
-# ------------------ أدوات نص عربية ------------------
-_AR_DIAC = r"[ًٌٍَُِّْـ]"
-_AR_PUNCT = r"[.,،;؛!?؟()\[\]{}\"'<>:/\\|*_+=-]"
+MIN_SCORE = 2.2          # أقل درجة لقبول التشخيص
+CRITICAL_BOOST = 1.2     # مضاعف إذا ظهرت راية حمراء
+FUNCTIONAL_BOOST = 1.1   # مضاعف عند وجود أثر وظيفي واضح
+DURATION_BOOSTS = [      # تعزيز حسب المدة (أيام)
+    (365*2, 1.25), (180, 1.18), (90, 1.12), (30, 1.06)
+]
 
-def normalize(text: str) -> str:
-    if not text: return ""
-    t = text.strip().lower()
-    t = re.sub(_AR_DIAC, "", t)
-    t = re.sub(_AR_PUNCT, " ", t)
-    t = (t.replace("أ","ا").replace("إ","ا").replace("آ","ا")
-           .replace("ة","ه").replace("ى","ي").replace("ؤ","و").replace("ئ","ي"))
-    t = re.sub(r"\s+", " ", t)
-    return t
+# --------------------------- أدوات عربية ---------------------------
+_AR_DIAC  = r"[ًٌٍَُِّْـ]"
+_AR_PUNCT = r"[.,،;؛!?؟()\[\]{}\"\'<>:]"
 
-def sim(a: str, b: str) -> float:
-    return SequenceMatcher(None, a, b).ratio()
+def normalize(s: str) -> str:
+    if not s: return ""
+    s = re.sub(_AR_DIAC, "", s.strip())
+    s = re.sub(_AR_PUNCT, " ", s)
+    s = (s.replace("أ","ا").replace("إ","ا").replace("آ","ا")
+           .replace("ة","ه").replace("ى","ي").replace("ؤ","و").replace("ئ","ي")
+           .replace("ـ","").replace("ﻻ","لا").replace("ﻷ","لا"))
+    s = re.sub(r"\s+", " ", s)
+    return s.lower()
 
-# ------------------ مرادفات بسيطة لتعزيز المطابقة ------------------
-SYN = {
-    "حزن": ["كابه","ضيقه","تعاسه","زعل"],
-    "انعدام المتعه": ["فقدان المتعه","فقدان الاهتمام","ما عاد يفرحني شي"],
-    "قلق": ["توتر","توجس","على اعصابي"],
-    "نوبه هلع": ["هلع","ذعر","فجعه"],
-    "هلوسه": ["هلاوس","اسمع اصوات","اشوف اشياء"],
-    "اوهام": ["ضلالات","افكار وهاميه","بارانويا","اضطهاد"],
-    "رهاب اجتماعي": ["خوف اجتماعي","خجل شديد","قلق اداء"],
-    "وسواس": ["افكار متسلطه","اقتحاميه","هواجس"],
-    "سلوك قهري": ["طقوس","غسل متكرر","تفقد متكرر","عد قهري"],
-    "تشتت": ["عدم تركيز","نسيان","سهو"],
-    "فرط حركه": ["نشاط زائد","اندفاع","مقاطعه"],
-    "شهية منخفضه": ["سدت نفسي","قلة اكل"],
-    "نهم": ["شراهه","اكل كثير","نوبات اكل"],
+def tokens(s: str) -> set[str]:
+    return set(normalize(s).split())
+
+def sim_contains(text_norm: str, phrase: str, hard: bool=False) -> bool:
+    p = normalize(phrase)
+    if hard:
+        return p in text_norm
+    # مطابقة ناعمة: كل كلمات العبارة موجودة ضمن النص
+    ptoks = set(p.split())
+    return ptoks.issubset(set(text_norm.split()))
+
+# --------------------------- مرادفات ---------------------------
+SYNONYMS = {
+    "حزن": ["كابه","تعاسه","زعل","ضيقه","غم"],
+    "انعدام المتعة": ["فقدان المتعه","ما استمتع","ما عاد يفرحني شي","فقدان الاهتمام"],
+    "طاقة منخفضة": ["خمول","كسل","ارهاق","تعب","وهن","هبوط طاقه"],
+    "اضطراب نوم": ["ارق","قلة نوم","نوم متقطع","استيقاظ مبكر","كثرة نوم","كوابيس","نعاس نهاري"],
+    "شهية منخفضة": ["قلة اكل","سدت نفسي","فقدان شهيه"],
+    "شهية زائدة": ["نهم","اكل كثير","شراهه"],
+    "انسحاب اجتماعي": ["انعزال","انطواء","تجنب اجتماعي"],
+    "تفكير انتحاري": ["افكار انتحار","تمني الموت","رغبه بالموت"],
+    "قلق": ["توتر","توجس","على اعصابي","قلق مفرط"],
+    "نوبة هلع": ["خفقان","اختناق","ضيق نفس","ذعر","رجفه","تعرق","دوار"],
+    "خوف اجتماعي": ["رهبه مواجهه","خجل شديد","قلق اداء"],
+    "خوف شديد": ["فوبيا","خوف طيران","خوف المرتفعات","خوف الظلام","خوف حقن","خوف حشرات","خوف دم"],
+    "وسواس": ["افكار متسلطه","اقتحاميه","هواجس","خوف تلوث"],
+    "سلوك قهري": ["طقوس","تفقد متكرر","عد قهري","غسل متكرر","تنظيم مفرط"],
+    "حدث صادم": ["تعرضت لحادث","اعتداء","كارثه","حرب","فقد عزيز","تنمر قاس"],
+    "استرجاع الحدث": ["فلاش باك","ذكريات مؤلمه","كوابيس","فرط تيقظ"],
+    "هلوسة": ["هلاوس سمعيه","اسمع اصوات","اشوف اشياء"],
+    "اوهام": ["ضلالات","اعتقادات وهميه","اضطهاد","عظمه","غيره وهاميه"],
+    "تشتت": ["عدم تركيز","سهو","شرود","نسيان","ضعف تنظيم"],
+    "فرط حركة": ["نشاط زائد","اندفاع","مقاطعه","ملل سريع"],
+    "تواصل اجتماعي ضعيف": ["صعوبه تواصل","تواصل بصري ضعيف","تواصل غير لفظي ضعيف"],
+    "اهتمامات مقيدة": ["روتين صارم","حساسيات صوت","حساسيات ضوء","سلوك نمطي"],
+    "نهم": ["شراهه","نوبات اكل","اكل سرا"],
     "تطهير": ["استفراغ متعمد","ملينات","صيام تعويضي"],
+    "الم غير مفسر": ["اوجاع متنقله","وجع بلا سبب","شكاوى جسديه"],
+    "قلق صحي": ["وسواس مرض","توهم المرض","تفقد جسد"],
+    "مزاج مكتئب مزمن": ["تعاسه مزمنه","تشاؤم مزمن"],
+    "نوبة هوس": ["نشوه غير طبيعيه","طاقه عاليه","قليل نوم","اندفاع","تهور","افكار سباق","طلاقة الكلام","عظمة"],
 }
 
-def expand_with_syn(text: str) -> str:
-    base = normalize(text)
-    bag = [base]
-    for k, vs in SYN.items():
-        k_n = normalize(k)
-        if k_n in base or any(normalize(v) in base for v in vs):
-            bag += [k_n] + [normalize(v) for v in vs]
-    return " ".join(bag)
+CRITICAL_SYM = {"هلوسة","اوهام","نوبة هلع","تفكير انتحاري"}
 
-# ------------------ قاعدة DSM موسعة (مختارة) ------------------
-# لكل اضطراب: required (يجب توفرها)، keywords (تحسب نقاط)، weight (ترجيح)
-DSM = {
+def expand_with_synonyms(text: str) -> str:
+    t = normalize(text)
+    for base, syns in SYNONYMS.items():
+        if any(normalize(w) in t for w in [base] + syns):
+            t += " " + " ".join(set(normalize(s) for s in ([base] + syns)))
+    return t
+
+# --------------------------- قاعدة DSM ---------------------------
+# required = أعراض لازمة، min_days = حد أدنى للمدة، max_days اختياري، weight = وزن الاضطراب
+DSM_DB = {
+    # ذهاني
+    "فصام": {
+        "required": ["هلوسة","اوهام"],
+        "keywords": ["تفكير غير منظم","انسحاب اجتماعي","تسطح وجداني","انعدام اراده"],
+        "min_days": 180, "weight": 2.0
+    },
+    "اضطراب فصامي عاطفي": {
+        "required": ["هلوسة"],
+        "keywords": ["اوهام","اكتئاب شديد","نوبة هوس","تذبذب مزاج"],
+        "min_days": 30, "weight": 1.7
+    },
+
+    # مزاج
     "اضطراب اكتئابي جسيم": {
-        "required": ["حزن", "انعدام المتعه"],
-        "keywords": ["قلة نوم","كثرة نوم","تعب","بطء نفسي حركي","شعور بالذنب","ياس","تفكير انتحاري","شهية منخفضه"],
-        "weight": 1.7
+        "required": ["حزن","انعدام المتعة"],
+        "keywords": ["طاقة منخفضة","اضطراب نوم","انسحاب اجتماعي","تركيز ضعيف","شعور بالذنب","يأس","تفكير انتحاري","شهية منخفضة","شهية زائدة"],
+        "min_days": 14, "weight": 1.9
     },
     "اكتئاب مستمر (عسر المزاج)": {
-        "required": ["حزن"],
-        "keywords": ["مزمن","سنتين","قلة طاقه","قله تركيز","نوم سيء","ثقه منخفضه"],
-        "weight": 1.3
+        "required": ["مزاج مكتئب مزمن"],
+        "keywords": ["طاقة منخفضة","نوم ضعيف","شهية قليلة","ثقه منخفضه","انتاجية ضعيفه"],
+        "min_days": 730, "weight": 1.5
     },
-    "اضطراب ثنائي القطب (نوبة هوس)": {
-        "required": ["طاقة عاليه","قليل نوم"],
-        "keywords": ["اندفاع","افكار سباق","طلاقة الكلام","عظمه","تهور","مشاكل قانونيه"],
-        "weight": 1.8
+    "اضطراب ثنائي القطب": {
+        "required": ["نوبة هوس"],
+        "keywords": ["قلة نوم","اندفاع","تهور","افكار سباق","طلاقة الكلام","عظمة","نوبات اكتئاب"],
+        "min_days": 4, "weight": 1.8
     },
+
+    # قلق/رهاب/هلع
     "اضطراب القلق العام": {
         "required": ["قلق"],
-        "keywords": ["شد عضلي","صعوبه تركيز","ارق","تعب","قابليه استفزاز","قلق مفرط"],
-        "weight": 1.4
+        "keywords": ["قلق مفرط","توتر","توجس","شد عضلي","صعوبة تركيز","أرق","تعب","قابلية استفزاز"],
+        "min_days": 90, "weight": 1.45
     },
     "اضطراب الهلع": {
-        "required": ["نوبه هلع"],
-        "keywords": ["خفقان","ضيق نفس","اختناق","رجفه","تعرق","خوف الموت"],
-        "weight": 1.6
+        "required": ["نوبة هلع"],
+        "keywords": ["خفقان","اختناق","ضيق نفس","رجفه","تعرق","دوار","خوف الموت","خوف فقدان السيطرة"],
+        "min_days": 0, "weight": 1.6
     },
     "رهاب اجتماعي": {
-        "required": ["رهاب اجتماعي"],
-        "keywords": ["تجنب اجتماعي","احمرار","رجفه","خوف تقييم"],
-        "weight": 1.35
+        "required": ["خوف اجتماعي"],
+        "keywords": ["قلق اداء","خجل شديد","تجنب اجتماعي","احمرار","رجفه"],
+        "min_days": 30, "weight": 1.4
     },
     "رهاب محدد": {
         "required": ["خوف شديد"],
-        "keywords": ["فوبيا","حشرات","طيران","مرتفعات","حقن","دم","ظلام"],
-        "weight": 1.2
+        "keywords": ["خوف طيران","خوف المرتفعات","خوف الظلام","خوف حقن","خوف حشرات","خوف دم"],
+        "min_days": 0, "weight": 1.3
     },
-    "رهاب الساحه": {
-        "required": ["خوف من الاماكن المفتوحه"],
-        "keywords": ["مواصلات","تجمعات","تجنب الخروج وحيدا"],
-        "weight": 1.3
-    },
+
+    # وسواس
     "اضطراب الوسواس القهري": {
         "required": ["وسواس","سلوك قهري"],
-        "keywords": ["غسل متكرر","تفقد","عد","تنظيم","تدنيس","خوف تلوث"],
-        "weight": 1.7
+        "keywords": ["تفقد متكرر","غسل متكرر","تنظيم مفرط","عد قهري","خوف تلوث"],
+        "min_days": 30, "weight": 1.7
     },
+
+    # صدمة
     "اضطراب ما بعد الصدمة": {
-        "required": ["حدث صادم","استرجاع"],
-        "keywords": ["كوابيس","يقظه مفرطه","تجنب","خدر عاطفي","ذنب الناجي"],
-        "weight": 1.7
+        "required": ["حدث صادم","استرجاع الحدث"],
+        "keywords": ["كابوس","تجنب","خدر عاطفي","يقظه مفرطه","ذنب الناجي"],
+        "min_days": 30, "weight": 1.8
     },
-    "فصام": {
-        "required": ["هلوسه","اوهام"],
-        "keywords": ["تفكير غير منظم","انسحاب اجتماعي","تسطح وجداني"],
-        "weight": 1.9
+    "اضطراب تكيف": {
+        "required": ["توتر موقف"],
+        "keywords": ["حزن بعد حدث","قلق ظرفي","تراجع اداء بعد ضغط","مشاكل عمل/دراسة"],
+        "min_days": 0, "max_days": 180, "weight": 1.25
     },
-    "اضطراب فصامي عاطفي": {
-        "required": ["هلوسه"],
-        "keywords": ["نوبات اكتئاب","نوبات هوس","تذبذب مزاج"],
-        "weight": 1.6
+
+    # أعراض جسدية
+    "أعراض جسدية": {
+        "required": ["الم غير مفسر"],
+        "keywords": ["اعراض جسدية متعددة","انشغال صحي","زياره اطباء كثيره"],
+        "min_days": 30, "weight": 1.5
     },
-    "نهم عصبي (نهام)": {
-        "required": ["نهم","تطهير"],
-        "keywords": ["ذنب بعد الاكل","اختلال وزن"],
-        "weight": 1.5
+    "قلق المرض": {
+        "required": ["قلق صحي"],
+        "keywords": ["خوف مرض خطير","تفقد جسد","طمانه متكرره","بحث طبي مستمر"],
+        "min_days": 90, "weight": 1.45
     },
+
+    # أكل
     "قهم عصبي": {
         "required": ["نقص وزن شديد","خوف من زياده الوزن"],
-        "keywords": ["تقييد طعام","صورة جسد سلبيه"],
-        "weight": 1.6
+        "keywords": ["صورة جسد سلبيه","تقييد طعام"],
+        "min_days": 30, "weight": 1.7
+    },
+    "نهام عصبي": {
+        "required": ["نهم","تطهير"],
+        "keywords": ["استفراغ","ملينات","ذنب بعد الاكل"],
+        "min_days": 30, "weight": 1.6
     },
     "اضطراب نهم الطعام": {
-        "required": ["نهم"],
-        "keywords": ["فقدان تحكم","اكل سرا","زياده وزن"],
-        "weight": 1.4
-    },
-    "اعراض جسديه (Somatic)": {
-        "required": ["الم غير مفسر"],
-        "keywords": ["زياره اطباء كثيره","انشغال صحي"],
-        "weight": 1.3
-    },
-    "اضطراب نقص الانتباه وفرط الحركه": {
-        "required": ["تشتت","فرط حركه"],
-        "keywords": ["اندفاع","نسيان","تنظيم ضعيف"],
-        "weight": 1.25
-    },
-    "شخصية حدّيه": {
-        "required": ["تقلب عاطفي"],
-        "keywords": ["اندفاع","خوف هجر","ايذاء ذاتي","فراغ مزمن"],
-        "weight": 1.2
+        "required": ["نهم","فقدان تحكم"],
+        "keywords": ["اكل سرا","زيادة وزن"],
+        "min_days": 30, "weight": 1.5
     },
 }
 
-# حوّل كل required/keywords إلى نسخ مطبّعة لسرعة المطابقة
-DSM_IDX = {}
-for name, meta in DSM.items():
-    DSM_IDX[name] = {
-        "required": [normalize(x) for x in meta["required"]],
-        "keywords": [normalize(x) for x in meta["keywords"]],
-        "weight": float(meta.get("weight", 1.0)),
-    }
+# --------------------------- محرك الدرجات ---------------------------
+def score_case(symptoms: str, duration_days: int, history: str="") -> list[dict]:
+    text = expand_with_synonyms(symptoms or "")
+    hist = normalize(history or "")
 
-# ------------------ محرك التشخيص (يعيد تشخيص واحد) ------------------
-def diagnose(symptoms: str, duration_days: int = 0) -> tuple[str, float, list]:
-    text = expand_with_syn(symptoms)
-    durB = 1.0
-    if duration_days >= 365: durB = 1.2
-    elif duration_days >= 90: durB = 1.12
-    elif duration_days >= 30: durB = 1.06
+    # تعزيز مدة الأعراض
+    dur_boost = 1.0
+    for days, boost in DURATION_BOOSTS:
+        if duration_days >= days:
+            dur_boost = boost
+            break
 
-    best_name, best_score, best_hits = None, 0.0, []
+    # أثر وظيفي؟
+    func_boost = FUNCTIONAL_BOOST if any(
+        k in hist for k in ["مشاكل عمل","تعثر دراسي","غياب","طلاق","تراجع اداء","مشاكل زواج"]
+    ) else 1.0
 
-    for name, meta in DSM_IDX.items():
-        # تحقّق المطلوبات
-        if meta["required"] and not all(r in text or sim(text, r) >= 0.72 for r in meta["required"]):
+    out = []
+    for dx, meta in DSM_DB.items():
+        req = meta.get("required", [])
+        # تحقق وجود المطلوبات (ناعمة)
+        if req and not all(sim_contains(text, r) for r in req):
             continue
 
+        # مدة الحد الأدنى/الأقصى
+        min_days = meta.get("min_days", 0)
+        if duration_days < min_days:
+            continue
+        max_days = meta.get("max_days", None)
+        if max_days is not None and duration_days > max_days:
+            continue
+
+        # تجميع الدرجات
         sc = 0.0
         hits = []
-        for kw in meta["keywords"] + meta["required"]:
-            if kw in text:
-                w = 1.0
-                if kw in ("هلوسه","اوهام","تفكير انتحاري","نوبه هلع"): w = 1.6
-                sc += w; hits.append(kw)
-            else:
-                s = sim(text, kw)
-                if s >= 0.72:
-                    sc += 0.7; hits.append(kw+"~")
-                elif s >= 0.5:
-                    sc += 0.35
 
-        # ترجيحات عامة
-        sc *= meta["weight"]
-        sc *= durB
+        # نقاط للأعراض المطلوبة (أقوى)
+        for r in req:
+            if sim_contains(text, r):
+                sc += 1.1
+                hits.append(r)
 
-        if sc > best_score:
-            best_name, best_score, best_hits = name, sc, hits
+        # نقاط لبقية الكلمات المفتاحية
+        for k in meta.get("keywords", []):
+            if sim_contains(text, k):
+                sc += 0.7
+                hits.append(k)
 
-    return best_name, round(best_score, 2), best_hits
+        if sc == 0:
+            continue
 
-# ------------------ واجهة HTML ------------------
+        # رايات حرجة؟
+        if any(sim_contains(text, c) for c in CRITICAL_SYM):
+            sc *= CRITICAL_BOOST
+
+        # تعزيزات عامة
+        sc *= meta.get("weight", 1.0)
+        sc *= dur_boost
+        sc *= func_boost
+
+        out.append({
+            "name": dx,
+            "score": round(sc, 2),
+            "hits": list(dict.fromkeys(hits))[:12]
+        })
+
+    out.sort(key=lambda x: x["score"], reverse=True)
+    return out
+
+def pick_best(candidates: list[dict]) -> dict | None:
+    if not candidates:
+        return None
+    best = candidates[0]
+    return best if best["score"] >= MIN_SCORE else None
+
+# --------------------------- واجهة HTML ---------------------------
 PAGE = """
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <title>DSM-5 | دراسة حالة وتشخيص أدق</title>
+  <title>DSM | دراسة حالة وتشخيص</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-    body{margin:0;font-family:'Tajawal',system-ui;background:linear-gradient(135deg,#0b3a75,#0a65b0);color:#fff}
-    .wrap{max-width:1100px;margin:24px auto;padding:16px}
-    .card{background:rgba(255,255,255,.08);border:1px solid #ffffff22;border-radius:16px;padding:18px}
-    label{color:#ffd86a;margin:8px 0 6px;display:block}
-    input,textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid #ffffff33;background:rgba(255,255,255,.12);color:#fff}
-    textarea{min-height:130px;resize:vertical}
-    button{margin-top:12px;background:#f4b400;color:#2b1b02;border:none;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer}
-    .result{margin-top:16px;padding:14px;border-radius:14px;background:#fff;color:#111}
-    .hits span{display:inline-block;margin:3px 6px 0 0;padding:4px 8px;border-radius:999px;background:#eef}
+    :root{--bg1:#0b3a75;--bg2:#0a65b0;--gold:#f4b400}
+    *{box-sizing:border-box}
+    body{font-family:"Tajawal",system-ui;background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#fff;margin:0}
+    .wrap{max-width:1100px;margin:26px auto;padding:14px}
+    .card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:16px}
+    label{display:block;color:#ffe28a;margin:6px 2px}
+    input,select,textarea{width:100%;border-radius:12px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff;padding:11px}
+    textarea{min-height:120px;resize:vertical}
+    .btn{background:var(--gold);color:#2b1b02;border:none;padding:12px 16px;border-radius:12px;font-weight:800;cursor:pointer}
+    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
+    @media(max-width:1000px){.grid{grid-template-columns:1fr}}
+    .badge{display:inline-block;background:#16a34a;color:#fff;padding:4px 10px;border-radius:999px}
+    .warn{background:#ef4444}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{border-bottom:1px solid rgba(255,255,255,.15);padding:8px;text-align:right}
+    th{color:#ffe28a}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="card">
-      <h2>🗂️ دراسة حالة + تشخيص (DSM)</h2>
-      <form method="post">
-        <label>الأعراض (اكتب وصفًا حرًا)</label>
-        <textarea name="symptoms" placeholder="مثال: هلوسه سمعيه، اوهام اضطهاد، انسحاب عن الناس...">{{ symptoms or "" }}</textarea>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div>
-            <label>مدة الأعراض (بالأيام)</label>
-            <input name="duration" value="{{ duration or "" }}" placeholder="90">
+    <h2>🗂️ دراسة حالة + تشخيص (DSM)</h2>
+    <div class="grid">
+      <section class="card">
+        <form method="post">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div><label>الاسم (اختياري)</label><input name="name" value="{{name}}"></div>
+            <div><label>العمر</label><input name="age" value="{{age}}" placeholder="مثال 30"></div>
+            <div><label>الجنس</label>
+              <select name="gender">
+                <option value="" {{'selected' if not gender else ''}}>— اختر —</option>
+                <option {{'selected' if gender=='ذكر' else ''}}>ذكر</option>
+                <option {{'selected' if gender=='أنثى' else ''}}>أنثى</option>
+              </select>
+            </div>
+            <div><label>مدة الأعراض (أيام)</label><input name="duration" value="{{duration}}" placeholder="90"></div>
           </div>
-          <div>
-            <label>الاسم (اختياري)</label>
-            <input name="name" value="{{ name or "" }}" placeholder="الاسم">
+          <label>الأعراض (حرّر بعامية واضحة)</label>
+          <textarea name="symptoms" placeholder="مثال: حزن شديد، فقدان المتعة، قلة نوم، أفكار انتحار...">{{symptoms}}</textarea>
+          <label>التاريخ/الأثر الوظيفي (عمل/دراسة/علاقات/قضايا…)</label>
+          <textarea name="history">{{history}}</textarea>
+          <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn" type="submit">إصدار تشخيص</button>
+            <a class="btn" href="/" style="text-decoration:none;background:#9bd5ff;color:#04122c">الواجهة</a>
           </div>
-        </div>
-        <button type="submit">تشخيص أدق</button>
-      </form>
-
-      {% if dx %}
-        <div class="result">
-          <h3>📋 التشخيص الأدق: {{ dx }}</h3>
-          <p>الدرجة الكلية: <b>{{ score }}</b></p>
-          <div class="hits">
-            <small>مطابقات:</small>
-            {% for h in hits %}<span>{{ h }}</span>{% endfor %}
-          </div>
-          <p style="opacity:.75;margin-top:8px">⚠️ هذه نتيجة مساعدة وليست بديلاً عن التقييم الإكلينيكي.</p>
-        </div>
-      {% elif tried %}
-        <div class="result"><b>❌ لا توجد مطابقة كافية.</b> أضف مفردات أدق (مثلاً: هلوسه/اوهام/وسواس/نوبه هلع/رهاب/نهم/تطهير/انعدام المتعه...).</div>
-      {% endif %}
+        </form>
+      </section>
+      <aside class="card">
+        {% if result %}
+          <div><span class="badge">التشخيص المرجّح</span></div>
+          <h3 style="margin:.4rem 0 0">{{result.name}}</h3>
+          <div style="opacity:.8">الدرجة: {{result.score}}</div>
+          <table>
+            <thead><tr><th>مطابقات</th></tr></thead>
+            <tbody>
+              {% for h in result.hits %}
+              <tr><td>{{h}}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <p style="opacity:.8;margin-top:8px">⚠️ أداة مساعدة ولا تغني عن التقييم السريري.</p>
+        {% else %}
+          <div><span class="badge warn">لا تشخيص مؤكد بعد</span></div>
+          <p>اكتب مفردات أدق (مثال: <b>هلوسة/أوهام/نوبة هلع/وسواس+طقوس/نهم+تطهير/انقطاع نفس</b>) واذكر المدة والأثر الوظيفي.</p>
+        {% endif %}
+      </aside>
     </div>
   </div>
 </body>
 </html>
 """
 
-# ------------------ المسار ------------------
-@dsm_bp.route("/", methods=["GET","POST"])
+# --------------------------- المسار ---------------------------
+@dsm_bp.route("/dsm", methods=["GET", "POST"])
 def dsm_hub():
-    ctx = {"dx": None, "score": None, "hits": [], "tried": False,
-           "symptoms":"", "duration":"", "name":""}
+    form = request.form if request.method == "POST" else {}
+    name     = (form.get("name") or "").strip()
+    age      = (form.get("age") or "").strip()
+    gender   = (form.get("gender") or "").strip()
+    duration = (form.get("duration") or "").strip()
+    symptoms = (form.get("symptoms") or "").strip()
+    history  = (form.get("history") or "").strip()
+
+    try:
+        d = int(float(duration)) if duration else 0
+    except Exception:
+        d = 0
+
+    result = None
     if request.method == "POST":
-        ctx["tried"] = True
-        raw_symptoms = request.form.get("symptoms","")
-        ctx["symptoms"] = raw_symptoms
-        dur_raw = request.form.get("duration","")
-        ctx["duration"] = dur_raw
-        try: dur = int(dur_raw or 0)
-        except: dur = 0
-        dx, score, hits = diagnose(raw_symptoms, duration_days=dur)
-        ctx.update({"dx": dx, "score": score, "hits": hits})
-    return render_template_string(PAGE, **ctx)
+        cand = score_case(symptoms, d, history)
+        best = pick_best(cand)
+        if best:
+            result = type("R",(object,),best)()
+
+    return render_template_string(
+        PAGE, name=name, age=age, gender=gender,
+        duration=duration, symptoms=symptoms, history=history, result=result
+    )
