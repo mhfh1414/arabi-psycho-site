@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# cbt/__init__.py — باكيج CBT كامل: اختبارات (PHQ-9, GAD-7, PCL-5, DASS-21)
+# cbt_suite.py — لوحة CBT متكاملة: اختبارات (PHQ-9, GAD-7, PCL-5, DASS-21)
 # + أدوات علاجية (سجل الأفكار، التنشيط السلوكي، التعرض) + خطة جلسات
 
 from __future__ import annotations
@@ -10,14 +10,18 @@ cbt_bp = Blueprint("cbt", __name__, url_prefix="/cbt")
 
 # ============================== أدوات عامة ==============================
 def now_year():
-    try: return datetime.now().year
-    except: return 2025
+    try:
+        return datetime.now().year
+    except Exception:
+        return 2025
 
 def _val_int(v, default=0):
-    try: return int(v)
-    except: return default
+    try:
+        return int(v)
+    except Exception:
+        return default
 
-# ============================== واجهة عامة ==============================
+# ============================== القالب العام ==============================
 BASE = """
 <!doctype html><html lang="ar" dir="rtl">
 <head>
@@ -60,12 +64,12 @@ th{color:#ffe28a}
 </body></html>
 """
 
-# ============================== لوحة CBT الرئيسية ==============================
+# ============================== لوحة CBT ==============================
 @cbt_bp.route("/")
 def dashboard():
     body = """
     <div class="card">
-      <p>هذه لوحة متكاملة تشمل اختبارات قياسية + أدوات CBT عملية + توليد خطة جلسات أولية.</p>
+      <p>لوحة متكاملة تشمل اختبارات قياسية + أدوات CBT عملية + توليد خطة جلسات أولية.</p>
     </div>
     <div class="grid">
       <div class="card">
@@ -82,7 +86,7 @@ def dashboard():
         <ul>
           <li><a class="btn" href="{{ url_for('cbt.thought_record') }}">سجل الأفكار (REBT/CBT)</a></li>
           <li><a class="btn" href="{{ url_for('cbt.behavioral_activation') }}">التنشيط السلوكي (BA)</a></li>
-          <li><a class="btn" href="{{ url_for('cbt.exposures') }}">سلم التعرض (ERP/تعرض تدريجي)</a></li>
+          <li><a class="btn" href="{{ url_for('cbt.exposures') }}">سلم التعرض (ERP)</a></li>
           <li><a class="btn" href="{{ url_for('cbt.session_plan') }}">توليد خطة جلسات</a></li>
         </ul>
       </div>
@@ -131,7 +135,8 @@ def phq9():
         html_result = f"""
         <div class="card">
           <h3>النتيجة</h3>
-          <p>المجموع: <strong>{total}</strong> — الشدة: <span class="badge {'warn' if total>=15 else 'mid' if total>=10 else 'ok'}">{level}</span></p>
+          <p>المجموع: <strong>{total}</strong> — الشدة:
+            <span class="badge {'warn' if total>=15 else 'mid' if total>=10 else 'ok'}">{level}</span></p>
           <small>{note}</small>
         </div>"""
     qs = "".join(f"""
@@ -173,7 +178,8 @@ def gad7():
         html_result = f"""
         <div class="card">
           <h3>النتيجة</h3>
-          <p>المجموع: <strong>{total}</strong> — الشدة: <span class="badge {'warn' if total>=15 else 'mid' if total>=10 else 'ok'}">{level}</span></p>
+          <p>المجموع: <strong>{total}</strong> — الشدة:
+            <span class="badge {'warn' if total>=15 else 'mid' if total>=10 else 'ok'}">{level}</span></p>
         </div>"""
     qs = "".join(f"""
       <div class="card">
@@ -211,11 +217,9 @@ PCL5_Q = [
 "مشاكل التركيز",
 "صعوبة النوم"
 ]
-# PCL-5 يُسجل من 0 إلى 4 لكل بند (0=أبدًا … 4=شديد جدًا)
 PCL_OPTS = [("0","أبدًا"),("1","قليلًا"),("2","متوسط"),("3","كثيرًا"),("4","شديد جدًا")]
 
 def pcl5_flag(total:int)->str:
-    # عتبة فحصية شائعة ≈ 31-33
     if total>=33: return "مؤشرات قوية لاحتمال PTSD — يلزم تقييم سريري"
     if total>=20: return "أعراض ملحوظة تحتاج متابعة"
     return "منخفض"
@@ -229,7 +233,8 @@ def pcl5():
         html_result = f"""
         <div class="card">
           <h3>النتيجة</h3>
-          <p>المجموع: <strong>{total}</strong> — إشارة: <span class="badge {'warn' if total>=33 else 'mid' if total>=20 else 'ok'}">{flag}</span></p>
+          <p>المجموع: <strong>{total}</strong> — إشارة:
+            <span class="badge {'warn' if total>=33 else 'mid' if total>=20 else 'ok'}">{flag}</span></p>
         </div>"""
     qs = "".join(f"""
       <div class="card">
@@ -246,54 +251,34 @@ def pcl5():
     return render_template_string(BASE, title="PCL-5", heading="PCL-5 — مقياس ما بعد الصدمة", body=body, year=now_year())
 
 # ============================== DASS-21 ==============================
-# 21 بند — 7 اكتئاب / 7 قلق / 7 توتر (0-3 لكل بند)
 DASS_Q = [
-"أجد صعوبة في تهدئة نفسي",                 # Stress
-"أشعر بجفاف في الفم",                       # Anxiety
-"لا أرى أي متعة في الأشياء",                # Depression
-"أعاني صعوبة في التنفس دون مجهود",         # Anxiety
-"أجد صعوبة في المبادرة بالأشياء",           # Depression
-"أبالغ في ردود فعلي على المواقف",           # Stress
-"أشعر بالارتجاف",                           # Anxiety
-"أستخدم الكثير من الطاقة العصبية",          # Stress
-"لا أستطيع تحمّل أي شيء",                   # Stress
-"أشعر بانهيار عصبي على وشك الحدوث",         # Stress
-"غير قادر على الشعور بأي إيجابية",          # Depression
-"أشعر بخوف بدون سبب وجيه",                   # Anxiety
-"أشعر بالحزن والاكتئاب",                    # Depression
-"أفقد الصبر بسهولة",                        # Stress
-"أشعر بالذعر",                               # Anxiety
-"لا أستمتع بأي شيء",                        # Depression
-"منزعج وصعب الاسترخاء",                      # Stress
-"أشعر بإحساس القلق",                         # Anxiety
-"لا أيّ حماس لأي شيء",                       # Depression
-"أشعر كأني على حافة الانهيار",               # Stress
-"لا معنى للحياة"                             # Depression
+"أجد صعوبة في تهدئة نفسي", "أشعر بجفاف في الفم", "لا أرى أي متعة في الأشياء",
+"أعاني صعوبة في التنفس دون مجهود", "أجد صعوبة في المبادرة بالأشياء",
+"أبالغ في ردود فعلي على المواقف", "أشعر بالارتجاف", "أستخدم الكثير من الطاقة العصبية",
+"لا أستطيع تحمّل أي شيء", "أشعر بانهيار عصبي على وشك الحدوث",
+"غير قادر على الشعور بأي إيجابية", "أشعر بخوف بدون سبب وجيه",
+"أشعر بالحزن والاكتئاب", "أفقد الصبر بسهولة", "أشعر بالذعر",
+"لا أستمتع بأي شيء", "منزعج وصعب الاسترخاء", "أشعر بإحساس القلق",
+"لا أيّ حماس لأي شيء", "أشعر كأني على حافة الانهيار", "لا معنى للحياة"
 ]
-DASS_OPTS = [("0","لا ينطبق عليّ مطلقًا"),("1","ينطبق بعض الشيء"),("2","ينطبق كثيرًا"),("3","ينطبق جدًا")]
+DASS_OPTS = [("0","لا ينطبق مطلقًا"),("1","ينطبق بعض الشيء"),("2","ينطبق كثيرًا"),("3","ينطبق جدًا")]
+DASS_IDX_DEP = [3,5,11,13,16,19,21]
+DASS_IDX_ANX = [2,4,7,12,15,18,20]
+DASS_IDX_STR = [1,6,8,9,10,14,17]
 
-# فهارس المقاييس الثلاثة (وفق ترتيب الأسئلة أعلاه)
-DASS_IDX_DEP = [3,5,11,13,16,19,21]   # Depression (1-based)
-DASS_IDX_ANX = [2,4,7,12,15,18,20]    # Anxiety
-DASS_IDX_STR = [1,6,8,9,10,14,17]     # Stress
-
-def _sum_indices(vals, idxs):
-    return sum(vals[i-1] for i in idxs)
-
-def dass_level_dep(s):  # مستويات تقريبية بعد الضرب ×2 (إكلينيكيًا)
+def _sum_indices(vals, idxs): return sum(vals[i-1] for i in idxs)
+def dass_level_dep(s):
     if s<10: return "طبيعي"
     if s<14: return "خفيف"
     if s<21: return "متوسط"
     if s<28: return "شديد"
     return "شديد جدًا"
-
 def dass_level_anx(s):
     if s<8: return "طبيعي"
     if s<10: return "خفيف"
     if s<15: return "متوسط"
     if s<20: return "شديد"
     return "شديد جدًا"
-
 def dass_level_str(s):
     if s<15: return "طبيعي"
     if s<19: return "خفيف"
@@ -333,7 +318,7 @@ def dass21():
     """
     return render_template_string(BASE, title="DASS-21", heading="DASS-21 — اكتئاب/قلق/توتر", body=body, year=now_year())
 
-# ============================== سجل الأفكار (Thought Record) ==============================
+# ============================== سجل الأفكار ==============================
 @cbt_bp.route("/thought-record", methods=["GET","POST"])
 def thought_record():
     result = ""
@@ -346,13 +331,13 @@ def thought_record():
         evidence_against = request.form.get("evidence_against","").strip()
         alt_thought = request.form.get("alt_thought","").strip()
         new_belief = _val_int(request.form.get("new_belief","0"))
-
         shift = belief - new_belief
         tag = "ok" if shift>=3 else "mid" if shift>=1 else "info"
         result = f"""
         <div class="card">
           <h3>النتيجة</h3>
-          <p>انخفضت قناعة الفكرة من <strong>{belief}/10</strong> إلى <strong>{new_belief}/10</strong> — التحول: <span class="badge {tag}">{shift:+}</span></p>
+          <p>انخفضت قناعة الفكرة من <strong>{belief}/10</strong> إلى <strong>{new_belief}/10</strong>
+             — التحول: <span class="badge {tag}">{shift:+}</span></p>
           <table>
             <tr><th>الموقف</th><td>{situation}</td></tr>
             <tr><th>الفكرة التلقائية</th><td>{thought}</td></tr>
@@ -416,7 +401,7 @@ def behavioral_activation():
     """
     return render_template_string(BASE, title="التنشيط السلوكي", heading="التنشيط السلوكي (BA)", body=body, year=now_year())
 
-# ============================== التعرض التدريجي (ERP/Exposures) ==============================
+# ============================== التعرض التدريجي (ERP) ==============================
 @cbt_bp.route("/exposures", methods=["GET","POST"])
 def exposures():
     result = ""
@@ -453,7 +438,7 @@ def session_plan():
         modules      = []
         if request.form.get("use_depression"): modules.append("اكتئاب/BA + سجل أفكار")
         if request.form.get("use_anxiety"):    modules.append("قلق/تعرض + مهارات تنفس/يقظة")
-        if request.form.get("use_trauma"):     modules.append("صدمة/معالجة تدريجية + تنظيم")
+        if request.form.get("use_trauma"):     modules.append("صدمة/تنظيم + معالجة تدريجية")
         schedule = """
         <ol>
           <li><strong>جلسة 1:</strong> بناء علاقة + صياغة حالة + أهداف + قياس أساسي (PHQ-9/GAD-7).</li>
@@ -495,12 +480,11 @@ def session_plan():
     """
     return render_template_string(BASE, title="خطة الجلسات", heading="توليد خطة جلسات (CBT)", body=body, year=now_year())
 
-# ============================== روابط مختصرة للأدوات ==============================
+# ============================== روابط مختصرة آمنة (بدون تضارب) ==============================
 @cbt_bp.route("/thought")
-def thought_alias(): return redirect(url_for("cbt.thought_record"))
-
-@cbt_bp.route("/ba")
-def ba_alias(): return redirect(url_for("cbt.behavioral_activation"))
+def thought_alias(): 
+    return redirect(url_for("cbt.thought_record"))
 
 @cbt_bp.route("/erp")
-def erp_alias(): return redirect(url_for("cbt.exposures"))
+def erp_alias(): 
+    return redirect(url_for("cbt.exposures"))
