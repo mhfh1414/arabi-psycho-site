@@ -488,3 +488,17 @@ def thought_alias():
 @cbt_bp.route("/erp")
 def erp_alias(): 
     return redirect(url_for("cbt.exposures"))
+# في آخر cbt_suite.py
+
+# لوحة رئيسية على /cbt/ (موجودة لديك @cbt_bp.route("/") )
+# نضيف aliases كي لا يحصل 404 مع البروكسي:
+
+@cbt_bp.route("", methods=["GET"])        # /cbt
+def cbt_root_alias():
+    from flask import redirect, url_for
+    return redirect(url_for("cbt.dashboard"), code=302)
+
+@cbt_bp.route("/index", methods=["GET"])  # /cbt/index
+def cbt_index_alias():
+    from flask import redirect, url_for
+    return redirect(url_for("cbt.dashboard"), code=302)
