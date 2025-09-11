@@ -1,77 +1,97 @@
 # -*- coding: utf-8 -*-
-# home_app.py — ملف التشغيل/الهوم: يشغل الموقع ويربط DSM
-from flask import Flask, render_template_string, redirect
-from datetime import datetime
-
-# استيراد DSM (ملف مستقل)
-from dsm import dsm_bp
+from flask import Flask, render_template_string, url_for
 
 app = Flask(__name__)
-app.register_blueprint(dsm_bp)  # المسار: /dsm
 
-HOME_HTML = """
-<!doctype html><html lang="ar" dir="rtl"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>عربي سايكو | الرئيسية</title>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;800&display=swap" rel="stylesheet">
-<style>
-:root{--bg1:#0b3a75;--bg2:#0a65b0;--gold:#f4b400;--w:#fff}
-*{box-sizing:border-box} body{margin:0;font-family:"Tajawal",system-ui;background:
-radial-gradient(900px 480px at 85% -10%, #1a4bbd22, transparent),
-linear-gradient(135deg,var(--bg1),var(--bg2));color:var(--w)}
-.wrap{max-width:1240px;margin:auto;padding:28px 20px}
-header{display:flex;align-items:center;justify-content:space-between;gap:16px}
-.brand{display:flex;align-items:center;gap:14px}
-.badge{width:56px;height:56px;border-radius:16px;background:#0d2c54;border:1px solid #ffffff33;display:grid;place-items:center;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.25);color:#ffd86a}
-.title{margin:0;font-size:32px} .subtitle{margin:.25rem 0 0;color:#cfe0ff}
-.actions{display:flex;gap:10px;flex-wrap:wrap}
-.btn,a.btn{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font-weight:800;background:linear-gradient(180deg,#ffd86a,#f4b400);color:#2b1b02;padding:12px 16px;border-radius:14px;box-shadow:0 6px 18px rgba(244,180,0,.28)}
-.card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:18px;margin:12px 0}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px} @media(max-width:980px){.grid{grid-template-columns:1fr}}
-.sec h3{margin:0 0 8px}
-</style></head><body>
-<div class="wrap">
-  <header>
-    <div class="brand" style="text-align:right">
-      <div class="badge">AS</div>
-      <div>
-        <h1 class="title">عربي سايكو</h1>
-        <p class="subtitle">منصّة نفسية تخدم الجميع — {{year}}</p>
-      </div>
+# =====================[ HTML BASE ]=====================
+BASE_HTML = """
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>عربي سايكو</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Tajawal', sans-serif;
+      background: linear-gradient(135deg, #0b3a75, #0a65b0);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      text-align: center;
+      max-width: 800px;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 2.4rem;
+      margin-bottom: 10px;
+      color: #ffd86a;
+      text-shadow: 1px 1px 3px #000;
+    }
+    p {
+      font-size: 1.2rem;
+      line-height: 1.8;
+      margin-bottom: 30px;
+    }
+    .btn-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+    }
+    a.btn {
+      display: block;
+      padding: 14px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border-radius: 12px;
+      text-decoration: none;
+      background: linear-gradient(180deg,#ffd86a,#f4b400);
+      color: #2b1b02;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      transition: 0.2s;
+    }
+    a.btn:hover {
+      transform: scale(1.05);
+      background: linear-gradient(180deg,#ffe699,#ffbb33);
+    }
+    footer {
+      margin-top: 40px;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>💙 منصة عربي سايكو</h1>
+    <p>
+      خدمات نفسية متكاملة: <br>
+      التشخيص حسب معايير DSM-5، العلاج السلوكي المعرفي (CBT)، <br>
+      برامج الإدمان والتعافي، وأدوات طبية حديثة لدعم صحتك النفسية.
+    </p>
+    <div class="btn-grid">
+      <a href="/dsm" class="btn">🧾 التشخيص ودراسة الحالة (DSM)</a>
+      <a href="/cbt" class="btn">🧠 العلاج السلوكي المعرفي (CBT)</a>
+      <a href="/addiction" class="btn">🚭 الإدمان والتعافي</a>
+      <a href="https://t.me/Mhfh1414" target="_blank" class="btn">📲 تواصل مع الأخصائي</a>
     </div>
-    <nav class="actions">
-      <a class="btn" href="/dsm">🗂️ دراسة الحالة + التشخيص DSM</a>
-      <a class="btn" href="https://wa.me/9665XXXXXXXX" target="_blank">واتساب</a>
-      <a class="btn" href="https://t.me/USERNAME" target="_blank">تلجرام</a>
-      <a class="btn" href="mailto:info@arabipsycho.com">إيميل</a>
-    </nav>
-  </header>
-
-  <section class="card sec">
-    <h3>مرحبًا بك في مركز عربي سايكو</h3>
-    <p>واجهة سريعة، ألوان أزرق/ذهبي، وروابط تواصل مباشرة. ابدأ التشخيص عبر DSM ثم أضف لاحقًا CBT والإدمان كملفات مستقلة بنفس الأسلوب.</p>
-  </section>
-
-  <section class="grid">
-    <div class="card"><h3>📖 DSM-5</h3><p>قاموس أعراض موسّع + دراسة حالة + تشخيص مرجّح.</p><a class="btn" href="/dsm">ابدأ الآن</a></div>
-    <div class="card"><h3>🧠 CBT</h3><p>(لاحقًا) لوحة اختبارات وأدوات علاجية.</p><a class="btn" href="/dsm">مؤقتًا ادخل DSM</a></div>
-    <div class="card"><h3>🚭 الإدمان</h3><p>(لاحقًا) تقييم وخطط علاج والتأهيل.</p><a class="btn" href="/dsm">مؤقتًا ادخل DSM</a></div>
-  </section>
-</div>
-</body></html>
+    <footer>© 2025 منصة عربي سايكو — الصحة النفسية أولويتنا</footer>
+  </div>
+</body>
+</html>
 """
 
+# =====================[ ROUTES ]=====================
 @app.route("/")
 def home():
-    return render_template_string(HOME_HTML, year=datetime.now().year)
+    return render_template_string(BASE_HTML)
 
-# مسارات مختصرة للاتصال (اختياري)
-@app.route("/contact/whatsapp")
-def contact_whatsapp(): return redirect("https://wa.me/9665XXXXXXXX", code=302)
-@app.route("/contact/telegram")
-def contact_telegram(): return redirect("https://t.me/USERNAME", code=302)
-@app.route("/contact/email")
-def contact_email(): return redirect("mailto:info@arabipsycho.com", code=302)
-
+# =====================[ RUN LOCAL ]=====================
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    app.run(host="0.0.0.0", port=5000, debug=True)
