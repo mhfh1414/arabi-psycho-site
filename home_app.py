@@ -1,8 +1,13 @@
-from flask import Flask, render_template_string, url_for
+from flask import Flask, render_template_string
+import dsm_suite
+import cbt_suite
+import addiction_suite
 
 app = Flask(__name__)
 
-# واجهة HTML مع Bootstrap
+# ---------------------------
+# الواجهة الرئيسية (Home)
+# ---------------------------
 HOME_PAGE = """
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -90,19 +95,26 @@ HOME_PAGE = """
 def home():
     return render_template_string(HOME_PAGE)
 
-
-# روابط الملفات الأخرى
+# ---------------------------
+# ربط DSM
+# ---------------------------
 @app.route("/dsm")
 def dsm_page():
-    return "📋 هنا صفحة DSM (التشخيص)."
+    return dsm_suite.render_page()
 
+# ---------------------------
+# ربط CBT
+# ---------------------------
 @app.route("/cbt")
 def cbt_page():
-    return "⚡ هنا صفحة CBT (العلاج السلوكي المعرفي)."
+    return cbt_suite.render_page()
 
+# ---------------------------
+# ربط الإدمان
+# ---------------------------
 @app.route("/addiction")
 def addiction_page():
-    return "🚭 هنا صفحة الإدمان."
+    return addiction_suite.render_page()
 
 
 if __name__ == "__main__":
