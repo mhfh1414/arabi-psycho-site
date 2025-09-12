@@ -1,503 +1,164 @@
-# -*- coding: utf-8 -*-
-# cbt.py — باكيج CBT كامل: اختبارات (PHQ-9, GAD-7, PCL-5, DASS-21)
-# + أدوات علاجية (سجل الأفكار، التنشيط السلوكي، التعرض) + خطة جلسات
+from flask import Blueprint, render_template_string, request
 
-from __future__ import annotations
-from flask import Blueprint, render_template_string, request, redirect, url_for
-from datetime import datetime
+cbt_bp = Blueprint("cbt_bp", __name__, url_prefix="/cbt")
 
-cbt_bp = Blueprint("cbt", __name__, url_prefix="/cbt")
-
-# ============================== أدوات عامة ==============================
-def now_year():
-    try: return datetime.now().year
-    except: return 2025
-
-def _val_int(v, default=0):
-    try: return int(v)
-    except: return default
-
-# ============================== قالب واجهة موحّد ==============================
 BASE = """
-<!doctype html><html lang="ar" dir="rtl">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>{{title}}</title>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;800&display=swap" rel="stylesheet">
+<!doctype html><html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title }}</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-:root{--bg1:#0b3a75;--bg2:#0a65b0;--gold:#f4b400;--w:#fff;--glass:rgba(255,255,255,.08);--gb:rgba(255,255,255,.18)}
-*{box-sizing:border-box}
-body{margin:0;font-family:"Tajawal",system-ui;background:linear-gradient(135deg,var(--bg1),var(--bg2)) fixed;color:var(--w)}
-.wrap{max-width:1180px;margin:24px auto;padding:16px}
-.bar{display:flex;justify-content:space-between;gap:10px;align-items:center}
-a.btn,button.btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(180deg,#ffd86a,#f4b400);color:#2b1b02;border-radius:14px;padding:10px 14px;text-decoration:none;font-weight:800;border:none;cursor:pointer}
-a.btn.sec{background:linear-gradient(180deg,#9cc5ff,#63a4ff);color:#04122c}
-.card{background:var(--glass);border:1px solid var(--gb);border-radius:16px;padding:18px;margin:10px 0}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-@media(max-width:980px){.grid{grid-template-columns:1fr}}
-label{display:block;margin:6px 0 4px;color:#ffe28a}
-input[type=text],textarea,select{width:100%;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:10px}
-textarea{min-height:110px;resize:vertical}
-small{opacity:.85}
-.badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:.85rem;margin:2px 0}
-.ok{background:#16a34a}.warn{background:#ef4444}.mid{background:#f59e0b}.info{background:#0284c7}
-table{width:100%;border-collapse:collapse}
-th,td{border-bottom:1px solid rgba(255,255,255,.18);padding:8px;text-align:right}
-th{color:#ffe28a}
-ul.clean{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-@media(max-width:980px){ul.clean{grid-template-columns:1fr}}
-.tile{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--glass);border:1px solid var(--gb);border-radius:14px;padding:12px}
-.tile .t{font-weight:700}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <div class="bar">
-    <h2 style="margin:0">{{heading}}</h2>
+body{background:#0f1420;color:#eaf2ff}
+.card-glass{background:#121a2a88;border:1px solid #2a3b5a;border-radius:16px}
+a{text-decoration:none}
+</style></head><body class="p-3 p-md-5">
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="m-0">{{ header }}</h3>
     <div>
-      <a class="btn sec" href="/">الواجهة</a>
-      <a class="btn" href="{{ url_for('cbt.dashboard') }}">لوحة CBT</a>
+      <a class="btn btn-outline-info me-2" href="{{ url_for('cbt_bp.dashboard') }}">لوحة CBT</a>
+      <a class="btn btn-secondary" href="{{ url_for('index') }}">الرئيسية</a>
     </div>
   </div>
   {{ body|safe }}
-  <p style="opacity:.7;margin-top:18px">© {{year}} عربي سايكو — العلاج السلوكي المعرفي</p>
 </div>
 </body></html>
 """
 
-# ============================== لوحة CBT الرئيسية ==============================
 @cbt_bp.route("/")
 def dashboard():
     body = """
-    <div class="card">
-      <p>لوحة متكاملة تشمل اختبارات قياسية + أدوات CBT عملية + توليد خطة جلسات أولية.</p>
-    </div>
-    <div class="grid">
-      <div class="card">
-        <h3>🧪 اختبارات القياس</h3>
-        <ul class="clean">
-          <li class="tile"><span class="t">PHQ-9 — الاكتئاب</span><a class="btn" href="{{ url_for('cbt.phq9') }}">ابدأ</a></li>
-          <li class="tile"><span class="t">GAD-7 — القلق العام</span><a class="btn" href="{{ url_for('cbt.gad7') }}">ابدأ</a></li>
-          <li class="tile"><span class="t">PCL-5 — ما بعد الصدمة</span><a class="btn" href="{{ url_for('cbt.pcl5') }}">ابدأ</a></li>
-          <li class="tile"><span class="t">DASS-21 — اكتئاب/قلق/توتر</span><a class="btn" href="{{ url_for('cbt.dass21') }}">ابدأ</a></li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>💡 أدوات CBT</h3>
-        <ul class="clean">
-          <li class="tile"><span class="t">سجل الأفكار (REBT/CBT)</span><a class="btn" href="{{ url_for('cbt.thought_record') }}">افتح</a></li>
-          <li class="tile"><span class="t">التنشيط السلوكي (BA)</span><a class="btn" href="{{ url_for('cbt.behavioral_activation') }}">افتح</a></li>
-          <li class="tile"><span class="t">سُلّم التعرض (ERP)</span><a class="btn" href="{{ url_for('cbt.exposures') }}">افتح</a></li>
-          <li class="tile"><span class="t">توليد خطة جلسات</span><a class="btn" href="{{ url_for('cbt.session_plan') }}">افتح</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="card">
-      <h3>روابط سريعة</h3>
-      <div style="display:flex;flex-wrap:wrap;gap:10px">
-        <a class="btn" href="/dsm">دراسة الحالة + DSM</a>
-        <a class="btn" href="{{ url_for('cbt.phq9') }}">PHQ-9</a>
-        <a class="btn" href="{{ url_for('cbt.gad7') }}">GAD-7</a>
-        <a class="btn" href="{{ url_for('cbt.pcl5') }}">PCL-5</a>
-        <a class="btn" href="{{ url_for('cbt.dass21') }}">DASS-21</a>
-      </div>
-    </div>
-    """
-    return render_template_string(BASE, title="CBT | لوحة", heading="لوحة CBT المتكاملة", body=body, year=now_year())
-
-# ============================== PHQ-9 ==============================
-PHQ9_Q = [
-"قلة الاهتمام أو المتعة بالقيام بالأشياء",
-"الشعور بالاكتئاب أو اليأس",
-"صعوبة النوم أو فرط النوم",
-"الإرهاق أو قلة الطاقة",
-"قلة الشهية أو فرط الأكل",
-"الشعور بالسوء تجاه نفسك أو أنك فاشل",
-"صعوبة التركيز (قراءة/مشاهدة)",
-"الحركة أو الكلام ببطء شديد أو العكس (توتر)",
-"أفكار بأنك تود إيذاء نفسك أو الموت"
-]
-PHQ_OPTS = [("0","أبدًا"),("1","عدة أيام"),("2","أكثر من نصف الأيام"),("3","تقريبًا كل يوم")]
-
-def phq9_level(score:int)->str:
-    if score<=4: return "خفيف جدًا"
-    if score<=9: return "خفيف"
-    if score<=14: return "متوسط"
-    if score<=19: return "متوسط-شديد"
-    return "شديد"
-
-@cbt_bp.route("/phq9", methods=["GET","POST"])
-def phq9():
-    total,html_result = 0,""
-    if request.method=="POST":
-        total = sum(_val_int(request.form.get(f"q{i}",0)) for i in range(1,10))
-        level = phq9_level(total)
-        note = "إذا كانت الشدة متوسطة فأعلى فالأفضل المتابعة مع مختص."
-        html_result = f"""
-        <div class="card">
-          <h3>النتيجة</h3>
-          <p>المجموع: <strong>{total}</strong> — الشدة: <span class="badge {'warn' if total>=15 else 'mid' if total>=10 else 'ok'}">{level}</span></p>
-          <small>{note}</small>
-        </div>"""
-    qs = "".join(f"""
-      <div class="card">
-        <label>({i}) {PHQ9_Q[i-1]}</label>
-        <select name="q{i}">{"".join([f'<option value="{v}">{t}</option>' for v,t in PHQ_OPTS])}</select>
-      </div>""" for i in range(1,10))
-    body = f"""
-    <form method="post">
-      {qs}
-      <button class="btn" type="submit">حساب PHQ-9</button>
-    </form>
-    {html_result}
-    """
-    return render_template_string(BASE, title="PHQ-9", heading="PHQ-9 — مقياس الاكتئاب", body=body, year=now_year())
-
-# ============================== GAD-7 ==============================
-GAD7_Q = [
-"الشعور بالتوتر أو القلق أو على الأعصاب",
-"عدم القدرة على التوقف عن القلق أو التحكم به",
-"القلق المفرط حول مختلف الأمور",
-"صعوبة الاسترخاء",
-"التململ أو عدم القدرة على الجلوس بهدوء",
-"سهولة الانزعاج أو التهيج",
-"الشعور بالخوف كأن شيئًا فظيعًا سيحدث"
-]
-def gad7_level(s:int)->str:
-    if s<=4: return "خفيف"
-    if s<=9: return "متوسط"
-    if s<=14:return "متوسط-شديد"
-    return "شديد"
-
-@cbt_bp.route("/gad7", methods=["GET","POST"])
-def gad7():
-    total,html_result = 0,""
-    if request.method=="POST":
-        total = sum(_val_int(request.form.get(f"q{i}",0)) for i in range(1,8))
-        level = gad7_level(total)
-        html_result = f"""
-        <div class="card">
-          <h3>النتيجة</h3>
-          <p>المجموع: <strong>{total}</strong> — الشدة: <span class="badge {'warn' if total>=15 else 'mid' if total>=10 else 'ok'}">{level}</span></p>
-        </div>"""
-    qs = "".join(f"""
-      <div class="card">
-        <label>({i}) {GAD7_Q[i-1]}</label>
-        <select name="q{i}">{"".join([f'<option value="{v}">{t}</option>' for v,t in PHQ_OPTS])}</select>
-      </div>""" for i in range(1,8))
-    body = f"""
-    <form method="post">
-      {qs}
-      <button class="btn" type="submit">حساب GAD-7</button>
-    </form>
-    {html_result}
-    """
-    return render_template_string(BASE, title="GAD-7", heading="GAD-7 — مقياس القلق العام", body=body, year=now_year())
-
-# ============================== PCL-5 (PTSD) ==============================
-PCL5_Q = [
-"ذكريات اقتحامية مزعجة حول الحدث الصادم",
-"أحلام/كوابيس مزعجة تتعلق بالحدث",
-"تصرفات أو شعور وكأن الحدث يتكرر (فلاش باك)",
-"انزعاج شديد عند التعرّض لمذكّرات الحدث",
-"تفاعل جسدي قوي عند التعرّض للمذكرات",
-"تجنّب الذكريات أو الأفكار أو المشاعر المتعلقة بالحدث",
-"تجنّب التذكيرات الخارجية (أماكن/أشخاص/أنشطة)",
-"صعوبة تذكر جوانب مهمة من الحدث",
-"معتقدات سلبية مستمرّة عن الذات/الآخرين/العالم",
-"لوم الذات أو الآخرين بشكل مفرط",
-"حالة عاطفية سلبية مستمرّة (خوف/غضب/ذنب/عار)",
-"انعدام الاهتمام/الابتعاد عن الأنشطة",
-"الابتعاد عن الآخرين",
-"صعوبة الشعور بالمشاعر الإيجابية",
-"تهيج/نوبات غضب",
-"سلوك متهور أو مدمّر للذات",
-"فرط اليقظة",
-"مشاكل التركيز",
-"صعوبة النوم"
-]
-PCL_OPTS = [("0","أبدًا"),("1","قليلًا"),("2","متوسط"),("3","كثيرًا"),("4","شديد جدًا")]
-
-def pcl5_flag(total:int)->str:
-    if total>=33: return "مؤشرات قوية لاحتمال PTSD — يلزم تقييم سريري"
-    if total>=20: return "أعراض ملحوظة تحتاج متابعة"
-    return "منخفض"
-
-@cbt_bp.route("/pcl5", methods=["GET","POST"])
-def pcl5():
-    total,html_result = 0,""
-    if request.method=="POST":
-        total = sum(_val_int(request.form.get(f"q{i}",0)) for i in range(1,20))
-        flag = pcl5_flag(total)
-        html_result = f"""
-        <div class="card">
-          <h3>النتيجة</h3>
-          <p>المجموع: <strong>{total}</strong> — إشارة: <span class="badge {'warn' if total>=33 else 'mid' if total>=20 else 'ok'}">{flag}</span></p>
-        </div>"""
-    qs = "".join(f"""
-      <div class="card">
-        <label>({i}) {PCL5_Q[i-1]}</label>
-        <select name="q{i}">{"".join([f'<option value="{v}">{t}</option>' for v,t in PCL_OPTS])}</select>
-      </div>""" for i in range(1,20))
-    body = f"""
-    <form method="post">
-      {qs}
-      <button class="btn" type="submit">حساب PCL-5</button>
-    </form>
-    {html_result}
-    """
-    return render_template_string(BASE, title="PCL-5", heading="PCL-5 — مقياس ما بعد الصدمة", body=body, year=now_year())
-
-# ============================== DASS-21 ==============================
-DASS_Q = [
-"أجد صعوبة في تهدئة نفسي",                 # Stress
-"أشعر بجفاف في الفم",                       # Anxiety
-"لا أرى أي متعة في الأشياء",                # Depression
-"أعاني صعوبة في التنفس دون مجهود",         # Anxiety
-"أجد صعوبة في المبادرة بالأشياء",           # Depression
-"أبالغ في ردود فعلي على المواقف",           # Stress
-"أشعر بالارتجاف",                           # Anxiety
-"أستخدم الكثير من الطاقة العصبية",          # Stress
-"لا أستطيع تحمّل أي شيء",                   # Stress
-"أشعر بانهيار عصبي على وشك الحدوث",         # Stress
-"غير قادر على الشعور بأي إيجابية",          # Depression
-"أشعر بخوف بدون سبب وجيه",                   # Anxiety
-"أشعر بالحزن والاكتئاب",                    # Depression
-"أفقد الصبر بسهولة",                        # Stress
-"أشعر بالذعر",                               # Anxiety
-"لا أستمتع بأي شيء",                        # Depression
-"منزعج وصعب الاسترخاء",                      # Stress
-"أشعر بإحساس القلق",                         # Anxiety
-"لا أيّ حماس لأي شيء",                       # Depression
-"أشعر كأني على حافة الانهيار",               # Stress
-"لا معنى للحياة"                             # Depression
-]
-DASS_OPTS = [("0","لا ينطبق مطلقًا"),("1","ينطبق بعض الشيء"),("2","ينطبق كثيرًا"),("3","ينطبق جدًا")]
-
-DASS_IDX_DEP = [3,5,11,13,16,19,21]
-DASS_IDX_ANX = [2,4,7,12,15,18,20]
-DASS_IDX_STR = [1,6,8,9,10,14,17]
-
-def _sum_indices(vals, idxs): return sum(vals[i-1] for i in idxs)
-
-def dass_level_dep(s):
-    if s<10: return "طبيعي"
-    if s<14: return "خفيف"
-    if s<21: return "متوسط"
-    if s<28: return "شديد"
-    return "شديد جدًا"
-
-def dass_level_anx(s):
-    if s<8: return "طبيعي"
-    if s<10: return "خفيف"
-    if s<15: return "متوسط"
-    if s<20: return "شديد"
-    return "شديد جدًا"
-
-def dass_level_str(s):
-    if s<15: return "طبيعي"
-    if s<19: return "خفيف"
-    if s<26: return "متوسط"
-    if s<34: return "شديد"
-    return "شديد جدًا"
-
-@cbt_bp.route("/dass21", methods=["GET","POST"])
-def dass21():
-    html_result = ""
-    if request.method=="POST":
-        vals = [_val_int(request.form.get(f"q{i}",0)) for i in range(1,22)]
-        dep = _sum_indices(vals, DASS_IDX_DEP)*2
-        anx = _sum_indices(vals, DASS_IDX_ANX)*2
-        st  = _sum_indices(vals, DASS_IDX_STR)*2
-        html_result = f"""
-        <div class="card">
-          <h3>النتيجة</h3>
-          <table>
-            <tr><th>اكتئاب</th><td>{dep}</td><td><span class="badge {'warn' if dep>=28 else 'mid' if dep>=14 else 'ok'}">{dass_level_dep(dep)}</span></td></tr>
-            <tr><th>قلق</th><td>{anx}</td><td><span class="badge {'warn' if anx>=20 else 'mid' if anx>=10 else 'ok'}">{dass_level_anx(anx)}</span></td></tr>
-            <tr><th>توتر</th><td>{st}</td><td><span class="badge {'warn' if st>=34 else 'mid' if st>=19 else 'ok'}">{dass_level_str(st)}</span></td></tr>
-          </table>
+    <div class="row g-3">
+      <div class="col-12 col-lg-6">
+        <div class="card-glass p-3 h-100">
+          <h5>دفتر تسجيل الأفكار (Thought Record)</h5>
+          <p class="text-light">سجّل الموقف، الفكرة الآلية، الدليل مع/ضد، والفكرة المتوازنة.</p>
+          <a class="btn btn-primary" href="{{ url_for('cbt_bp.thought_record') }}">ابدأ التسجيل</a>
         </div>
-        """
-    qs = "".join(f"""
-      <div class="card">
-        <label>({i}) {DASS_Q[i-1]}</label>
-        <select name="q{i}">{"".join([f'<option value="{v}">{t}</option>' for v,t in DASS_OPTS])}</select>
-      </div>""" for i in range(1,22))
-    body = f"""
-    <form method="post">
-      {qs}
-      <button class="btn" type="submit">حساب DASS-21</button>
-    </form>
-    {html_result}
+      </div>
+      <div class="col-12 col-lg-6">
+        <div class="card-glass p-3 h-100">
+          <h5>تفعيل سلوكي (BA)</h5>
+          <p class="text-light">خطّط أنشطة ممتعة/ذات قيمة مع درجة توقع المتعة والإنجاز.</p>
+          <a class="btn btn-success" href="{{ url_for('cbt_bp.ba') }}">إنشاء خطة</a>
+        </div>
+      </div>
+      <div class="col-12 col-lg-6">
+        <div class="card-glass p-3 h-100">
+          <h5>سُلّم التعرض (ERP)</h5>
+          <p class="text-light">ابنِ قائمة التعرض مع درجات القلق (SUDS) وتصاعد المهام.</p>
+          <a class="btn btn-warning" href="{{ url_for('cbt_bp.erp') }}">ابنِ السُلّم</a>
+        </div>
+      </div>
+      <div class="col-12 col-lg-6">
+        <div class="card-glass p-3 h-100">
+          <h5>سلوكيات الأمان</h5>
+          <p class="text-light">تعرف وحدّد السلوكيات التي تُبقي القلق وتعلم بدائل وظيفية.</p>
+          <a class="btn btn-info" href="{{ url_for('cbt_bp.safety') }}">سجّل السلوكيات</a>
+        </div>
+      </div>
+    </div>
     """
-    return render_template_string(BASE, title="DASS-21", heading="DASS-21 — اكتئاب/قلق/توتر", body=body, year=now_year())
+    html = BASE.replace("{{ body|safe }}", body)
+    return render_template_string(html, title="لوحة CBT", header="لوحة CBT")
 
-# ============================== سجل الأفكار ==============================
-@cbt_bp.route("/thought-record", methods=["GET","POST"])
+@cbt_bp.route("/thought", methods=["GET","POST"])
 def thought_record():
-    result = ""
-    if request.method=="POST":
-        situation = request.form.get("situation","").strip()
-        thought   = request.form.get("thought","").strip()
-        emotion   = request.form.get("emotion","").strip()
-        belief    = _val_int(request.form.get("belief","0"))
-        evidence_for = request.form.get("evidence_for","").strip()
-        evidence_against = request.form.get("evidence_against","").strip()
-        alt_thought = request.form.get("alt_thought","").strip()
-        new_belief = _val_int(request.form.get("new_belief","0"))
-
-        shift = belief - new_belief
-        tag = "ok" if shift>=3 else "mid" if shift>=1 else "info"
-        result = f"""
-        <div class="card">
-          <h3>النتيجة</h3>
-          <p>انخفضت قناعة الفكرة من <strong>{belief}/10</strong> إلى <strong>{new_belief}/10</strong> — التحول: <span class="badge {tag}">{shift:+}</span></p>
-          <table>
-            <tr><th>الموقف</th><td>{situation}</td></tr>
-            <tr><th>الفكرة التلقائية</th><td>{thought}</td></tr>
-            <tr><th>المشاعر</th><td>{emotion}</td></tr>
-            <tr><th>أدلة تأييد</th><td>{evidence_for}</td></tr>
-            <tr><th>أدلة نفي</th><td>{evidence_against}</td></tr>
-            <tr><th>الفكرة البديلة</th><td>{alt_thought}</td></tr>
-          </table>
-        </div>
-        """
+    result = None
+    if request.method == "POST":
+        data = {k: request.form.get(k,"") for k in ["situation","auto_thought","emotion","evidence_for","evidence_against","balanced"]}
+        result = data
     body = f"""
-    <div class="card">
-      <form method="post">
-        <label>الموقف</label><input type="text" name="situation" placeholder="أين/متى/مع من؟">
-        <label>الفكرة التلقائية</label><input type="text" name="thought" placeholder="ما الذي خطر ببالك؟">
-        <label>المشاعر</label><input type="text" name="emotion" placeholder="حزن، قلق، غضب …">
-        <label>درجة القناعة (قبل) 0–10</label><input type="text" name="belief" value="7">
-        <label>أدلة تأييد</label><textarea name="evidence_for"></textarea>
-        <label>أدلة نفي</label><textarea name="evidence_against"></textarea>
-        <label>الفكرة البديلة المتوازنة</label><textarea name="alt_thought"></textarea>
-        <label>درجة القناعة (بعد) 0–10</label><input type="text" name="new_belief" value="4">
-        <div style="margin-top:10px"><button class="btn">حفظ السجل</button></div>
+    <div class="card-glass p-3 mb-3">
+      <form method="post" class="row g-3">
+        <div class="col-12"><label class="form-label">الموقف</label><textarea name="situation" class="form-control" required></textarea></div>
+        <div class="col-12 col-md-6"><label class="form-label">الفكرة الآلية</label><textarea name="auto_thought" class="form-control" required></textarea></div>
+        <div class="col-12 col-md-6"><label class="form-label">العاطفة/الشدة</label><input name="emotion" class="form-control" placeholder="قلق 70/100"></div>
+        <div class="col-12 col-md-6"><label class="form-label">دلائل مع الفكرة</label><textarea name="evidence_for" class="form-control"></textarea></div>
+        <div class="col-12 col-md-6"><label class="form-label">دلائل ضد الفكرة</label><textarea name="evidence_against" class="form-control"></textarea></div>
+        <div class="col-12"><label class="form-label">الفكرة المتوازنة</label><textarea name="balanced" class="form-control"></textarea></div>
+        <div class="col-12"><button class="btn btn-primary">حفظ المذكرة</button></div>
       </form>
     </div>
-    {result}
+    {render_result(result)}
     """
-    return render_template_string(BASE, title="سجل الأفكار", heading="سجل الأفكار (CBT/REBT)", body=body, year=now_year())
+    html = BASE.replace("{{ body|safe }}", body)
+    return render_template_string(html, title="دفتر الأفكار", header="دفتر تسجيل الأفكار")
 
-# ============================== التنشيط السلوكي ==============================
 @cbt_bp.route("/ba", methods=["GET","POST"])
-def behavioral_activation():
-    result = ""
-    if request.method=="POST":
-        activities = request.form.get("activities","").strip()
-        schedule   = request.form.get("schedule","").strip()
-        barriers   = request.form.get("barriers","").strip()
-        solutions  = request.form.get("solutions","").strip()
-        result = f"""
-        <div class="card">
-          <h3>خطة تنشيط</h3>
-          <table>
-            <tr><th>أنشطة ممتعة/ذات معنى</th><td>{activities}</td></tr>
-            <tr><th>جدولة أسبوعية</th><td>{schedule}</td></tr>
-            <tr><th>عوائق</th><td>{barriers}</td></tr>
-            <tr><th>حلول/خطوات صغيرة</th><td>{solutions}</td></tr>
-          </table>
-          <small>ابدأ بخطوات صغيرة قابلة للقياس والمتابعة.</small>
-        </div>
-        """
+def ba():
+    plan = None
+    if request.method == "POST":
+        plan = {
+            "activity": request.form.get("activity",""),
+            "enjoy": request.form.get("enjoy",""),
+            "mastery": request.form.get("mastery",""),
+            "when": request.form.get("when","")
+        }
     body = f"""
-    <div class="card">
-      <form method="post">
-        <label>أنشطة ممتعة/ذات معنى</label><textarea name="activities" placeholder="رياضة خفيفة، اتصال بصديق، هواية..."></textarea>
-        <label>جدولة أسبوعية</label><textarea name="schedule" placeholder="السبت: مشي 20 دقيقة…"></textarea>
-        <label>عوائق متوقعة</label><textarea name="barriers"></textarea>
-        <label>حلول وخطوات صغيرة</label><textarea name="solutions"></textarea>
-        <div style="margin-top:10px"><button class="btn">بناء خطة</button></div>
+    <div class="card-glass p-3">
+      <form method="post" class="row g-3">
+        <div class="col-12 col-md-6"><label class="form-label">النشاط</label><input name="activity" class="form-control" required></div>
+        <div class="col-6 col-md-3"><label class="form-label">توقع المتعة (0-10)</label><input name="enjoy" class="form-control" type="number" min="0" max="10"></div>
+        <div class="col-6 col-md-3"><label class="form-label">توقع الإنجاز (0-10)</label><input name="mastery" class="form-control" type="number" min="0" max="10"></div>
+        <div class="col-12 col-md-6"><label class="form-label">متى/أين</label><input name="when" class="form-control" placeholder="اليوم 6م في الحديقة"></div>
+        <div class="col-12"><button class="btn btn-success">إضافة</button></div>
       </form>
     </div>
-    {result}
+    {render_result(plan)}
     """
-    return render_template_string(BASE, title="التنشيط السلوكي", heading="التنشيط السلوكي (BA)", body=body, year=now_year())
+    html = BASE.replace("{{ body|safe }}", body)
+    return render_template_string(html, title="التفعيل السلوكي", header="التفعيل السلوكي (BA)")
 
-# ============================== التعرض التدريجي (ERP) ==============================
-@cbt_bp.route("/exposures", methods=["GET","POST"])
-def exposures():
-    result = ""
-    if request.method=="POST":
-        items = [s.strip() for s in (request.form.get("ladder","") or "").split("\n") if s.strip()]
-        ladder = "".join(f"<tr><td>{i+1}</td><td>{x}</td></tr>" for i,x in enumerate(items))
-        result = f"""
-        <div class="card">
-          <h3>سُلّم التعرض</h3>
-          <table><tr><th>#</th><th>مهمة التعرض</th></tr>{ladder}</table>
-          <small>ابدأ من الأدنى قلقًا وتدرّج للأعلى مع منع سلوكيات الأمان/الطقوس.</small>
-        </div>
-        """
+@cbt_bp.route("/erp", methods=["GET","POST"])
+def erp():
+    item = None
+    if request.method == "POST":
+        item = {"exposure": request.form.get("exposure",""),
+                "suds": request.form.get("suds",""),
+                "steps": request.form.get("steps","")}
     body = f"""
-    <div class="card">
-      <form method="post">
-        <label>اكتب سُلّم التعرض (عنصر في كل سطر، من الأسهل للأصعب)</label>
-        <textarea name="ladder" placeholder="مثال:\nالسلام على جار أعرفه\nالتحدث دقيقتين في اجتماع صغير\nعرض قصير أمام الفريق\nكلمة أمام جمهور"></textarea>
-        <div style="margin-top:10px"><button class="btn">بناء السُلّم</button></div>
+    <div class="card-glass p-3">
+      <form method="post" class="row g-3">
+        <div class="col-12"><label class="form-label">مثير/مهمة التعرض</label><input name="exposure" class="form-control" required></div>
+        <div class="col-6 col-md-3"><label class="form-label">SUDS (قلق 0-100)</label><input name="suds" class="form-control" type="number" min="0" max="100"></div>
+        <div class="col-12"><label class="form-label">خطوات/تصعيد</label><textarea name="steps" class="form-control" rows="3" placeholder="خطوة 1…"></textarea></div>
+        <div class="col-12"><button class="btn btn-warning">إضافة للسُلّم</button></div>
       </form>
     </div>
-    {result}
+    {render_result(item)}
     """
-    return render_template_string(BASE, title="التعرض التدريجي", heading="التعرض التدريجي (ERP)", body=body, year=now_year())
+    html = BASE.replace("{{ body|safe }}", body)
+    return render_template_string(html, title="سُلّم التعرض", header="سُلّم التعرض (ERP)")
 
-# ============================== خطة جلسات آلية ==============================
-@cbt_bp.route("/plan", methods=["GET","POST"])
-def session_plan():
-    result = ""
-    if request.method=="POST":
-        main_problem = request.form.get("main_problem","").strip()
-        goals        = request.form.get("goals","").strip()
-        metrics      = request.form.get("metrics","").strip()
-        modules      = []
-        if request.form.get("use_depression"): modules.append("اكتئاب/BA + سجل أفكار")
-        if request.form.get("use_anxiety"):    modules.append("قلق/تعرض + مهارات تنفس/يقظة")
-        if request.form.get("use_trauma"):     modules.append("صدمة/تنظيم + معالجة تدريجية")
-        schedule = """
-        <ol>
-          <li><strong>جلسة 1:</strong> بناء علاقة + صياغة حالة + أهداف + قياس أساسي (PHQ-9/GAD-7).</li>
-          <li><strong>جلسة 2:</strong> تثقيف نفسي + مهارات تنظيم (تنفّس/يقظة) + واجب منزلي.</li>
-          <li><strong>جلسة 3:</strong> سجل أفكار (تشوهات معرفية) + تجربة سلوكية.</li>
-          <li><strong>جلسة 4:</strong> BA/تعرض تدريجي حسب الحالة.</li>
-          <li><strong>جلسة 5:</strong> مراجعة التقدم + تعديل خطة + قياسات متابعة.</li>
-          <li><strong>جلسة 6:</strong> تثبيت مكاسب + خطة انتكاسة + ختام.</li>
-        </ol>
-        """
-        result = f"""
-        <div class="card">
-          <h3>خطة جلسات مبدئية (6 جلسات)</h3>
-          <table>
-            <tr><th>المشكلة الرئيسية</th><td>{main_problem}</td></tr>
-            <tr><th>الأهداف</th><td>{goals}</td></tr>
-            <tr><th>مؤشرات النجاح</th><td>{metrics}</td></tr>
-            <tr><th>الوحدات المقترحة</th><td>{'، '.join(modules) if modules else 'تُحدّد بعد القياس'}</td></tr>
-          </table>
-          {schedule}
-          <small>الخطة توجيهية وتتعدل حسب التقييم والمتابعة.</small>
-        </div>
-        """
+@cbt_bp.route("/safety", methods=["GET","POST"])
+def safety():
+    rec = None
+    if request.method == "POST":
+        rec = {"behavior": request.form.get("behavior",""),
+               "function": request.form.get("function",""),
+               "alternative": request.form.get("alternative","")}
     body = f"""
-    <div class="card">
-      <form method="post">
-        <label>المشكلة الرئيسية</label><input name="main_problem" placeholder="مثال: اكتئاب مع قلق اجتماعي">
-        <label>الأهداف</label><textarea name="goals" placeholder="رفع النشاط، تحسين النوم، تخفيف القلق الاجتماعي..."></textarea>
-        <label>مؤشرات النجاح</label><textarea name="metrics" placeholder="هبوط PHQ-9 تحت 9، حضور نشاطين أسبوعيًا..."></textarea>
-        <div class="grid">
-          <label><input type="checkbox" name="use_depression"> وحدة اكتئاب (BA + أفكار)</label>
-          <label><input type="checkbox" name="use_anxiety"> وحدة قلق (تعرض + تنظيم)</label>
-          <label><input type="checkbox" name="use_trauma"> وحدة صدمة (تنظيم + معالجة تدريجية)</label>
-        </div>
-        <div style="margin-top:10px"><button class="btn">توليد الخطة</button></div>
+    <div class="card-glass p-3">
+      <form method="post" class="row g-3">
+        <div class="col-12 col-md-6"><label class="form-label">سلوك الأمان</label><input name="behavior" class="form-control" required></div>
+        <div class="col-12 col-md-6"><label class="form-label">وظيفته</label><input name="function" class="form-control" placeholder="خفض القلق مؤقتاً…"></div>
+        <div class="col-12"><label class="form-label">بديل وظيفي</label><input name="alternative" class="form-control" placeholder="تعرض تدريجي + منع طقوس"></div>
+        <div class="col-12"><button class="btn btn-info">حفظ</button></div>
       </form>
     </div>
-    {result}
+    {render_result(rec)}
     """
-    return render_template_string(BASE, title="خطة الجلسات", heading="توليد خطة جلسات (CBT)", body=body, year=now_year())
+    html = BASE.replace("{{ body|safe }}", body)
+    return render_template_string(html, title="سلوكيات الأمان", header="سلوكيات الأمان")
 
-# ============================== روابط مختصرة ==============================
-@cbt_bp.route("/thought")
-def thought_alias(): return redirect(url_for("cbt.thought_record"))
-
-@cbt_bp.route("/erp")
-def erp_alias(): return redirect(url_for("cbt.exposures"))
+def render_result(obj):
+    if not obj: return ""
+    rows = "".join(f"<tr><th class='text-nowrap'>{k}</th><td>{(v or '').strip() or '-'}</td></tr>" for k,v in obj.items())
+    return f"""
+    <div class='card-glass p-3 mt-3'>
+      <h6 class="text-info">تم الحفظ (عرض فوري):</h6>
+      <div class="table-responsive"><table class="table table-sm table-borderless text-light">{rows}</table></div>
+      <div class="small text-secondary">* ملاحظة: هذا عرض فوري غير مخزن في قاعدة بيانات.</div>
+    </div>
+    """
