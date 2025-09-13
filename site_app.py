@@ -1,165 +1,241 @@
-/* === Arabi Psycho – Royal Navy & Gold === */
-:root{
-  /* كُحلي عميق */
-  --bg-0:#070c18;               /* خلفية عامة كحلي داكن جدًا */
-  --bg-1:#0b1224;               /* طبقة ثانية */
-  --navy:#0e1a33;               /* كُحلي أساسي للبطاقات */
+# --- أعلى الملف ---
+import os, json, re
+from collections import defaultdict
+from flask import Flask, request, render_template_string
 
-  /* ذهبي معدني (درجات) */
-  --gold-1:#8f6b00;  /* ظل غامق */
-  --gold-2:#b38800;  /* وسط */
-  --gold-3:#d4af37;  /* ذهبي كلاسيك */
-  --gold-4:#f5cc58;  /* إضاءة */
-  --gold-5:#ffe8a0;  /* لمعة */
+# لو تستخدم openai الرسمي:
+# from openai import OpenAI
+# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-  /* ألوان مساعدة */
-  --success:#22c55e;
-  --danger:#ef4444;
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_PATH = os.path.join(APP_DIR, "data", "dsm_rules.json")
 
-  /* نصوص وحدود */
-  --text:#f3f6ff;
-  --muted:#b9c3da;
-  --border:rgba(255,255,255,.08);
+with open(DATA_PATH, "r", encoding="utf-8") as f:
+    DSM_RULES = json.load(f)
 
-  /* توّهجات */
-  --navy-glow: 0 14px 34px rgba(15,27,51,.45);
-  --gold-glow: 0 10px 28px rgba(244,204,88,.35), 0 4px 10px rgba(212,175,55,.35);
+def normalize_ar(text: str) -> str:
+    if not text: return ""
+    t = text.strip()
+    t = re.sub(r"[^\u0600-\u06FF\s]", " ", t)  # إبقاء العربية والمسافات
+    t = re.sub(r"\s+", " ", t)
+    # تطبيع بسيط
+    t = t.replace("أ", "ا").replace("إ", "ا").replace("آ", "ا")
+    t = t.replace("ة", "ه").replace("ى", "ي")
+    return t
 
-  /* تدرجات ذهبيّة/كُحليّة */
-  --grad-gold: linear-gradient(92deg, var(--gold-1), var(--gold-3) 45%, var(--gold-4) 60%, var(--gold-2));
-  --grad-navy: linear-gradient(180deg, #0b1329, #0b1224);
-}
+def score_by_rules(text: str):
+    txt = normalize_ar(text)
+    tokens = set(txt.split())
+    reports = []
+    for code, spec in DSM_RULES.items():
+        required = [normalize_ar(w) for w in spec.get("required", [])]
+        optional = [normalize_ar(w) for w in spec.get("optional", [])]
+        min_req = spec.get("min_required", max(1, len(required)//2))
+        weights = spec.get("weights", {})
 
-/* خلفيّة ملكيّة */
-body{
-  margin:0; color:var(--text);
-  background:
-    radial-gradient(1200px 720px at 85% -10%, rgba(245,204,88,.12), transparent 60%),
-    radial-gradient(900px 600px at -10% 70%, rgba(15,27,51,.55), transparent 60%),
-    var(--grad-navy);
-  font-family:"Tajawal",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-  letter-spacing:.2px;
-}
+        req_hits = [w for w in required if any(w in token for token in tokens)]
+        opt_hits = [w for w in optional if any(w in token for token in tokens)]
 
-/* حاوية */
-.container{max-width:1150px;margin:auto;padding:30px 18px;}
+        if len(req_hits) >= min_req:
+            score = 0
+            details = []
+            for w in req_hits + opt_hits:
+                w_norm = normalize_ar(w)
+                w_score = weights.get(w, 1)
+                score += w_score
+                details.append((w, w_score))
+            reports.append({
+                "code": code,
+                "name_ar": spec.get("name_ar", code),
+                "score": score,
+                "required_hits": req_hits,
+                "optional_hits": opt_hits,
+                "details": details
+            })
+    # ترتيب أفضل 3
+    reports.sort(key=lambda d: d["score"], reverse=True)
+    return reports[:3]
 
-/* شريط علوي زجاجي بلمعة ذهبية خفيفة */
-.appbar{
-  position:sticky;top:0;z-index:50;
-  background:linear-gradient(180deg, rgba(7,12,24,.86), rgba(7,12,24,.55));
-  backdrop-filter:blur(10px);
-  border-bottom:1px solid var(--border);
-  box-shadow: 0 6px 14px rgba(0,0,0,.35);
-}
+def llm_opinion(user_text: str, top3):
+    """اختياري: تعليق تفسيري من نموذج لغوي—يتطلب مفتاح OPENAI_API_KEY.
+       لو المفتاح غير متوفر نرجّع None.
+    """
+    api = os.getenv("OPENAI_API_KEY")
+    if not api:
+        return None
 
-/* بطاقات كُحليّة زجاجيّة بحواف ذهبية دقيقة */
-.card{
-  background:linear-gradient(180deg, rgba(14,26,51,.85), rgba(14,26,51,.72));
-  border:1px solid rgba(245,204,88,.18);
-  border-radius:22px; overflow:hidden;
-  box-shadow:var(--navy-glow);
-}
-.card--gold{
-  border-image: var(--grad-gold) 1;
-  box-shadow: var(--gold-glow), var(--navy-glow);
-}
+    # prompt مختصر وواضح (بدون تعهدات طبية)
+    summary = "\n".join([f"- {r['name_ar']} (درجة: {r['score']})" for r in top3]) or "لا ترشيحات قوية."
+    system_msg = (
+        "أنت مساعد دعم نفسي غير علاجي. قدّم ترشيحاً تفسيرياً غير تشخيصي "
+        "استناداً إلى الشكوى وترشيحات النظام القاعدي. اذكر لماذا قد تنطبق "
+        "هذه الترشيحات، واقترح خطوات مبدئية آمنة للرعاية الذاتية أو طلب المساعدة المختصة. "
+        "أضف تنبيهاً واضحاً أن هذا ليس تشخيصاً طبياً."
+    )
+    user_msg = f"الشكوى:\n{user_text}\n\nترشيحات القواعد:\n{summary}"
 
-/* عناوين بلمعة ذهبية معدنية متحركة */
-h1,h2,h3{
-  margin:.1rem 0 .6rem; font-weight:800; line-height:1.08;
-  background:linear-gradient(90deg, var(--gold-2), var(--gold-4) 45%, var(--gold-5) 55%, var(--gold-3));
-  -webkit-background-clip:text; background-clip:text; color:transparent;
-  position:relative;
-}
-h1{font-size:clamp(30px,3.8vw,48px)}
-h2{font-size:clamp(22px,2.6vw,32px)}
-h3{font-size:clamp(18px,2vw,24px)}
-/* لمعة عابرة */
-h1::after,h2::after{
-  content:""; position:absolute; inset:0 auto 0 -120%;
-  width:120px; transform:skewX(-18deg);
-  background:linear-gradient(90deg, transparent, rgba(255,255,255,.7), transparent);
-  filter:blur(2px); animation:shimmer 4.2s linear infinite;
-}
-@keyframes shimmer{ 0%{left:-120%} 60%{left:140%} 100%{left:140%} }
+    # مثال باستخدام Chat Completions القديم/المشابه. عدّل بحسب مكتبتك:
+    # resp = client.chat.completions.create(
+    #     model="gpt-4o-mini",
+    #     messages=[{"role":"system","content":system_msg},
+    #               {"role":"user","content":user_msg}],
+    #     temperature=0.2,
+    # )
+    # return resp.choices[0].message.content.strip()
 
-.lead{color:var(--muted);font-size:clamp(16px,1.6vw,18px);line-height:1.8}
+    return None  # لو ما تبغى LLM الآن
 
-/* أزرار ملكيّة */
-.btn{
-  display:inline-flex;align-items:center;gap:10px;
-  padding:12px 18px;border-radius:16px;font-weight:800;
-  color:#1a1300;text-shadow:0 1px 0 rgba(255,255,255,.4);
-  background:var(--grad-gold); border:1px solid rgba(213,176,55,.5);
-  box-shadow: var(--gold-glow);
-  transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
-}
-.btn:hover{transform:translateY(-2px) scale(1.02);filter:saturate(1.12) brightness(1.02);}
-.btn:active{transform:none;filter:saturate(1);}
-.btn:focus-visible{outline:2px solid transparent;box-shadow:0 0 0 6px rgba(245,204,88,.35), var(--gold-glow);}
+# -------- واجهة DSM-AI --------
 
-/* أزرار ثانوية بكُحلي وحواف ذهبية */
-.btn--ghost{
-  color:var(--text); text-shadow:none;
-  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-  border:1px solid rgba(245,204,88,.35); box-shadow: var(--navy-glow);
-}
-.btn--success{ background:linear-gradient(92deg,#2bb255,#5ae08d); color:#06100a; }
-.btn--danger{  background:linear-gradient(92deg,#f14646,#ff7b7b); color:#240404; }
+DSM_AI_HTML = """
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>تشخيص مساعد (DSM-AI) | عربي سايكو</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0b1b3a;        /* كحلي عميق */
+    --navy-2:#0e254f;      /* تدرّج أدكن */
+    --gold:#f5c242;        /* ذهبي لامع */
+    --gold-2:#ffd773;      /* إضاءة ذهبية */
+    --text:#e9eef7;
+    --ok:#49d17c;
+    --bad:#ff6b6b;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:'Cairo', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    background: radial-gradient(1200px 600px at 80% -100px, rgba(245,194,66,0.08), transparent 70%),
+                linear-gradient(180deg, var(--navy), var(--navy-2));
+    color:var(--text);
+    min-height:100vh;
+    display:flex; align-items:center; justify-content:center; padding:32px;
+  }
+  .shell{
+    width:min(1100px,100%);
+    background: rgba(14,37,79,0.65);
+    border:1px solid rgba(245,194,66,0.22);
+    box-shadow: 0 20px 60px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
+    border-radius:24px; padding:28px;
+    backdrop-filter: blur(8px);
+  }
+  .hero{
+    display:flex; gap:18px; align-items:center; justify-content:space-between; flex-wrap:wrap;
+    margin-bottom:18px;
+  }
+  .brand{
+    font-weight:800; letter-spacing:.5px; font-size:26px;
+    color:var(--gold);
+    text-shadow:0 0 18px rgba(245,194,66,.35);
+  }
+  .badge{
+    background: linear-gradient(140deg, var(--gold), var(--gold-2));
+    color:#141b2d; font-weight:800; padding:8px 14px; border-radius:9999px; font-size:14px;
+    box-shadow:0 10px 30px rgba(245,194,66,.25);
+  }
+  .panel{background:rgba(9,18,40,.55); border:1px solid rgba(245,194,66,.18); border-radius:18px; padding:18px}
+  .title{font-size:20px; font-weight:800; color:#fff; margin:0 0 12px}
+  textarea{
+    width:100%; min-height:140px; resize:vertical;
+    background:rgba(255,255,255,.04);
+    color:var(--text); border:1px solid rgba(245,194,66,.18);
+    border-radius:14px; padding:14px; outline:none;
+  }
+  textarea:focus{border-color:var(--gold); box-shadow:0 0 0 4px rgba(245,194,66,.15)}
+  .row{display:flex; gap:14px; flex-wrap:wrap}
+  .btn{
+    background: linear-gradient(180deg, var(--gold), #f0b226);
+    color:#171c2c; font-weight:800; border:none; border-radius:14px; padding:12px 18px;
+    cursor:pointer; box-shadow: 0 8px 28px rgba(245,194,66,.3);
+  }
+  .btn:hover{transform:translateY(-1px)}
+  .ghost{
+    background:transparent; color:var(--gold); border:1px solid var(--gold); box-shadow:none
+  }
+  .chips{display:flex; gap:10px; flex-wrap:wrap}
+  .chip{
+    border:1px dashed rgba(245,194,66,.35);
+    color:var(--gold-2); border-radius:999px; padding:6px 10px; font-size:12px
+  }
+  .card{
+    background:rgba(255,255,255,.03);
+    border:1px solid rgba(245,194,66,.16);
+    border-radius:16px; padding:14px;
+  }
+  .score{font-weight:800; color:var(--gold)}
+  .muted{opacity:.8; font-size:13px}
+  .warn{
+    background:rgba(255,107,107,.12); border:1px solid rgba(255,107,107,.35);
+    color:#ffdede; border-radius:12px; padding:10px 12px; font-size:13px;
+  }
+</style>
+</head>
+<body>
+  <div class="shell">
+    <div class="hero">
+      <div class="brand">عربي سايكو — DSM-AI</div>
+      <div class="badge">تجريبي • غير تشخيصي</div>
+    </div>
 
-/* رقاقات */
-.chip{
-  display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:28px;
-  color:var(--text);
-  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-  border:1px solid rgba(245,204,88,.22);
-}
-.chip--on{ box-shadow:0 0 0 3px rgba(245,204,88,.25) inset; }
+    <form method="post" class="panel" style="margin-bottom:14px">
+      <div class="title">احكِ لنا باختصار، ما الذي يزعجك هذه الفترة؟</div>
+      <textarea name="complaint" placeholder="مثال: أشعر بقلق مستمر وصعوبة بالنوم وتركيزي ضعيف في العمل...">{{complaint or ""}}</textarea>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" type="submit">تحليل الشكوى</button>
+        <button class="btn ghost" type="reset">مسح</button>
+      </div>
+      <div class="chips" style="margin-top:10px">
+        <div class="chip">التحليل يعتمد على الكلمات الدالة</div>
+        <div class="chip">يمكن أن يخطئ • ليس بديلاً للطبيب</div>
+      </div>
+    </form>
 
-/* إدخالات */
-.input, select, textarea{
-  width:100%;color:var(--text);
-  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-  border:1px solid rgba(245,204,88,.25); border-radius:14px; padding:12px 14px;
-  transition:border-color .12s ease, box-shadow .12s ease;
-}
-.input::placeholder{color:#c9d1ea}
-.input:focus{outline:none;border-color:var(--gold-4);box-shadow:0 0 0 6px rgba(245,204,88,.22)}
+    {% if results %}
+    <div class="panel" style="margin-bottom:14px">
+      <div class="title">الترشيحات الأقرب استناداً إلى الأعراض</div>
+      <div class="row">
+        {% for r in results %}
+        <div class="card" style="flex:1 1 260px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-weight:800">{{r.name_ar}}</div>
+            <div class="score">درجة: {{r.score}}</div>
+          </div>
+          <div class="muted" style="margin-top:6px">رمز: {{r.code}}</div>
+          <div class="muted" style="margin-top:8px">أصابت: {{ ", ".join(r.required_hits + r.optional_hits) if (r.required_hits or r.optional_hits) else "—" }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
 
-/* أقسام */
-.section{padding:28px}
-.section--hero{
-  background:linear-gradient(180deg, rgba(212,175,55,.10), rgba(15,27,51,.35));
-  border:1px solid rgba(245,204,88,.25); border-radius:26px;
-  box-shadow: var(--gold-glow);
-}
+    {% if llm %}
+    <div class="panel">
+      <div class="title">ملاحظات توضيحية من المساعد</div>
+      <div class="card">{{llm|safe}}</div>
+    </div>
+    {% endif %}
 
-/* سايدبار */
-.sidebar{position:sticky; top:84px; display:flex; flex-direction:column; gap:12px;}
-.sidebar .btn{width:100%;justify-content:flex-start}
+    <div class="warn" style="margin-top:14px">
+      هذا المحتوى لأغراض تثقيفية ودعم أولي فقط، ولا يُعد تشخيصاً طبياً. إذا كانت الأعراض شديدة
+      أو لديك أفكار بإيذاء النفس، فضلاً تواصل فوراً مع جهات الطوارئ أو مختص مرخّص.
+    </div>
+  </div>
+</body>
+</html>
+"""
 
-/* فاصل ذهبي ناعم */
-.hr{
-  height:1px; border:none; margin:18px 0;
-  background:linear-gradient(90deg, transparent, rgba(245,204,88,.55), transparent);
-}
-
-/* تذييل */
-footer{
-  margin-top:28px; padding:22px; text-align:center; color:var(--muted);
-  border-top:1px solid rgba(245,204,88,.25);
-  background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));
-}
-
-/* حركات بسيطة */
-.fade-in{animation:fade .6s ease both}
-@keyframes fade{from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none}}
-
-/* وضع فاتح (اختياري) */
-html.light{
-  --bg-0:#f7f4ea; --bg-1:#f4efe1; --navy:#ffffff;
-  --text:#0b1224; --muted:#303a52; --border:rgba(11,18,36,.12);
-  --navy-glow:0 10px 24px rgba(11,18,36,.12);
-  --gold-glow:0 8px 20px rgba(212,175,55,.25);
-}
+@app.route("/dsm-ai", methods=["GET", "POST"])
+def dsm_ai():
+    complaint = ""
+    results = []
+    llm = None
+    if request.method == "POST":
+        complaint = request.form.get("complaint", "")
+        if complaint.strip():
+            results = score_by_rules(complaint)
+            llm = llm_opinion(complaint, results)  # قد تكون None
+    return render_template_string(DSM_AI_HTML, complaint=complaint, results=results, llm=llm)
