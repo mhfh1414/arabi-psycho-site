@@ -6,9 +6,7 @@ from flask import Flask, render_template_string
 
 app = Flask(__name__)
 
-# ======================
-# الصفحة الرئيسية
-# ======================
+# صفحة رئيسية بواجهة أنيقة (كحلي + ذهبي)
 @app.route("/")
 def home():
     return render_template_string("""
@@ -19,73 +17,68 @@ def home():
     <title>عربي سايكو</title>
     <style>
         body {
+            font-family: 'Tahoma', sans-serif;
+            background: linear-gradient(135deg, #0a1a33, #001f3f);
+            color: #FFD700;
             margin: 0;
-            font-family: "Cairo", sans-serif;
-            background: linear-gradient(to right, #0a0f2c, #1b1f3a);
-            color: #f5d76e;
+            padding: 0;
             text-align: center;
         }
         header {
-            padding: 25px;
-            background: #0a0f2c;
-            color: #f5d76e;
-            font-size: 28px;
+            padding: 40px;
+            background-color: #001f3f;
+            color: #FFD700;
+            font-size: 32px;
             font-weight: bold;
-            letter-spacing: 1px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.6);
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.6);
         }
         .btn {
             display: inline-block;
-            margin: 12px;
-            padding: 14px 28px;
-            font-size: 18px;
-            font-weight: bold;
+            margin: 15px;
+            padding: 15px 30px;
+            border: 2px solid #FFD700;
             border-radius: 12px;
-            border: 2px solid #f5d76e;
-            background: transparent;
-            color: #f5d76e;
-            transition: 0.3s;
+            background-color: transparent;
+            color: #FFD700;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease-in-out;
         }
         .btn:hover {
-            background: #f5d76e;
-            color: #0a0f2c;
-            cursor: pointer;
+            background-color: #FFD700;
+            color: #001f3f;
             transform: scale(1.1);
-            box-shadow: 0 0 15px #f5d76e;
-        }
-        section {
-            padding: 40px;
         }
         footer {
-            background: #0a0f2c;
-            padding: 15px;
+            margin-top: 40px;
+            padding: 20px;
             font-size: 14px;
-            color: #f5d76e;
-            margin-top: 50px;
-            box-shadow: 0 -2px 15px rgba(0,0,0,0.6);
+            background-color: #0a1a33;
+            color: #ccc;
         }
     </style>
 </head>
 <body>
-    <header>🌟 عربي سايكو | راحتك النفسية تبدأ من هنا 🌟</header>
+    <header>🌟 عربي سايكو | Arabi Psycho 🌟</header>
+    <h2>مرحباً بك في منصتك للصحة النفسية</h2>
+    <p>ابدأ رحلتك مع اختبارات نفسية، DSM-5، العلاج السلوكي المعرفي (CBT)، وخدمات الدعم.</p>
 
-    <section>
-        <h2>اختر خدمتك</h2>
-        <a class="btn" href="/dsm">DSM-5</a>
-        <a class="btn" href="/cbt">العلاج السلوكي CBT</a>
-        <a class="btn" href="/tests">اختبارات نفسية</a>
-        <a class="btn" href="/contact">تواصل معنا</a>
-    </section>
+    <div>
+        <a href="#" class="btn">📘 DSM-5</a>
+        <a href="#" class="btn">🧠 CBT</a>
+        <a href="#" class="btn">📝 اختبارات</a>
+        <a href="#" class="btn">❤️ الإدمان</a>
+        <a href="#" class="btn">📞 التواصل</a>
+    </div>
 
     <footer>
-        ⓒ 2025 Arabi Psycho | Navy & Gold Edition
+        جميع الحقوق محفوظة © 2025 - عربي سايكو  
     </footer>
 </body>
 </html>
     """)
 
-# ======================
-# تشغيل التطبيق
-# ======================
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
