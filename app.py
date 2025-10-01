@@ -1,12 +1,10 @@
 # app.py — Flask web (Purple/Gold, DSM + CBT + Addiction + Case Study)
-import os
+import os, importlib
 from flask import Flask, render_template_string
-import importlib
 
 app = Flask(__name__)
 
-# واجهة HTML
-HTML = """
+HTML_HOME = """
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -14,47 +12,18 @@ HTML = """
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>عربي سايكو — DSM / CBT / Addiction / Case Study</title>
   <style>
-    :root{
-      --purple:#4B0082;   /* البنفسجي */
-      --gold:#FFD700;     /* الذهبي */
-      --white:#ffffff;
-    }
-    body{
-      margin:0;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:var(--purple);
-      font-family:"Tajawal","Segoe UI",system-ui,sans-serif;
-      color:var(--white);
-    }
-    .card{
-      background:var(--gold);
-      color:var(--purple);
-      padding:40px 60px;
-      border-radius:20px;
-      box-shadow:0 8px 25px rgba(0,0,0,0.3);
-      text-align:center;
-    }
+    :root{ --purple:#4B0082; --gold:#FFD700; --white:#ffffff; }
+    body{ margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+          background:var(--purple); font-family:"Tajawal","Segoe UI",system-ui,sans-serif; color:var(--white);}
+    .card{ background:var(--gold); color:var(--purple); padding:40px 60px; border-radius:20px;
+           box-shadow:0 8px 25px rgba(0,0,0,.3); text-align:center; }
     .card h1{margin:0 0 20px; font-size:2rem}
-    .btn{
-      display:block; margin:10px auto; padding:12px 18px;
-      border-radius:14px; background:var(--purple); color:var(--white);
-      text-decoration:none; font-weight:700; width:200px;
-    }
-    .btn:hover{opacity:0.85}
-    pre{
-      text-align:right;
-      background:#f4f4f4;
-      color:#000;
-      padding:15px;
-      border-radius:10px;
-      overflow-x:auto;
-      max-width:90%;
-      margin:20px auto;
-      direction:ltr;
-    }
+    .btn{ display:block; margin:10px auto; padding:12px 18px; border-radius:14px;
+          background:var(--purple); color:var(--white); text-decoration:none; font-weight:700; width:220px; }
+    .btn:hover{opacity:.9}
+    .wrap{max-width:980px; margin:40px auto; padding:20px}
+    .back{position:fixed; top:16px; right:16px}
+    .back a{background:var(--gold); color:var(--purple); padding:8px 12px; border-radius:10px; text-decoration:none; font-weight:700}
   </style>
 </head>
 <body>
@@ -69,34 +38,59 @@ HTML = """
 </html>
 """
 
-def load_module_output(module_name):
+def render_module(module_name: str, title_ar: str):
+    """
+    يحاول استدعاء module.main()، ولو رجّع HTML نعرضه كما هو.
+    لو ما فيه main() أو صار خطأ، نعرض رسالة مفيدة.
+    """
     try:
-        module = importlib.import_module(module_name)
-        if hasattr(module, "main"):
-            return module.main()
-        return f"تم استيراد {module_name} بنجاح."
+        m = importlib.import_module(module_name)
+        if hasattr(m, "main"):
+            content = m.main()
+            # نعرض المحتوى كـ HTML فعلي
+            page = f"""
+            <html lang="ar" dir="rtl"><head>
+            <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+            <title>{title_ar}</title>
+            <style>
+              body{{font-family:"Tajawal","Segoe UI",system-ui,sans-serif; margin:0; background:#faf7e6}}
+              .back{{position:fixed; top:16px; right:16px}}
+              .back a{{background:#FFD700; color:#4B0082; padding:8px 12px; border-radius:10px; text-decoration:none; font-weight:700}}
+              .wrap{{max-width:980px; margin:40px auto; padding:20px}}
+            </style></head>
+            <body>
+              <div class="back"><a href="/">⬅ الرجوع</a></div>
+              <div class="wrap">
+                {content}
+              </div>
+            </body></html>
+            """
+            return render_template_string(page)
+        else:
+            msg = f"الملف <b>{module_name}.py</b> لا يحتوي دالة <code>main()</code> لعرض المحتوى."
+            return render_template_string(f"<div class='wrap'>{msg}</div>")
     except Exception as e:
-        return f"خطأ في تحميل {module_name}: {e}"
+        return render_template_string(f"<div class='wrap'>خطأ أثناء تحميل <b>{module_name}</b>: {e}</div>")
 
 @app.get("/")
 def home():
-    return render_template_string(HTML)
+    return render_template_string(HTML_HOME)
 
 @app.get("/dsm")
 def dsm():
-    return f"<h2>DSM.py</h2><pre>{load_module_output('DSM')}</pre>"
+    return render_module("DSM", "DSM")
 
 @app.get("/cbt")
 def cbt():
-    return f"<h2>CBT.py</h2><pre>{load_module_output('CBT')}</pre>"
+    return render_module("CBT", "CBT")
 
 @app.get("/addiction")
 def addiction():
-    return f"<h2>Addiction.py</h2><pre>{load_module_output('Addiction')}</pre>"
+    return render_module("Addiction", "Addiction")
 
 @app.get("/ipb")
 def ipb():
-    return f"<h2>ipb.py</h2><pre>{load_module_output('ipb')}</pre>"
+    return render_module("ipb", "Case Study")
 
 @app.get("/health")
 def health():
