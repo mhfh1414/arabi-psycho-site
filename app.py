@@ -1,10 +1,10 @@
-# app.py — عربي سايكو: رئيسية + دراسة حالة تستدعي DSM.diagnose + طباعة/حفظ
+# app.py — عربي سايكو: رئيسية + دراسة حالة تستدعي DSM.diagnose
 import os, importlib
-from flask import Flask, render_template_string, request, jsonify
+from flask import Flask, render_template_string, request
 
 app = Flask(__name__)
 
-# ===== الصفحة الرئيسية =====
+# ===== الرئيسية =====
 HTML_HOME = """
 <!DOCTYPE html><html lang="ar" dir="rtl"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -16,7 +16,7 @@ HTML_HOME = """
   .card{ background:var(--gold); color:var(--purple); padding:40px 60px; border-radius:20px;
          box-shadow:0 8px 25px rgba(0,0,0,.3); text-align:center; }
   .card h1{margin:0 0 10px; font-size:2rem}
-  .brand{font-weight:800; letter-spacing:.5px}
+  .brand{font-weight:800}
   .btn{ display:block; margin:12px auto; padding:12px 18px; border-radius:14px;
         background:var(--purple); color:var(--white); text-decoration:none; font-weight:700; width:280px; }
   .btn:hover{opacity:.9}
@@ -25,16 +25,14 @@ HTML_HOME = """
   <main class="card">
     <div class="brand">عربي سايكو</div>
     <h1>واجهة التشخيص المبدئي</h1>
-    <a class="btn" href="/case">📝 دراسة الحالة (البدء)</a>
+    <a class="btn" href="/case">📝 دراسة الحالة</a>
     <a class="btn" href="/dsm">📘 DSM (مرجع)</a>
-    <a class="btn" href="/cbt">🧠 CBT (خطة علاج)</a>
-    <a class="btn" href="/addiction">💊 Addiction (الإدمان)</a>
     <div class="copy">© جميع الحقوق محفوظة لعربي سايكو</div>
   </main>
 </body></html>
 """
 
-def render_simple_page(content: str, title: str):
+def shell_page(content: str, title: str):
     page = f"""
     <!DOCTYPE html><html lang="ar" dir="rtl"><head>
       <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -56,41 +54,20 @@ def render_simple_page(content: str, title: str):
 def home():
     return render_template_string(HTML_HOME)
 
-# صفحات مرجعية إن وجدت لديك CBT/Addiction بــ main()
 @app.get("/dsm")
 def dsm():
     DSM = importlib.import_module("DSM")
     content = DSM.main() if hasattr(DSM, "main") else "<p>DSM reference.</p>"
-    return render_simple_page(content, "DSM — مرجع")
+    return shell_page(content, "DSM — مرجع")
 
-@app.get("/cbt")
-def cbt():
-    try:
-        m = importlib.import_module("CBT")
-        content = m.main() if hasattr(m, "main") else "<p>CBT reference.</p>"
-    except Exception:
-        content = "<p>CBT module غير متوفر.</p>"
-    return render_simple_page(content, "CBT — خطة علاج")
-
-@app.get("/addiction")
-def addiction():
-    try:
-        m = importlib.import_module("Addiction")
-        content = m.main() if hasattr(m, "main") else "<p>Addiction reference.</p>"
-    except Exception:
-        content = "<p>Addiction module غير متوفر.</p>"
-    return render_simple_page(content, "Addiction — الإدمان")
-
-# ===== دراسة الحالة (Form) =====
+# ===== دراسة الحالة =====
 FORM_HTML = """
 <h1>📝 دراسة الحالة — إدخال الأعراض</h1>
-<p class="note">النتيجة تعليمية/إرشادية وليست تشخيصًا طبيًا. إذا كانت الأعراض شديدة، يُرجى مراجعة مختص.</p>
-
+<p class="note">النتيجة تعليمية/إرشادية وليست تشخيصًا طبيًا.</p>
 <style>
-  .grid{{display:grid; gap:10px; grid-template-columns: repeat(auto-fit, minmax(240px,1fr));}}
-  label{{display:block; background:#fafafa; border:1px solid #eee; border-radius:10px; padding:10px}}
-  .submit{{margin-top:14px; padding:10px 16px; border-radius:12px; background:#4B0082; color:#fff; border:0; font-weight:700}}
-  .note{{font-size:.9rem; color:#555}}
+  .grid{display:grid; gap:10px; grid-template-columns: repeat(auto-fit, minmax(240px,1fr));}
+  label{display:block; background:#fafafa; border:1px solid #eee; border-radius:10px; padding:10px}
+  .submit{margin-top:14px; padding:10px 16px; border-radius:12px; background:#4B0082; color:#fff; border:0; font-weight:700}
 </style>
 
 <form method="post" action="/case">
@@ -139,13 +116,13 @@ FORM_HTML = """
     <label><input type="checkbox" name="functional_decline"> تدهور وظيفي</label>
   </div>
 
-  <h3>اضطرابات أكل/انتباه/تعاطي</h3>
+  <h3>أكل/انتباه/تعاطي</h3>
   <div class="grid">
     <label><input type="checkbox" name="restriction"> تقييد الأكل</label>
-    <label><input type="checkbox" name="underweight"> نقص وزن ملحوظ</label>
-    <label><input type="checkbox" name="body_image_distort"> صورة جسد مشوّهة</label>
+    <label><input type="checkbox" name="underweight"> نقص وزن</label>
+    <label><input type="checkbox" name="body_image_distort"> صورة جسد مشوهة</label>
     <label><input type="checkbox" name="binges"> نوبات أكل كبيرة</label>
-    <label><input type="checkbox" name="compensatory"> سلوك تعويضي (تقيؤ/مسهلات/رياضة مفرطة)</label>
+    <label><input type="checkbox" name="compensatory"> سلوك تعويضي</label>
 
     <label><input type="checkbox" name="inattention"> عدم انتباه</label>
     <label><input type="checkbox" name="hyperactivity"> فرط حركة</label>
@@ -166,6 +143,7 @@ FORM_HTML = """
 </form>
 """
 
+# *** هنا أصلحنا مشكلة جينجا عبر تهريب الأقواس في الجافاسكربت ***
 RESULT_HTML = """
 <h1>📌 ترشيحات أولية</h1>
 <ul style="line-height:1.9">{items}</ul>
@@ -180,7 +158,7 @@ RESULT_HTML = """
 
 <script>
 function downloadJSON(){
-  const data = {items: Array.from(document.querySelectorAll('li')).map(li => li.innerText)};
+  const data = {{ "{" }}"items": Array.from(document.querySelectorAll('li')).map(li => li.innerText){{ "}" }};
   const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -191,26 +169,23 @@ function downloadJSON(){
 </script>
 """
 
-@app.route("/case", methods=["GET", "POST"])
+@app.route("/case", methods=["GET","POST"])
 def case():
     if request.method == "GET":
-        return render_simple_page(FORM_HTML, "دراسة الحالة")
-    # POST: جمع المدخلات
+        return shell_page(FORM_HTML, "دراسة الحالة")
+    # POST: جمع المدخلات (checkbox= 'on' عند الاختيار)
     data = {k: v for k, v in request.form.items()}
-    # checkboxes ترسل "on" للقيم المؤشرة: نحتفظ بها كما هي
     try:
         DSM = importlib.import_module("DSM")
         picks = DSM.diagnose(data) if hasattr(DSM, "diagnose") else [("تعذر التشخيص", "DSM.diagnose غير متوفر", 0.0)]
     except Exception as e:
         picks = [("خطأ في الاستدعاء", str(e), 0.0)]
-
     items = "".join([f"<li><b>{name}</b> — {why} <small>(Score: {score:.0f})</small></li>" for name, why, score in picks])
-    return render_simple_page(RESULT_HTML.format(items=items), "نتيجة الترشيح")
+    return shell_page(RESULT_HTML.format(items=items), "نتيجة الترشيح")
 
-# صحة الخدمة
 @app.get("/health")
 def health():
-    return {"status": "ok"}, 200
+    return {"status":"ok"}, 200
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "10000")))
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT","10000")))
