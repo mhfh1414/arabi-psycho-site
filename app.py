@@ -4,7 +4,7 @@ from flask import Flask, render_template_string, request
 
 app = Flask(__name__)
 
-# ===== الرئيسية =====
+# ===== الصفحة الرئيسية =====
 HTML_HOME = """
 <!DOCTYPE html><html lang="ar" dir="rtl"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -16,7 +16,7 @@ HTML_HOME = """
   .card{ background:var(--gold); color:var(--purple); padding:40px 60px; border-radius:20px;
          box-shadow:0 8px 25px rgba(0,0,0,.3); text-align:center; }
   .card h1{margin:0 0 10px; font-size:2rem}
-  .brand{font-weight:800}
+  .brand{font-weight:800; letter-spacing:.3px}
   .btn{ display:block; margin:12px auto; padding:12px 18px; border-radius:14px;
         background:var(--purple); color:var(--white); text-decoration:none; font-weight:700; width:280px; }
   .btn:hover{opacity:.9}
@@ -143,7 +143,7 @@ FORM_HTML = """
 </form>
 """
 
-# *** هنا أصلحنا مشكلة جينجا عبر تهريب الأقواس في الجافاسكربت ***
+# ===== نتيجة الترشيح (نهرب الأقواس لعدم تعارضها مع Jinja) =====
 RESULT_HTML = """
 <h1>📌 ترشيحات أولية</h1>
 <ul style="line-height:1.9">{items}</ul>
@@ -173,8 +173,7 @@ function downloadJSON(){
 def case():
     if request.method == "GET":
         return shell_page(FORM_HTML, "دراسة الحالة")
-    # POST: جمع المدخلات (checkbox= 'on' عند الاختيار)
-    data = {k: v for k, v in request.form.items()}
+    data = {k: v for k, v in request.form.items()}  # checkboxes = 'on'
     try:
         DSM = importlib.import_module("DSM")
         picks = DSM.diagnose(data) if hasattr(DSM, "diagnose") else [("تعذر التشخيص", "DSM.diagnose غير متوفر", 0.0)]
@@ -183,6 +182,7 @@ def case():
     items = "".join([f"<li><b>{name}</b> — {why} <small>(Score: {score:.0f})</small></li>" for name, why, score in picks])
     return shell_page(RESULT_HTML.format(items=items), "نتيجة الترشيح")
 
+# فحص صحة الخدمة
 @app.get("/health")
 def health():
     return {"status":"ok"}, 200
