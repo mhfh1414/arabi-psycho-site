@@ -1,32 +1,47 @@
-# app.py — عربي سايكو: رئيسية + دراسة حالة تستدعي DSM.diagnose
+# app.py — عربي سايكو: رئيسية + دراسة حالة + DSM + تواصل (تيليجرام/واتس)
 import os, importlib
 from flask import Flask, render_template_string, request
 
 app = Flask(__name__)
 
+# روابط التواصل (من متغيرات البيئة أو قيم افتراضية)
+TELEGRAM_URL = os.environ.get("TELEGRAM_URL", "https://t.me/arabipsycho")
+WHATSAPP_URL = os.environ.get("WHATSAPP_URL", "https://wa.me/966500000000?text=%D8%B9%D9%85%D9%8A%D9%84%20%D8%B9%D8%B1%D8%A8%D9%8A%20%D8%B3%D8%A7%D9%8A%D9%83%D9%88")
+
 # ===== الصفحة الرئيسية =====
-HTML_HOME = """
+HTML_HOME = f"""
 <!DOCTYPE html><html lang="ar" dir="rtl"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>عربي سايكو — الرئيسية</title>
 <style>
-  :root{ --purple:#4B0082; --gold:#FFD700; --white:#ffffff; }
-  body{ margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
-        background:var(--purple); font-family:"Tajawal","Segoe UI",system-ui,sans-serif; color:var(--white);}
-  .card{ background:var(--gold); color:var(--purple); padding:40px 60px; border-radius:20px;
-         box-shadow:0 8px 25px rgba(0,0,0,.3); text-align:center; }
-  .card h1{margin:0 0 10px; font-size:2rem}
-  .brand{font-weight:800; letter-spacing:.3px}
-  .btn{ display:block; margin:12px auto; padding:12px 18px; border-radius:14px;
-        background:var(--purple); color:var(--white); text-decoration:none; font-weight:700; width:280px; }
-  .btn:hover{opacity:.9}
-  .copy{margin-top:12px; font-size:.9rem}
+  :root{{ --purple:#4B0082; --gold:#FFD700; --white:#ffffff; }}
+  *{{box-sizing:border-box}}
+  body{{ margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+        background:var(--purple); font-family:"Tajawal","Segoe UI",system-ui,sans-serif; color:var(--white);}}
+  .card{{ background:var(--gold); color:var(--purple); padding:44px 60px; border-radius:22px;
+         box-shadow:0 10px 30px rgba(0,0,0,.35); text-align:center; width:min(92vw,640px) }}
+  .brand{{font-weight:800; letter-spacing:.3px; opacity:.9}}
+  .title{{margin:.4rem 0 1rem; font-size:2.1rem}}
+  .btn{{ display:block; margin:12px auto; padding:12px 18px; border-radius:14px;
+        background:var(--purple); color:var(--white); text-decoration:none; font-weight:700; width:100%; max-width:320px }}
+  .btn:hover{{opacity:.92}}
+  .row{{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px}}
+  .btn.alt{{background:#5b22a6}}
+  .btn.contact{{background:#1e1b4b}}
+  .btn.whats{{background:#25D366; color:#fff}}
+  .btn.tg{{background:#229ED9; color:#fff}}
+  .copy{{margin-top:14px; font-size:.9rem; opacity:.85}}
 </style></head><body>
   <main class="card">
     <div class="brand">عربي سايكو</div>
-    <h1>واجهة التشخيص المبدئي</h1>
+    <h1 class="title">واجهة التشخيص المبدئي</h1>
     <a class="btn" href="/case">📝 دراسة الحالة</a>
-    <a class="btn" href="/dsm">📘 DSM (مرجع)</a>
+    <a class="btn alt" href="/dsm">📘 DSM (مرجع)</a>
+    <div class="row">
+      <a class="btn tg" href="{TELEGRAM_URL}" target="_blank" rel="noopener">✈️ تواصل تيليجرام</a>
+      <a class="btn whats" href="{WHATSAPP_URL}" target="_blank" rel="noopener">🟢 تواصل واتساب</a>
+    </div>
+    <a class="btn contact" href="/contact">📞 صفحة التواصل</a>
     <div class="copy">© جميع الحقوق محفوظة لعربي سايكو</div>
   </main>
 </body></html>
@@ -42,6 +57,10 @@ def shell_page(content: str, title: str):
         .back{{position:fixed; top:16px; right:16px}}
         .back a{{background:#FFD700; color:#4B0082; padding:8px 12px; border-radius:10px; text-decoration:none; font-weight:700}}
         .wrap{{max-width:1000px; margin:40px auto; padding:20px; background:#fff; border:1px solid #eee; border-radius:14px}}
+        .grid2{{display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top:10px}}
+        .btn{{display:inline-block; padding:10px 14px; border-radius:12px; text-decoration:none; font-weight:700}}
+        .tg{{background:#229ED9; color:#fff}}
+        .wa{{background:#25D366; color:#fff}}
       </style>
     </head><body>
       <div class="back"><a href="/">⬅ الرجوع</a></div>
@@ -54,6 +73,7 @@ def shell_page(content: str, title: str):
 def home():
     return render_template_string(HTML_HOME)
 
+# ===== صفحة DSM (من الملف الخارجي) =====
 @app.get("/dsm")
 def dsm():
     DSM = importlib.import_module("DSM")
@@ -63,7 +83,7 @@ def dsm():
 # ===== دراسة الحالة =====
 FORM_HTML = """
 <h1>📝 دراسة الحالة — إدخال الأعراض</h1>
-<p class="note">النتيجة تعليمية/إرشادية وليست تشخيصًا طبيًا.</p>
+<p class="note">⚠️ النتيجة تعليمية/إرشادية وليست تشخيصًا طبيًا.</p>
 <style>
   .grid{display:grid; gap:10px; grid-template-columns: repeat(auto-fit, minmax(240px,1fr));}
   label{display:block; background:#fafafa; border:1px solid #eee; border-radius:10px; padding:10px}
@@ -88,7 +108,7 @@ FORM_HTML = """
     <label><input type="checkbox" name="restlessness"> تململ</label>
   </div>
 
-  <h3>هلع/اجتماعي/وسواس/صدمات</h3>
+  <h3>نوبات/اجتماعي/وسواس/صدمات</h3>
   <div class="grid">
     <label><input type="checkbox" name="panic_attacks"> نوبات هلع</label>
     <label><input type="checkbox" name="fear_of_attacks"> خوف من تكرار النوبات</label>
@@ -106,13 +126,13 @@ FORM_HTML = """
 
   <h3>مزاج مرتفع/ذهان</h3>
   <div class="grid">
-    <label><input type="checkbox" name="elevated_mood"> مزاج مرتفع/مبالغ</label>
+    <label><input type="checkbox" name="elevated_mood"> مزاج مرتفع</label>
     <label><input type="checkbox" name="impulsivity"> اندفاع/تهوّر</label>
     <label><input type="checkbox" name="grandiosity"> شعور بالعظمة</label>
-    <label><input type="checkbox" name="decreased_sleep_need"> قلة الحاجة للنوم</label>
+    <label><input type="checkbox" name="decreased_sleep_need"> قلة النوم</label>
     <label><input type="checkbox" name="hallucinations"> هلوسات</label>
     <label><input type="checkbox" name="delusions"> أوهام ثابتة</label>
-    <label><input type="checkbox" name="disorganized_speech"> اضطراب كلام/تفكير</label>
+    <label><input type="checkbox" name="disorganized_speech"> اضطراب كلام</label>
     <label><input type="checkbox" name="functional_decline"> تدهور وظيفي</label>
   </div>
 
@@ -121,7 +141,7 @@ FORM_HTML = """
     <label><input type="checkbox" name="restriction"> تقييد الأكل</label>
     <label><input type="checkbox" name="underweight"> نقص وزن</label>
     <label><input type="checkbox" name="body_image_distort"> صورة جسد مشوهة</label>
-    <label><input type="checkbox" name="binges"> نوبات أكل كبيرة</label>
+    <label><input type="checkbox" name="binges"> نوبات أكل</label>
     <label><input type="checkbox" name="compensatory"> سلوك تعويضي</label>
 
     <label><input type="checkbox" name="inattention"> عدم انتباه</label>
@@ -137,52 +157,48 @@ FORM_HTML = """
   </div>
 
   <h3>تقدير الشدة (0–10)</h3>
-  <label>الشدّة العامة: <input type="number" name="distress" min="0" max="10" value="5"></label>
+  <label>الشدّة: <input type="number" name="distress" min="0" max="10" value="5"></label>
 
   <button class="submit" type="submit">اعرض الترشيح</button>
 </form>
 """
 
-# ===== نتيجة الترشيح (نهرب الأقواس لعدم تعارضها مع Jinja) =====
+# ===== نتيجة الترشيح (نهرب أقواس JS إذا احتجنا لاحقًا) =====
 RESULT_HTML = """
 <h1>📌 ترشيحات أولية</h1>
 <ul style="line-height:1.9">{items}</ul>
-<p class="note">هذه النتائج تعليمية/إرشادية وليست تشخيصًا طبيًا. يُفضّل مراجعة مختص للتقييم الكامل.</p>
+<p class="note">⚠️ هذه النتائج تعليمية/إرشادية فقط. يُفضّل مراجعة مختص.</p>
+<button onclick="window.print()" style="margin-top:10px;padding:10px 16px;border-radius:12px;background:#4B0082;color:#fff;border:0;font-weight:700">طباعة</button>
+"""
 
-<button onclick="window.print()" style="margin-top:10px;padding:10px 16px;border-radius:12px;background:#4B0082;color:#fff;border:0;font-weight:700">
-  طباعة النتيجة
-</button>
-<button onclick='downloadJSON()' style="margin-top:10px;padding:10px 16px;border-radius:12px;background:#FFD700;color:#4B0082;border:0;font-weight:700">
-  حفظ JSON
-</button>
-
-<script>
-function downloadJSON(){
-  const data = {{ "{" }}"items": Array.from(document.querySelectorAll('li')).map(li => li.innerText){{ "}" }};
-  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'diagnosis_result.json';
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
-</script>
+# ===== صفحة التواصل =====
+CONTACT_HTML = f"""
+<h1>📞 التواصل مع عربي سايكو</h1>
+<p>اختر القناة المناسبة لك وسنتواصل معك في أقرب وقت:</p>
+<div class="grid2">
+  <a class="btn tg" href="{TELEGRAM_URL}" target="_blank" rel="noopener">✈️ تيليجرام</a>
+  <a class="btn wa" href="{WHATSAPP_URL}" target="_blank" rel="noopener">🟢 واتساب</a>
+</div>
+<p style="margin-top:14px">يمكنك دائمًا العودة للرئيسية ومتابعة <a href="/case">دراسة الحالة</a> أو تصفّح <a href="/dsm">DSM</a>.</p>
 """
 
 @app.route("/case", methods=["GET","POST"])
 def case():
     if request.method == "GET":
         return shell_page(FORM_HTML, "دراسة الحالة")
-    data = {k: v for k, v in request.form.items()}  # checkboxes = 'on'
+    data = {k: v for k, v in request.form.items()}
     try:
         DSM = importlib.import_module("DSM")
         picks = DSM.diagnose(data) if hasattr(DSM, "diagnose") else [("تعذر التشخيص", "DSM.diagnose غير متوفر", 0.0)]
     except Exception as e:
-        picks = [("خطأ في الاستدعاء", str(e), 0.0)]
+        picks = [("خطأ", str(e), 0.0)]
     items = "".join([f"<li><b>{name}</b> — {why} <small>(Score: {score:.0f})</small></li>" for name, why, score in picks])
     return shell_page(RESULT_HTML.format(items=items), "نتيجة الترشيح")
 
-# فحص صحة الخدمة
+@app.get("/contact")
+def contact():
+    return shell_page(CONTACT_HTML, "التواصل")
+
 @app.get("/health")
 def health():
     return {"status":"ok"}, 200
