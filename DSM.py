@@ -1,8 +1,10 @@
-# DSM.py — مرجع + تشخيص مبدئي موسّع (تعليمي)
+# DSM.py — موسّع (تعليمي) لتوليد ترشيحات تشخيصية مبدئية
+# يقرأ حقول الفورم في /case ويُرجع [(name, why, score)] مرتبة تنازليًا.
+# ملاحظة: هذا للاستخدام التعليمي/الإرشادي فقط وليس تشخيصًا طبيًا.
 
 from typing import Dict, List, Tuple
 
-# -------- أدوات مساعدة --------
+# ========== Helpers ==========
 def _yes(v) -> bool:
     if v is True: 
         return True
@@ -15,194 +17,172 @@ def _num(v, default=0.0) -> float:
     except Exception:
         return default
 
-# -------- دالة التشخيص --------
+def _reason(flag: bool, text: str, bag: list):
+    if flag: bag.append(text)
+
+# ========== Core DX ==========
 def diagnose(symptoms: Dict) -> List[Tuple[str, str, float]]:
     """
-    ترجع قائمة [(اسم التشخيص، السبب المختصر، درجة)] — تعليمية وليست تشخيصًا طبيًا.
+    يأخذ dict من الأعراض (كما ترسلها صفحة /case) ويُرجع قائمة:
+      (اسم التشخيص، سبب مختصر + نسبة تقديرية، درجة خام)
+    يتم ترتيب النتائج تنازليًا حسب الدرجة.
     """
+
     Y = lambda k: _yes(symptoms.get(k))
     V = lambda k, d=0.0: _num(symptoms.get(k, d), d)
 
-    results: List[Tuple[str,str,float]] = []
-    distress = V("distress", 0)
+    results: List[Tuple[str, str, float]] = []
+    distress = V("distress", 0)  # 0..10
 
-    # ==== مزاجية ====
-    # MDD
-    score_mdd = (2*Y("low_mood")) + (2*Y("anhedonia")) + Y("sleep_issue") + Y("appetite_change") + Y("fatigue") + (1 if distress>=6 else 0)
+    # نستخدم نفس مفاتيح الفورم في app.py
+
+    # ====== 1) الاكتئاب الجسيم (MDD) ======
+    mdd_reasons = []
+    score_mdd = 0; max_mdd = 8
+    _reason(Y("low_mood"), "مزاج منخفض", mdd_reasons);           score_mdd += 2 if Y("low_mood") else 0
+    _reason(Y("anhedonia"), "فقدان المتعة", mdd_reasons);         score_mdd += 2 if Y("anhedonia") else 0
+    _reason(Y("sleep_issue"), "اضطراب نوم", mdd_reasons);         score_mdd += 1 if Y("sleep_issue") else 0
+    _reason(Y("appetite_change"), "تغيّر شهية", mdd_reasons);     score_mdd += 1 if Y("appetite_change") else 0
+    _reason(Y("fatigue"), "إرهاق/خمول", mdd_reasons);             score_mdd += 1 if Y("fatigue") else 0
+    if distress >= 6:
+        _reason(True, f"شدّة مرتفعة ({int(distress)}/10)", mdd_reasons); score_mdd += 1
     if score_mdd >= 4:
-        results.append(("اكتئاب جسيم (MDD)", "مزاج منخفض/فقد متعة مع اضطراب نوم/شهية وضيق ملحوظ", float(score_mdd)))
+        pct = round(100*score_mdd/max_mdd)
+        results.append(("اكتئاب جسيم (MDD)", f"{'، '.join(mdd_reasons)} — تقدير {pct}%", float(score_mdd)))
 
-    # Bipolar (احتمال)
-    score_bip = (2*Y("elevated_mood")) + Y("impulsivity") + Y("grandiosity") + Y("decreased_sleep_need")
-    if score_bip >= 3:
-        results.append(("ثنائي القطب (احتمال)", "مزاج مرتفع + اندفاع/عظمة + قلة حاجة للنوم", float(score_bip)))
-
-    # ==== قلق ====
-    # GAD
-    score_gad = (2*Y("worry")) + Y("tension") + Y("focus_issue") + Y("restlessness") + (1 if distress>=6 else 0)
+    # ====== 2) اضطراب القلق العام (GAD) ======
+    gad_reasons = []
+    score_gad = 0; max_gad = 6
+    _reason(Y("worry"), "قلق مستمر", gad_reasons);                 score_gad += 2 if Y("worry") else 0
+    _reason(Y("tension"), "توتر جسدي", gad_reasons);               score_gad += 1 if Y("tension") else 0
+    _reason(Y("focus_issue"), "تشتت/صعوبة تركيز", gad_reasons);    score_gad += 1 if Y("focus_issue") else 0
+    _reason(Y("restlessness"), "تململ", gad_reasons);              score_gad += 1 if Y("restlessness") else 0
+    if distress >= 6:
+        _reason(True, f"شدّة مرتفعة ({int(distress)}/10)", gad_reasons); score_gad += 1
     if score_gad >= 4:
-        results.append(("اضطراب القلق العام (GAD)", "قلق متواصل مع توتر/تشتت وتأثير وظيفي", float(score_gad)))
+        pct = round(100*score_gad/max_gad)
+        results.append(("اضطراب القلق العام (GAD)", f"{'، '.join(gad_reasons)} — تقدير {pct}%", float(score_gad)))
 
-    # Panic
-    score_panic = (2*Y("panic_attacks")) + Y("fear_of_attacks") + Y("panic_avoidance")
+    # ====== 3) الهلع ======
+    panic_reasons = []
+    score_panic = 0; max_panic = 4
+    _reason(Y("panic_attacks"), "نوبات هلع", panic_reasons);       score_panic += 2 if Y("panic_attacks") else 0
+    _reason(Y("fear_of_attacks"), "خوف من تكرار النوبات", panic_reasons); score_panic += 1 if Y("fear_of_attacks") else 0
+    _reason(Y("panic_avoidance"), "سلوك تجنّبي", panic_reasons);   score_panic += 1 if Y("panic_avoidance") else 0
     if score_panic >= 3:
-        results.append(("اضطراب الهلع", "نوبات مفاجئة + قلق من تكرارها + تجنّب", float(score_panic)))
+        pct = round(100*score_panic/max_panic)
+        results.append(("اضطراب الهلع", f"{'، '.join(panic_reasons)} — تقدير {pct}%", float(score_panic)))
 
-    # Social Anxiety
-    score_social = (2*Y("social_avoid")) + Y("fear_judgment") + (1 if distress>=5 else 0)
-    if score_social >= 3:
-        results.append(("قلق/رهاب اجتماعي", "تجنب اجتماعي وخوف من تقييم الآخرين مع ضيق", float(score_social)))
+    # ====== 4) القلق/الرهاب الاجتماعي ======
+    sa_reasons = []
+    score_sa = 0; max_sa = 4
+    _reason(Y("social_avoid"), "تجنّب اجتماعي", sa_reasons);       score_sa += 2 if Y("social_avoid") else 0
+    _reason(Y("fear_judgment"), "خوف من تقييم الآخرين", sa_reasons); score_sa += 1 if Y("fear_judgment") else 0
+    if distress >= 5:
+        _reason(True, f"ضيق واضح ({int(distress)}/10)", sa_reasons); score_sa += 1
+    if score_sa >= 3:
+        pct = round(100*score_sa/max_sa)
+        results.append(("قلق/رهاب اجتماعي", f"{'، '.join(sa_reasons)} — تقدير {pct}%", float(score_sa)))
 
-    # ==== وسواس/صدمات ====
-    # OCD
-    score_ocd = (2*Y("obsessions")) + (2*Y("compulsions")) + (1 if distress>=5 else 0)
+    # ====== 5) الوسواس القهري (OCD) ======
+    ocd_reasons = []
+    score_ocd = 0; max_ocd = 5
+    _reason(Y("obsessions"), "أفكار ملحّة", ocd_reasons);          score_ocd += 2 if Y("obsessions") else 0
+    _reason(Y("compulsions"), "أفعال قهرية", ocd_reasons);         score_ocd += 2 if Y("compulsions") else 0
+    if distress >= 5:
+        _reason(True, f"ضيق ملحوظ ({int(distress)}/10)", ocd_reasons); score_ocd += 1
     if score_ocd >= 4:
-        results.append(("وسواس قهري (OCD)", "أفكار ملحّة مع أفعال قهرية وضيق", float(score_ocd)))
+        pct = round(100*score_ocd/max_ocd)
+        results.append(("وسواس قهري (OCD)", f"{'، '.join(ocd_reasons)} — تقدير {pct}%", float(score_ocd)))
 
-    # PTSD
-    score_ptsd = (2*Y("trauma_event")) + (1 if (Y("flashbacks") or Y("nightmares")) else 0) + Y("trauma_avoid") + Y("hypervigilance")
+    # ====== 6) اضطراب ما بعد الصدمة (PTSD) ======
+    ptsd_reasons = []
+    score_ptsd = 0; max_ptsd = 5
+    _reason(Y("trauma_event"), "تعرض لحدث صادمي", ptsd_reasons);   score_ptsd += 2 if Y("trauma_event") else 0
+    _reason(Y("flashbacks") or Y("nightmares"), "استرجاع/كوابيس", ptsd_reasons); score_ptsd += 1 if (Y("flashbacks") or Y("nightmares")) else 0
+    _reason(Y("trauma_avoid"), "تجنّب مرتبط بالحدث", ptsd_reasons); score_ptsd += 1 if Y("trauma_avoid") else 0
+    _reason(Y("hypervigilance"), "يقظة مفرطة", ptsd_reasons);      score_ptsd += 1 if Y("hypervigilance") else 0
     if score_ptsd >= 4:
-        results.append(("اضطراب ما بعد الصدمة (PTSD)", "حدث صادمي + استرجاع/كوابيس + تجنّب + يقظة", float(score_ptsd)))
+        pct = round(100*score_ptsd/max_ptsd)
+        results.append(("اضطراب ما بعد الصدمة (PTSD)", f"{'، '.join(ptsd_reasons)} — تقدير {pct}%", float(score_ptsd)))
 
-    # ==== ذهانات/طيف الفصام ====
-    score_psych = (2*Y("hallucinations")) + (2*Y("delusions")) + Y("disorganized_speech") + Y("functional_decline")
-    if score_psych >= 4:
-        results.append(("ذهاني/طيف الفصام (احتمال)", "هلاوس/أوهام مع اضطراب تفكير/تدهور وظيفي", float(score_psych)))
+    # ====== 7) ثنائي القطب (احتمال) ======
+    bp_reasons = []
+    score_bp = 0; max_bp = 5
+    _reason(Y("elevated_mood"), "نوبات مزاج مرتفع/مبالغ", bp_reasons); score_bp += 2 if Y("elevated_mood") else 0
+    _reason(Y("impulsivity"), "اندفاع/تهوّر", bp_reasons);         score_bp += 1 if Y("impulsivity") else 0
+    _reason(Y("grandiosity"), "شعور بالعظمة", bp_reasons);         score_bp += 1 if Y("grandiosity") else 0
+    _reason(Y("decreased_sleep_need"), "قلة الحاجة للنوم", bp_reasons); score_bp += 1 if Y("decreased_sleep_need") else 0
+    if score_bp >= 3:
+        pct = round(100*score_bp/max_bp)
+        results.append(("ثنائي القطب (احتمال)", f"{'، '.join(bp_reasons)} — تقدير {pct}%", float(score_bp)))
 
-    # ==== أكل ====
-    score_an = (2*Y("restriction")) + Y("body_image_distort") + Y("underweight")
+    # ====== 8) طيف الذهان/الفصام ======
+    psych_reasons = []
+    score_psy = 0; max_psy = 6
+    _reason(Y("hallucinations"), "هلوسات", psych_reasons);         score_psy += 2 if Y("hallucinations") else 0
+    _reason(Y("delusions"), "أوهام ثابتة", psych_reasons);         score_psy += 2 if Y("delusions") else 0
+    _reason(Y("disorganized_speech"), "اضطراب تفكير/كلام", psych_reasons); score_psy += 1 if Y("disorganized_speech") else 0
+    _reason(Y("functional_decline"), "تدهور وظيفي", psych_reasons); score_psy += 1 if Y("functional_decline") else 0
+    if score_psy >= 4:
+        pct = round(100*score_psy/max_psy)
+        results.append(("ذهاني/طيف الفصام (احتمال)", f"{'، '.join(psych_reasons)} — تقدير {pct}%", float(score_psy)))
+
+    # ====== 9) اضطرابات الأكل ======
+    # فقدان الشهية
+    an_reasons = []
+    score_an = 0; max_an = 4
+    _reason(Y("restriction"), "تقييد الأكل", an_reasons);          score_an += 2 if Y("restriction") else 0
+    _reason(Y("body_image_distort"), "صورة جسد مشوّهة", an_reasons); score_an += 1 if Y("body_image_distort") else 0
+    _reason(Y("underweight"), "نقص وزن", an_reasons);               score_an += 1 if Y("underweight") else 0
     if score_an >= 3:
-        results.append(("فقدان الشهية (احتمال)", "تقييد أكل + صورة جسد مشوهة + نقص وزن", float(score_an)))
+        pct = round(100*score_an/max_an)
+        results.append(("فقدان الشهية (احتمال)", f"{'، '.join(an_reasons)} — تقدير {pct}%", float(score_an)))
 
-    score_bn = (2*Y("binges")) + Y("compensatory")
+    # النهام العصبي
+    bn_reasons = []
+    score_bn = 0; max_bn = 4
+    _reason(Y("binges"), "نوبات أكل كبيرة متكررة", bn_reasons);    score_bn += 2 if Y("binges") else 0
+    _reason(Y("compensatory"), "سلوك تعويضي (تقيؤ/مسهلات/رياضة)", bn_reasons); score_bn += 2 if Y("compensatory") else 0
     if score_bn >= 3:
-        results.append(("نهام عصبي (احتمال)", "نوبات أكل كبيرة مع سلوك تعويضي", float(score_bn)))
+        pct = round(100*score_bn/max_bn)
+        results.append(("نهام عصبي (احتمال)", f"{'، '.join(bn_reasons)} — تقدير {pct}%", float(score_bn)))
 
-    # ==== ADHD (مختصر) ====
-    score_adhd = Y("inattention") + Y("hyperactivity") + Y("impulsivity_symp") + Y("since_childhood") + Y("functional_impair")
+    # ====== 10) ADHD (مختصر للبالغين) ======
+    adhd_reasons = []
+    score_adhd = 0; max_adhd = 5
+    _reason(Y("inattention"), "عدم انتباه", adhd_reasons);         score_adhd += 1 if Y("inattention") else 0
+    _reason(Y("hyperactivity"), "فرط حركة", adhd_reasons);         score_adhd += 1 if Y("hyperactivity") else 0
+    _reason(Y("impulsivity_symp"), "اندفاعية", adhd_reasons);      score_adhd += 1 if Y("impulsivity_symp") else 0
+    _reason(Y("since_childhood"), "منذ الطفولة", adhd_reasons);     score_adhd += 1 if Y("since_childhood") else 0
+    _reason(Y("functional_impair"), "تأثير وظيفي", adhd_reasons);   score_adhd += 1 if Y("functional_impair") else 0
     if score_adhd >= 3:
-        results.append(("ADHD (احتمال)", "عدم انتباه/فرط حركة منذ الطفولة وتأثير وظيفي", float(score_adhd)))
+        pct = round(100*score_adhd/max_adhd)
+        results.append(("ADHD (احتمال)", f"{'، '.join(adhd_reasons)} — تقدير {pct}%", float(score_adhd)))
 
-    # ==== تعاطي مواد ====
-    score_sud = Y("craving") + Y("tolerance") + Y("withdrawal") + Y("use_despite_harm")
+    # ====== 11) تعاطي مواد ======
+    sud_reasons = []
+    score_sud = 0; max_sud = 4
+    _reason(Y("craving"), "اشتهاء", sud_reasons);                   score_sud += 1 if Y("craving") else 0
+    _reason(Y("tolerance"), "تحمّل", sud_reasons);                  score_sud += 1 if Y("tolerance") else 0
+    _reason(Y("withdrawal"), "انسحاب", sud_reasons);                score_sud += 1 if Y("withdrawal") else 0
+    _reason(Y("use_despite_harm"), "استمرار رغم الضرر", sud_reasons); score_sud += 1 if Y("use_despite_harm") else 0
     if score_sud >= 3:
-        results.append(("اضطراب تعاطي مواد (احتمال)", "اشتهاء/تحمّل/انسحاب أو استمرار رغم الضرر", float(score_sud)))
+        pct = round(100*score_sud/max_sud)
+        results.append(("اضطراب تعاطي مواد (احتمال)", f"{'، '.join(sud_reasons)} — تقدير {pct}%", float(score_sud)))
 
-    # لا شيء واضح
+    # لا توجد ترشيحات
     if not results:
         results.append(("لا توجد ترشيحات واضحة", "البيانات غير كافية — يُفضّل مراجعة مختص", 0.0))
 
-    # ترتيب تنازلي بالدرجة
+    # ترتيب حسب الدرجة
     results.sort(key=lambda x: x[2], reverse=True)
     return results
 
-# -------- صفحة مرجعية (HTML) --------
+
 def main():
+    # تُستخدم هذه الصفحة كمرجع (كما أرسلت سابقًا من عندك).
     return """
     <h1>الدليل التشخيصي DSM-5 — نظرة منظمة</h1>
     <p>هذه نسخة مرجعية تعليمية. للاقتراح المبدئي استخدم "دراسة الحالة".</p>
-
-    <style>
-      details{background:#fff; border:1px solid #ddd; border-radius:10px; margin:10px 0; padding:10px}
-      summary{cursor:pointer; font-weight:700; color:#4B0082}
-      .note{width:100%; min-height:70px}
-      .action{margin:12px 6px 0 0; padding:8px 12px; border-radius:10px; border:0; background:#4B0082; color:#fff; font-weight:700}
-      .action.gold{background:#FFD700; color:#4B0082}
-      .grid{display:grid; gap:8px; grid-template-columns: repeat(auto-fit, minmax(220px,1fr));}
-      label{display:block; background:#fafafa; border:1px solid #eee; border-radius:8px; padding:8px}
-    </style>
-
-    <div id="dsm">
-      <details open>
-        <summary>الاضطرابات العصابية/القلقية</summary>
-        <div class="grid">
-          <label><input type="checkbox" name="anxiety_gad"> اضطراب القلق العام (GAD)</label>
-          <label><input type="checkbox" name="panic"> اضطراب الهلع</label>
-          <label><input type="checkbox" name="phobia"> الرهاب المحدد</label>
-          <label><input type="checkbox" name="social"> قلق/رهاب اجتماعي</label>
-          <label><input type="checkbox" name="ocd"> الوسواس القهري (OCD)</label>
-          <label><input type="checkbox" name="ptsd"> اضطراب ما بعد الصدمة (PTSD)</label>
-        </div>
-      </details>
-
-      <details>
-        <summary>الاضطرابات المزاجية</summary>
-        <div class="grid">
-          <label><input type="checkbox" name="mdd"> اكتئاب جسيم (MDD)</label>
-          <label><input type="checkbox" name="pdd"> عسر المزاج (PDD)</label>
-          <label><input type="checkbox" name="bipolar1"> ثنائي القطب I</label>
-          <label><input type="checkbox" name="bipolar2"> ثنائي القطب II</label>
-          <label><input type="checkbox" name="cyclothymic"> دوروية المزاج</label>
-        </div>
-      </details>
-
-      <details>
-        <summary>اضطرابات الشخصية</summary>
-        <div class="grid">
-          <label><input type="checkbox" name="paranoid"> شخصية زورانية</label>
-          <label><input type="checkbox" name="schizoid"> انعزالية</label>
-          <label><input type="checkbox" name="schizotypal"> فصامية نمط</label>
-          <label><input type="checkbox" name="antisocial"> معادية للمجتمع</label>
-          <label><input type="checkbox" name="borderline"> حدّية</label>
-          <label><input type="checkbox" name="histrionic"> هستيرية</label>
-          <label><input type="checkbox" name="narcissistic"> نرجسية</label>
-          <label><input type="checkbox" name="avoidant"> تجنبية</label>
-          <label><input type="checkbox" name="dependent"> اعتمادية</label>
-          <label><input type="checkbox" name="ocpd"> قسرية-قهريّة شخصية</label>
-        </div>
-      </details>
-
-      <details>
-        <summary>اضطرابات طيف الفصام</summary>
-        <div class="grid">
-          <label><input type="checkbox" name="schizophrenia"> فصام</label>
-          <label><input type="checkbox" name="schizoaffective"> فصامي وجداني</label>
-          <label><input type="checkbox" name="brief_psychotic"> ذهان وجيز</label>
-          <label><input type="checkbox" name="delusional"> وهامي</label>
-        </div>
-      </details>
-
-      <details>
-        <summary>اضطرابات عصبية نمائية</summary>
-        <div class="grid">
-          <label><input type="checkbox" name="adhd"> فرط الحركة وتشتت الانتباه (ADHD)</label>
-          <label><input type="checkbox" name="asd"> طيف التوحد (ASD)</label>
-          <label><input type="checkbox" name="learning"> صعوبات تعلّم</label>
-          <label><input type="checkbox" name="tic"> اضطرابات العرات/تورات</label>
-        </div>
-      </details>
-
-      <details>
-        <summary>تعاطي المواد والإدمان</summary>
-        <div class="grid">
-          <label><input type="checkbox" name="alcohol"> اضطراب تعاطي الكحول</label>
-          <label><input type="checkbox" name="opioid"> أفيونات</label>
-          <label><input type="checkbox" name="stimulant"> منبهات</label>
-          <label><input type="checkbox" name="cannabis"> قنّب</label>
-          <label><input type="checkbox" name="sedative"> مهدئات/منومات</label>
-        </div>
-      </details>
-
-      <h3>ملاحظات تشخيصية</h3>
-      <textarea class="note" name="notes" placeholder="ضع المبررات ودليل الأعراض والمدة والاستبعاد التفريقي..."></textarea><br>
-      <button class="action" onclick="window.print()">طباعة</button>
-      <button class="action gold" onclick="saveDSM()">حفظ JSON</button>
-    </div>
-
-    <script>
-      function saveDSM(){
-        const root = document.getElementById('dsm');
-        const data = {};
-        root.querySelectorAll('input[type=checkbox]').forEach(cb=>{
-          data[cb.name] = cb.checked;
-        });
-        data['notes'] = root.querySelector('textarea[name=notes]').value || '';
-        const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'dsm_selection.json';
-        a.click();
-        URL.revokeObjectURL(a.href);
-      }
-    </script>
     """
