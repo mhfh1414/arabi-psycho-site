@@ -1,154 +1,135 @@
-# DSM.py — موسّع (تعليمي) لتوليد ترشيحات تشخيصية مبدئية
-# يقرأ الأعراض من /case ويرجع قائمة [(name, why, score)]
-# ⚠️ للاستخدام التعليمي/الإرشادي فقط — ليس تشخيصًا طبيًا
+# DSM.py — مرجع مختصر + خوارزمية ترشيح diagnose()
 
 from typing import Dict, List, Tuple
 
-def _yes(v) -> bool:
-    if v is True:
-        return True
-    s = str(v or "").strip().lower()
-    return s in ["1","y","yes","on","true","صح","نعم"]
+HTML = """
+<h1>📘 DSM — مرجع مختصر</h1>
+<p class="muted">محتوى تعليمي مبسّط للمراجعة فقط.</p>
 
-def _num(v, default=0.0) -> float:
-    try:
-        return float(v)
-    except Exception:
-        return default
+<h2>اضطرابات القلق</h2>
+<ul>
+  <li><b>قلق عام (GAD):</b> قلق مفرط أغلب الأيام ≥ 6 أشهر مع توتر/تعب/صعوبة تركيز.</li>
+  <li><b>نوبات هلع:</b> نوبات مفاجئة من الخوف الشديد + أعراض جسدية، يعقبها قلق من التكرار وتجنّب.</li>
+  <li><b>رهاب اجتماعي:</b> خوف من تقييم الآخرين، تجنّب مواقف اجتماعية.</li>
+</ul>
 
-def _reason(flag: bool, text: str, bag: list):
-    if flag: bag.append(text)
+<h2>الاضطرابات المزاجية</h2>
+<ul>
+  <li><b>اكتئاب جسيم:</b> مزاج منخفض/فقدان متعة + أعراض نوم/شهية/طاقة/تركيز.</li>
+  <li><b>ثنائي القطب:</b> نوبات مزاج مرتفع (هوس/هوس خفيف) ± اكتئاب.</li>
+</ul>
 
-def diagnose(symptoms: Dict) -> List[Tuple[str, str, float]]:
-    Y = lambda k: _yes(symptoms.get(k))
-    V = lambda k, d=0.0: _num(symptoms.get(k, d), d)
+<h2>الوسواس القهري (OCD)</h2>
+<ul>
+  <li>أفكار ملحّة متكررة + أفعال قهرية لتخفيف القلق، مع أثر وظيفي.</li>
+</ul>
 
-    results: List[Tuple[str, str, float]] = []
-    distress = V("distress", 0)
+<h2>اضطرابات الصدمة (PTSD)</h2>
+<ul>
+  <li>تعرّض لحدث صادمي + استرجاع/كوابيس/تجنّب/يقظة مفرطة.</li>
+</ul>
 
-    # ===== اكتئاب جسيم =====
-    reasons = []
-    score = 0; max_score = 8
-    _reason(Y("low_mood"), "مزاج منخفض", reasons); score += 2 if Y("low_mood") else 0
-    _reason(Y("anhedonia"), "فقدان المتعة", reasons); score += 2 if Y("anhedonia") else 0
-    _reason(Y("sleep_issue"), "اضطراب نوم", reasons); score += 1 if Y("sleep_issue") else 0
-    _reason(Y("appetite_change"), "تغير شهية", reasons); score += 1 if Y("appetite_change") else 0
-    _reason(Y("fatigue"), "إرهاق", reasons); score += 1 if Y("fatigue") else 0
-    if distress >= 6:
-        _reason(True, f"شدّة {int(distress)}/10", reasons); score += 1
-    if score >= 4:
-        pct = round(100*score/max_score)
-        results.append(("اكتئاب جسيم (MDD)", f"{'، '.join(reasons)} — تقدير {pct}%", float(score)))
+<h2>اضطرابات طيف الفُصام</h2>
+<ul>
+  <li>هلاوس/أوهام/اضطراب كلام أو سلوك + تدهور وظيفي.</li>
+</ul>
 
-    # ===== القلق العام =====
-    reasons = []
-    score = 0; max_score = 6
-    _reason(Y("worry"), "قلق مستمر", reasons); score += 2 if Y("worry") else 0
-    _reason(Y("tension"), "توتر جسدي", reasons); score += 1 if Y("tension") else 0
-    _reason(Y("focus_issue"), "تشتت", reasons); score += 1 if Y("focus_issue") else 0
-    _reason(Y("restlessness"), "تململ", reasons); score += 1 if Y("restlessness") else 0
-    if distress >= 6:
-        _reason(True, f"ضيق {int(distress)}/10", reasons); score += 1
-    if score >= 4:
-        pct = round(100*score/max_score)
-        results.append(("اضطراب القلق العام (GAD)", f"{'، '.join(reasons)} — تقدير {pct}%", float(score)))
+<h2>اضطرابات الأكل</h2>
+<ul>
+  <li><b>فقدان الشهية:</b> تقييد شديد ونقص وزن وصورة جسد مشوّهة.</li>
+  <li><b>الشره:</b> نوبات أكل مع سلوك تعويضي (قيء/مسهل/صيام/تمارين مفرطة).</li>
+</ul>
 
-    # ===== الهلع =====
-    reasons = []
-    score = 0; max_score = 4
-    _reason(Y("panic_attacks"), "نوبات هلع", reasons); score += 2 if Y("panic_attacks") else 0
-    _reason(Y("fear_of_attacks"), "خوف من النوبات", reasons); score += 1 if Y("fear_of_attacks") else 0
-    _reason(Y("panic_avoidance"), "سلوك تجنبي", reasons); score += 1 if Y("panic_avoidance") else 0
-    if score >= 3:
-        pct = round(100*score/max_score)
-        results.append(("اضطراب الهلع", f"{'، '.join(reasons)} — تقدير {pct}%", float(score)))
+<h2>فرط الحركة وتشتّت الانتباه (ADHD)</h2>
+<ul>
+  <li>عدم انتباه/فرط حركة/اندفاعية منذ الطفولة مع أثر وظيفي.</li>
+</ul>
 
-    # ===== قلق/رهاب اجتماعي =====
-    reasons = []
-    score = 0; max_score = 4
-    _reason(Y("social_avoid"), "تجنب اجتماعي", reasons); score += 2 if Y("social_avoid") else 0
-    _reason(Y("fear_judgment"), "خوف من تقييم الآخرين", reasons); score += 1 if Y("fear_judgment") else 0
-    if distress >= 5:
-        _reason(True, f"ضيق {int(distress)}/10", reasons); score += 1
-    if score >= 3:
-        pct = round(100*score/max_score)
-        results.append(("رهاب اجتماعي", f"{'، '.join(reasons)} — تقدير {pct}%", float(score)))
+<h2>اضطرابات تعاطي المواد</h2>
+<ul>
+  <li>نمط مشكلات: اشتهاء، تحمّل، انسحاب، استخدام رغم الضرر.</li>
+</ul>
+"""
 
-    # ===== وسواس قهري =====
-    reasons = []
-    score = 0; max_score = 5
-    _reason(Y("obsessions"), "أفكار ملحّة", reasons); score += 2 if Y("obsessions") else 0
-    _reason(Y("compulsions"), "أفعال قهرية", reasons); score += 2 if Y("compulsions") else 0
-    if distress >= 5:
-        _reason(True, f"ضيق {int(distress)}/10", reasons); score += 1
-    if score >= 4:
-        pct = round(100*score/max_score)
-        results.append(("وسواس قهري (OCD)", f"{'، '.join(reasons)} — تقدير {pct}%", float(score)))
+def main() -> str:
+    return HTML
 
-    # ===== PTSD =====
-    reasons = []
-    score = 0; max_score = 5
-    _reason(Y("trauma_event"), "حدث صادمي", reasons); score += 2 if Y("trauma_event") else 0
-    _reason(Y("flashbacks") or Y("nightmares"), "استرجاع/كوابيس", reasons); score += 1 if (Y("flashbacks") or Y("nightmares")) else 0
-    _reason(Y("trauma_avoid"), "تجنب", reasons); score += 1 if Y("trauma_avoid") else 0
-    _reason(Y("hypervigilance"), "يقظة مفرطة", reasons); score += 1 if Y("hypervigilance") else 0
-    if score >= 4:
-        pct = round(100*score/max_score)
-        results.append(("اضطراب ما بعد الصدمة (PTSD)", f"{'، '.join(reasons)} — تقدير {pct}%", float(score)))
+# تستقبل قاموس request.form من /case
+# وتُرجِع قائمة [(اسم, سبب, درجة)]
+def diagnose(data: Dict[str, str]) -> List[Tuple[str, str, float]]:
+    yes = lambda k: k in data  # وجود المربع يعني True
 
-    # ===== ثنائي القطب =====
-    reasons = []
-    score = 0; max_score = 5
-    _reason(Y("elevated_mood"), "مزاج مرتفع", reasons); score += 2 if Y("elevated_mood") else 0
-    _reason(Y("impulsivity"), "اندفاع", reasons); score += 1 if Y("impulsivity") else 0
-    _reason(Y("grandiosity"), "شعور بالعظمة", reasons); score += 1 if Y("grandiosity") else 0
-    _reason(Y("decreased_sleep_need"), "قلة نوم", reasons); score += 1 if Y("decreased_sleep_need") else 0
-    if score >= 3:
-        pct = round(100*score/max_score)
-        results.append(("ثنائي القطب", f"{'، '.join(reasons)} — تقدير {pct}%", float(score)))
+    picks: List[Tuple[str,str,float]] = []
 
-    # ===== فصام/ذهان =====
-    reasons = []
-    score = 0; max_score = 6
-    _reason(Y("hallucinations"), "هلوسات", reasons); score += 2 if Y("hallucinations") else 0
-    _reason(Y("delusions"), "أوهام", reasons); score += 2 if Y("delusions") else 0
-    _reason(Y("disorganized_speech"), "اضطراب تفكير", reasons); score += 1 if Y("disorganized_speech") else 0
-    _reason(Y("functional_decline"), "تدهور وظيفي", reasons); score += 1 if Y("functional_decline") else 0
-    if score >= 4:
-        pct = round(100*score/max_score)
-        results.append(("ذهان/فصام", f"{'، '.join(reasons)} — تقدير {pct}%", float(score)))
+    # اكتئاب
+    dep_keys = ["low_mood","anhedonia","sleep_issue","appetite_change","fatigue"]
+    dep_score = sum(1 for k in dep_keys if yes(k))
+    if dep_score >= 2:
+        picks.append((
+            "اكتئاب — ترشيح",
+            f"أعراض مزاجية متعددة ({dep_score}/{len(dep_keys)})",
+            60 + 5*max(0, dep_score-2)
+        ))
 
-    # ===== ADHD =====
-    reasons = []
-    score = 0; max_score = 5
-    _reason(Y("inattention"), "عدم انتباه", reasons); score += 1 if Y("inattention") else 0
-    _reason(Y("hyperactivity"), "فرط حركة", reasons); score += 1 if Y("hyperactivity") else 0
-    _reason(Y("impulsivity_symp"), "اندفاعية", reasons); score += 1 if Y("impulsivity_symp") else 0
-    _reason(Y("since_childhood"), "منذ الطفولة", reasons); score += 1 if Y("since_childhood") else 0
-    _reason(Y("functional_impair"), "تأثير وظيفي", reasons); score += 1 if Y("functional_impair") else 0
-    if score >= 3:
-        pct = round(100*score/max_score)
-        results.append(("ADHD", f"{'، '.join(reasons)} — تقدير {pct}%", float(score)))
+    # قلق عام
+    gad_keys = ["worry","tension","focus_issue","restlessness"]
+    gad_score = sum(1 for k in gad_keys if yes(k))
+    if gad_score >= 2:
+        picks.append((
+            "قلق عام — ترشيح",
+            f"قلق مستمر مع توتر/تركيز ({gad_score}/{len(gad_keys)})",
+            55 + 5*max(0, gad_score-2)
+        ))
 
-    # ===== تعاطي مواد =====
-    reasons = []
-    score = 0; max_score = 4
-    _reason(Y("craving"), "اشتهاء", reasons); score += 1 if Y("craving") else 0
-    _reason(Y("tolerance"), "تحمّل", reasons); score += 1 if Y("tolerance") else 0
-    _reason(Y("withdrawal"), "انسحاب", reasons); score += 1 if Y("withdrawal") else 0
-    _reason(Y("use_despite_harm"), "استخدام رغم الضرر", reasons); score += 1 if Y("use_despite_harm") else 0
-    if score >= 3:
-        pct = round(100*score/max_score)
-        results.append(("اضطراب تعاطي مواد", f"{'، '.join(reasons)} — تقدير {pct}%", float(score)))
+    # هلع
+    if yes("panic_attacks"):
+        sub = int(yes("fear_of_attacks")) + int(yes("panic_avoidance"))
+        picks.append((
+            "اضطراب هلع — ترشيح",
+            "نوبات + " + ("خوف من التكرار" if yes("fear_of_attacks") else "") + (" وتجنّب" if yes("panic_avoidance") else ""),
+            60 + 5*sub
+        ))
 
-    if not results:
-        results.append(("لا ترشيحات", "الأعراض غير كافية — راجع مختص", 0.0))
+    # رهاب اجتماعي
+    soc = int(yes("social_avoid")) + int(yes("fear_judgment"))
+    if soc >= 2:
+        picks.append(("رهاب اجتماعي — ترشيح","تجنّب اجتماعي وخوف من التقييم",60))
 
-    results.sort(key=lambda x: x[2], reverse=True)
-    return results
+    # وسواس قهري
+    if yes("obsessions") or yes("compulsions"):
+        both = int(yes("obsessions") and yes("compulsions"))
+        picks.append(("وسواس قهري — ترشيح","أفكار ملحّة/أفعال قهرية",60 + 5*both))
 
-def main():
-    return """
-    <h1>الدليل التشخيصي DSM-5 — نسخة مبسطة</h1>
-    <p>هذه النسخة للتعليم والإرشاد فقط. للاستخدام السريري راجع النسخة الكاملة.</p>
-    """
+    # PTSD
+    if yes("trauma_event") and (yes("flashbacks") or yes("nightmares") or yes("trauma_avoid") or yes("hypervigilance")):
+        pts = int(yes("flashbacks")) + int(yes("nightmares")) + int(yes("trauma_avoid")) + int(yes("hypervigilance"))
+        picks.append(("اضطراب ما بعد الصدمة — ترشيح","حدث صادمي + أعراض لاحقة",60 + 5*min(3, pts)))
+
+    # ثنائي القطب
+    if yes("elevated_mood") and (yes("decreased_sleep_need") or yes("impulsivity") or yes("grandiosity")):
+        mania = int(yes("decreased_sleep_need")) + int(yes("impulsivity")) + int(yes("grandiosity"))
+        picks.append(("ثنائي القطب — ترشيح","مزاج مرتفع + مؤشرات هوس",55 + 5*mania))
+
+    # فُصام/ذهان
+    psych = int(yes("hallucinations")) + int(yes("delusions")) + int(yes("disorganized_speech")) + int(yes("functional_decline"))
+    if psych >= 2:
+        picks.append(("ذهانيات — ترشيح","أعراض ذهانية متعددة",55 + 5*min(4, psych)))
+
+    # اضطرابات الأكل
+    eat = int(yes("restriction")) + int(yes("underweight")) + int(yes("body_image_distort")) + int(yes("binges")) + int(yes("compensatory"))
+    if eat >= 2:
+        picks.append(("اضطراب أكل — ترشيح","نمط تقييد/نوبات/صورة جسد",55 + 5*min(3, eat)))
+
+    # ADHD
+    adhd = int(yes("inattention")) + int(yes("hyperactivity")) + int(yes("impulsivity_symp")) + int(yes("since_childhood")) + int(yes("functional_impair"))
+    if adhd >= 3 and yes("since_childhood"):
+        picks.append(("ADHD — ترشيح","أعراض مستمرة منذ الطفولة مع أثر وظيفي",60 + 5*min(3, adhd-2)))
+
+    # تعاطي مواد
+    sud = int(yes("craving")) + int(yes("tolerance")) + int(yes("withdrawal")) + int(yes("use_despite_harm"))
+    if sud >= 2:
+        picks.append(("تعاطي مواد — ترشيح","اشتهاء/انسحاب/تحمّل/استخدام رغم الضرر",60 + 5*min(3, sud)))
+
+    # ترتيب ونرجع أعلى 6
+    picks.sort(key=lambda x: x[2], reverse=True)
+    return picks[:6] if picks else [("لا توجد ترشيحات قوية","البيانات المدخلة غير كافية",0.0)]
