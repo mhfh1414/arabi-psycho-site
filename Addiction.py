@@ -1,77 +1,42 @@
-# Addiction.py — صفحة علاج الإدمان (HTML + طباعة/JSON)
+# Addiction.py — برنامج مختصر لعلاج الإدمان (تعليمي)
 
-def main():
-    return """
-    <h1>خطة علاج الإدمان</h1>
-    <p>هذه الصفحة تلخص أنواع المواد، مراحل العلاج، عوامل الخطر/الحماية، وخطة المتابعة.</p>
+HTML = """
+<h1>🚭 علاج الإدمان — برنامج مختصر</h1>
+<p class="muted">محتوى تعليمي، ويُنصح بمراجعة مختص/عيادة عند الحاجة.</p>
 
-    <style>
-      .section{background:#fff; border:1px solid #ddd; border-radius:12px; padding:14px; margin:12px 0}
-      label{display:block; margin:6px 0}
-      textarea{width:100%; min-height:70px; padding:8px; border:1px solid #ccc; border-radius:8px}
-      .grid{display:grid; gap:8px; grid-template-columns: repeat(auto-fit, minmax(220px,1fr));}
-      .action{margin:12px 6px 0 0; padding:8px 12px; border-radius:10px; border:0; background:#4B0082; color:#fff; font-weight:700}
-      .action.gold{background:#FFD700; color:#4B0082}
-    </style>
+<h2>1) التقييم الأولي</h2>
+<div class="grid">
+  <input placeholder="المادة/السلوك"/>
+  <input placeholder="المدة والكمية"/>
+  <input placeholder="أهم المحفزات"/>
+  <input placeholder="أعراض انسحاب ظهرت سابقًا؟"/>
+</div>
 
-    <div id="addiction">
+<h2>2) خطة الإقلاع</h2>
+<ul>
+  <li>موعد بدء واضح + دعم أسري/صديق مسؤول.</li>
+  <li>إزالة المحفزات من البيئة (أماكن/أرقام/أدوات).</li>
+  <li>استبدالات صحية: مشي، تنفس 4-7-8، تواصل مع داعم.</li>
+</ul>
 
-      <div class="section">
-        <h3>1) أنواع المواد</h3>
-        <div class="grid">
-          <label><input type="checkbox" name="alcohol"> كحول</label>
-          <label><input type="checkbox" name="opioids"> أفيونات (هيروين، مورفين)</label>
-          <label><input type="checkbox" name="stimulants"> منبهات (أمفيتامين، كوكايين)</label>
-          <label><input type="checkbox" name="cannabis"> حشيش / ماريجوانا</label>
-          <label><input type="checkbox" name="sedatives"> مهدئات / منومات</label>
-          <label><input type="checkbox" name="nicotine"> نيكوتين (تدخين)</label>
-          <label><input type="checkbox" name="hallucinogens"> مهلوسات (LSD، فطر)</label>
-        </div>
-      </div>
+<h2>3) الوقاية من الانتكاس</h2>
+<div class="grid">
+  <textarea style="width:100%;height:80px" placeholder="المحفزات الشخصية (أماكن/أشخاص/مشاعر)"></textarea>
+  <textarea style="width:100%;height:80px" placeholder="خطة التعامل مع كل محفز (تأجيل 10 دقائق، خروج من الموقف، اتصال بشخص داعم…)"></textarea>
+</div>
 
-      <div class="section">
-        <h3>2) مراحل العلاج</h3>
-        <div class="grid">
-          <label><input type="checkbox" name="detox"> إزالة السموم (Detox)</label>
-          <label><input type="checkbox" name="rehab"> إعادة التأهيل (Rehabilitation)</label>
-          <label><input type="checkbox" name="therapy"> العلاج النفسي (CBT، دعم جماعي)</label>
-          <label><input type="checkbox" name="relapse"> الوقاية من الانتكاس (Relapse Prevention)</label>
-          <label><input type="checkbox" name="followup"> المتابعة طويلة المدى</label>
-        </div>
-      </div>
+<h2>4) متابعة أسبوعية</h2>
+<div class="grid">
+  <input placeholder="أيام الامتناع هذا الأسبوع"/>
+  <input placeholder="مواقف عالية الخطورة"/>
+  <input placeholder="مكافأة ذاتية صحية"/>
+</div>
 
-      <div class="section">
-        <h3>3) عوامل الخطر / الحماية</h3>
-        <textarea name="risk" placeholder="عوامل الخطر: ضغط أقران، تاريخ عائلي، صدمات..."></textarea>
-        <textarea name="protect" placeholder="عوامل الحماية: دعم أسري، التزام ديني، بيئة صحية..."></textarea>
-      </div>
+<h2>مصادر دعم</h2>
+<p class="muted">يمكنك التواصل معنا من صفحة “تواصل” لجدولة استشارة.</p>
 
-      <div class="section">
-        <h3>4) خطة المتابعة</h3>
-        <textarea name="plan" placeholder="ضع خطة للمتابعة: جلسات، علاج داعم، متابعة طبية..."></textarea>
-      </div>
+<button class="submit" onclick="window.print()">🖨️ طباعة الخطة</button>
+"""
 
-      <button class="action" onclick="window.print()">طباعة</button>
-      <button class="action gold" onclick="saveAddiction()">حفظ JSON</button>
-    </div>
-
-    <script>
-      function saveAddiction(){
-        const root = document.getElementById('addiction');
-        const data = {};
-        root.querySelectorAll('input[type=checkbox]').forEach(cb=>{
-          data[cb.name] = cb.checked;
-        });
-        ['risk','protect','plan'].forEach(name=>{
-          const el = root.querySelector(`[name=\"${name}\"]`);
-          data[name] = el ? el.value : '';
-        });
-        const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'addiction_plan.json';
-        a.click();
-        URL.revokeObjectURL(a.href);
-      }
-    </script>
-    """
+def main() -> str:
+    return HTML
