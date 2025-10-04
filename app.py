@@ -1,4 +1,4 @@
-# app.py — عربي سايكو: واجهة مميزة + دراسة الحالة (حفظ/طباعة/JSON) + DSM + CBT + إدمان + تواصل + تحسينات أمان/SEO
+# app.py — عربي سايكو: واجهة مميزة + قائمة جانبية + علاج نفسي افتراضي + دراسة الحالة + DSM + CBT + إدمان + تواصل
 import os, importlib
 from flask import Flask, render_template_string, request
 
@@ -7,100 +7,131 @@ app = Flask(__name__)
 # ========= إعدادات وروابط =========
 BRAND_NAME   = os.environ.get("BRAND_NAME", "عربي سايكو")
 TELEGRAM_URL = os.environ.get("TELEGRAM_URL", "https://t.me/arabipsycho")
-WHATSAPP_URL = os.environ.get("WHATSAPP_URL", "https://wa.me/966500000000?text=%D8%B9%D9%85%D9%8A%D9%84%20%D8%B9%D8%B1%D8%A8%D9%8A%20%D8%B3%D8%A7%D9%8A%D9%83%D9%88")
+WHATSAPP_URL = os.environ.get("WHATSAPP_URL", "https://wa.me/966500000000?text=%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%AA%D9%88%D8%A7%D8%B5%D9%84%20%D9%85%D8%B9%20%D8%B9%D8%B1%D8%A8%D9%8A%20%D8%B3%D8%A7%D9%8A%D9%83%D9%88")
 LOGO_URL     = os.environ.get("LOGO_URL", "https://upload.wikimedia.org/wikipedia/commons/3/36/Emoji_u1f985.svg")
 
 # ========= رأس موحّد (SEO/ستايل) =========
 BASE_HEAD = f"""
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<meta name="description" content="{BRAND_NAME} — واجهة تشخيص مبدئي تعليمية للصحة النفسية (DSM/CBT/إدمان)">
+<meta name="description" content="{BRAND_NAME} — منصتك للعلاج النفسي الافتراضي: دراسة حالة، DSM، CBT، وخطط دعم الإدمان.">
 <link rel="icon" href="{LOGO_URL}">
 <meta property="og:title" content="{BRAND_NAME}">
-<meta property="og:description" content="واجهة أنيقة بالبنفسجي والذهبي — دراسة حالة، DSM، CBT، علاج الإدمان.">
+<meta property="og:description" content="عربي سايكو — علاج نفسي افتراضي بتصميم أنيق بالبنفسجي والذهبي.">
 <meta property="og:type" content="website">
 <style>
 :root{{ --purple:#4B0082; --gold:#FFD700; --ink:#2d1b4e; --bg:#faf7e6 }}
 *{{box-sizing:border-box}}
 body{{margin:0;background:var(--bg);font-family:"Tajawal","Segoe UI",system-ui,sans-serif;color:#222}}
-.topbar{{background:var(--purple);color:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px}}
+a{{text-decoration:none}}
+
+.topbar{{position:sticky;top:0;z-index:5;background:var(--purple);color:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 14px rgba(0,0,0,.18)}}
 .topbar img{{width:42px;height:42px;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.25)}}
 .brand{{font-weight:800;letter-spacing:.3px}}
-.nav{{margin-right:auto}}
-.nav a{{color:#fff;text-decoration:none;margin:0 8px;font-weight:700;opacity:.95}}
-.nav a:hover{{opacity:1}}
-.wrap{{max-width:1100px;margin:28px auto;padding:20px;background:#fff;border:1px solid #eee;border-radius:16px;box-shadow:0 10px 24px rgba(0,0,0,.06)}}
-.btn{{display:inline-block;background:var(--purple);color:#fff;text-decoration:none;padding:10px 14px;border-radius:12px;font-weight:700}}
+.toplinks a{{color:#fff;margin:0 6px;font-weight:700;opacity:.95}}
+.toplinks a:hover{{opacity:1}}
+
+.layout{{display:grid;grid-template-columns:280px 1fr;gap:18px;max-width:1300px;margin:22px auto;padding:0 14px}}
+.sidebar{{background:#fff;border:1px solid #eee;border-radius:16px;box-shadow:0 10px 24px rgba(0,0,0,.06);padding:16px}}
+.side-title{{font-weight:800;color:var(--purple);margin:4px 0 10px}}
+.navlink{{display:block;padding:10px 12px;border-radius:12px;font-weight:700;color:#222;border:1px solid #f0f0f0;margin-bottom:8px}}
+.navlink:hover{{background:#fafafa}}
+.navlink.primary{{background:var(--purple);color:#fff;border-color:var(--purple)}}
+.contact-box{{margin-top:10px;display:grid;gap:8px}}
+.btn{{display:inline-block;background:var(--purple);color:#fff;padding:10px 14px;border-radius:12px;font-weight:700;text-align:center}}
 .btn.alt{{background:#5b22a6}}
 .btn.gold{{background:var(--gold);color:var(--purple)}}
 .btn.whatsapp{{background:#25D366}}
 .btn.telegram{{background:#229ED9}}
-.grid{{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}}
-.grid-sm{{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}}
-.muted{{opacity:.85}}
+.card{{background:#fff;border:1px solid #eee;border-radius:16px;box-shadow:0 10px 24px rgba(0,0,0,.06);padding:20px}}
 .footer{{text-align:center;color:#fff;margin-top:24px;padding:14px;background:var(--purple)}}
 .footer small{{opacity:.9}}
-.hero{{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:58vh;background:var(--purple);color:#fff;text-align:center;padding:28px}}
-.hero .card{{background:var(--gold);color:var(--ink);padding:36px 46px;border-radius:22px;width:min(96vw,860px);box-shadow:0 16px 40px rgba(0,0,0,.35)}}
-.hero .logo img{{max-width:120px;border-radius:50%;margin-bottom:12px;box-shadow:0 4px 12px rgba(0,0,0,.25)}}
-.hero h1{{margin:.3rem 0 1rem}}
-.cta{{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-top:10px}}
+
+.hero{{background:linear-gradient(160deg, rgba(75,0,130,.96), rgba(75,0,130,.85)), url('https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=1400&auto=format') center/cover no-repeat; color:#fff}}
+.hero .inner{{max-width:1000px;margin:0 auto;padding:56px 14px;display:grid;grid-template-columns:1fr;gap:12px}}
+.hero .badge{{background:var(--gold);color:var(--ink);display:inline-block;padding:6px 10px;border-radius:999px;font-weight:800}}
+.hero h1{{margin:.2rem 0 0;font-size:2.2rem}}
+.hero p{{opacity:.95;line-height:1.8}}
+
+.grid{{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}}
+.grid-sm{{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}}
 label.chk{{display:block;background:#fafafa;border:1px solid #eee;border-radius:10px;padding:10px}}
 input[type="text"],input[type="number"],select,textarea{{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px}}
-.note{{background:#fff7d1;border:1px dashed #e5c100;padding:8px 12px;border-radius:10px}}
 .section{{margin:10px 0}}
+.note{{background:#fff7d1;border:1px dashed #e5c100;padding:8px 12px;border-radius:10px}}
 .center{{text-align:center}}
 </style>
 """
 
-def site_shell(content: str, title: str):
-    page = f"""
+# ========= هيكل بsidebar + topbar =========
+def site_shell(content_html: str, title: str):
+    template = """
     <!DOCTYPE html><html lang="ar" dir="rtl"><head>
-      <title>{title}</title>{BASE_HEAD}
+      <title>{{ title }}</title>""" + BASE_HEAD + """
     </head><body>
       <header class="topbar">
-        <img src="{LOGO_URL}" alt="شعار"/>
-        <div class="brand">{BRAND_NAME}</div>
-        <nav class="nav">
+        <img src=\""""+LOGO_URL+"""\" alt="شعار"/>
+        <div class="brand">"""+BRAND_NAME+"""</div>
+        <div class="toplinks">
           <a href="/">الرئيسية</a>
           <a href="/case">دراسة الحالة</a>
           <a href="/dsm">DSM</a>
           <a href="/cbt">CBT</a>
           <a href="/addiction">إدمان</a>
           <a href="/contact">تواصل</a>
-        </nav>
+        </div>
       </header>
 
-      <main class="wrap">{content}</main>
+      <div class="layout">
+        <aside class="sidebar">
+          <div class="side-title">القائمة</div>
+          <a class="navlink primary" href="/case">📝 دراسة الحالة</a>
+          <a class="navlink" href="/dsm">📘 مرجع DSM</a>
+          <a class="navlink" href="/cbt">🧠 العلاج المعرفي السلوكي (CBT)</a>
+          <a class="navlink" href="/addiction">🚭 خطة علاج الإدمان</a>
+          <div class="side-title">تواصل سريع</div>
+          <div class="contact-box">
+            <a class="btn telegram" href=\""""+TELEGRAM_URL+"""\" target="_blank" rel="noopener">✈️ تيليجرام</a>
+            <a class="btn whatsapp" href=\""""+WHATSAPP_URL+"""\" target="_blank" rel="noopener">🟢 واتساب</a>
+          </div>
+        </aside>
+
+        <main class="card">{{ content|safe }}</main>
+      </div>
 
       <footer class="footer">
-        <small>© جميع الحقوق محفوظة لـ {BRAND_NAME}</small>
+        <small>© جميع الحقوق محفوظة لـ """+BRAND_NAME+"""</small>
       </footer>
     </body></html>
     """
-    return render_template_string(page)
+    return render_template_string(template, title=title, content=content_html)
 
 # ========= الصفحة الرئيسية =========
 @app.get("/")
 def home():
-    content = f"""
+    hero = f"""
     <section class="hero">
-      <div class="card">
-        <div class="logo"><img src="{LOGO_URL}" alt="شعار {BRAND_NAME}"/></div>
-        <h1>واجهة التشخيص المبدئي</h1>
-        <p class="muted">منصة تعليمية/إرشادية تساعد على تنظيم الأعراض ومراجعتها — ليست بديلاً عن التشخيص الطبي.</p>
-        <div class="cta">
-          <a class="btn" href="/case">📝 دراسة الحالة</a>
-          <a class="btn alt" href="/dsm">📘 DSM (مرجع)</a>
-          <a class="btn gold" href="/cbt">🧠 CBT</a>
-          <a class="btn gold" href="/addiction">🚭 علاج الإدمان</a>
-          <a class="btn telegram" href="{TELEGRAM_URL}" target="_blank" rel="noopener">✈️ تيليجرام</a>
-          <a class="btn whatsapp" href="{WHATSAPP_URL}" target="_blank" rel="noopener">🟢 واتساب</a>
+      <div class="inner">
+        <span class="badge">علاج نفسي افتراضي</span>
+        <h1>{BRAND_NAME} — راحةٌ نفسية أقرب إليك</h1>
+        <p>ابدأ رحلتك بخطواتٍ واضحة: دوِّن أعراضك، استعرض ترشيحات DSM، تدرّب على أدوات CBT، واتّبع خطةً ذكيةً لدعم التعافي من الإدمان.</p>
+        <div class="grid-sm">
+          <a class="btn gold" href="/case">ابدأ دراسة الحالة الآن</a>
+          <a class="btn alt" href="/dsm">استعرض DSM</a>
         </div>
       </div>
     </section>
+
+    <section class="card" style="margin-top:16px">
+      <h3>لماذا عربي سايكو؟</h3>
+      <div class="grid">
+        <div class="note">لغةٌ قريبةٌ منك وهويةٌ عربيةٌ أنيقة.</div>
+        <div class="note">مسارٌ عملي: من الأعراض إلى التفسير ثم الأدوات.</div>
+        <div class="note">روابط تواصل مباشرة لخطواتٍ أسرع نحو التحسُّن.</div>
+      </div>
+    </section>
     """
-    # نعرض البطاقة كاملة بدون الغلاف الأبيض
-    return render_template_string(f"<!DOCTYPE html><html lang='ar' dir='rtl'><head><title>{BRAND_NAME} — الرئيسية</title>{BASE_HEAD}</head><body>{content}<footer class='footer'><small>© جميع الحقوق محفوظة لـ {BRAND_NAME}</small></footer></body></html>")
+    # نعرض الهيرو + بطاقة التعريف ضمن الهيكل العام
+    return site_shell(hero, f"{BRAND_NAME} — الرئيسية")
 
 # ========= DSM/CBT/إدمان =========
 @app.get("/dsm")
@@ -116,7 +147,7 @@ def dsm():
 def cbt():
     try:
         CBT = importlib.import_module("CBT")
-        html = CBT.main() if hasattr(CBT, "main") else "<h2>CBT</h2><p>خطة العلاج السلوكي المعرفي غير متوفرة.</p>"
+        html = CBT.main() if hasattr(CBT, "main") else "<h2>CBT</h2><p>خطة العلاج المعرفي السلوكي غير متوفرة.</p>"
     except Exception as e:
         html = f"<p>تعذر تحميل CBT: {e}</p>"
     return site_shell(html, "CBT — خطة علاج")
@@ -130,10 +161,10 @@ def addiction():
         html = f"<p>تعذر تحميل صفحة الإدمان: {e}</p>"
     return site_shell(html, "علاج الإدمان")
 
-# ========= دراسة الحالة (مع حفظ تلقائي/طباعة/JSON) =========
+# ========= دراسة الحالة (حفظ تلقائي/طباعة/JSON) =========
 FORM_HTML = """
-<h1>📝 دراسة الحالة — إدخال الأعراض</h1>
-<p class="note">⚠️ النتيجة تعليمية/إرشادية وليست تشخيصًا طبيًا.</p>
+<h1>📝 دراسة الحالة</h1>
+<p class="note">خطوة البداية نحو فهمٍ أعمق لذاتك. كن صادقًا مع نفسك، ودعنا نرتّب الصورة بوضوح.</p>
 
 <form id="caseForm" method="post" action="/case">
   <div class="section">
@@ -228,34 +259,20 @@ FORM_HTML = """
 
 <script>
 const KEY='arabi_psycho_case_form';
-
-function toObj(form){
+function toObj(form){{
   const data = {{}};
-  new FormData(form).forEach((v,k)=>{{
-    if(data[k]!==undefined) {{
-      if(!Array.isArray(data[k])) data[k]=[data[k]];
-      data[k].push(v);
-    }} else {{
-      data[k]=v;
-    }}
-  }});
-  // اجعل checkboxes = true/false
-  form.querySelectorAll('input[type=checkbox]').forEach(cb=>{{
-    data[cb.name]=cb.checked;
-  }});
+  new FormData(form).forEach((v,k)=>{{ data[k]=v; }});
+  form.querySelectorAll('input[type=checkbox]').forEach(cb=>{{ data[cb.name]=cb.checked; }});
   return data;
-}
-
+}}
 function fromObj(form, data){{
   if(!data) return;
   Object.keys(data).forEach(k=>{{
-    const el = form.querySelector(`[name="${{k}}"]`);
+    const el=form.querySelector(`[name="${{k}}"]`);
     if(!el) return;
-    if(el.type==='checkbox') el.checked = !!data[k];
-    else el.value = data[k];
+    if(el.type==='checkbox') el.checked=!!data[k]; else el.value=data[k];
   }});
 }}
-
 function saveDraft(){{ localStorage.setItem(KEY, JSON.stringify(toObj(document.getElementById('caseForm')))); }}
 function loadDraft(){{ const s=localStorage.getItem(KEY); if(s) fromObj(document.getElementById('caseForm'), JSON.parse(s)); }}
 function clearForm(){{ localStorage.removeItem(KEY); document.getElementById('caseForm').reset(); }}
@@ -263,7 +280,6 @@ function saveJSON(){{
   const blob=new Blob([JSON.stringify(toObj(document.getElementById('caseForm')),null,2)],{{type:'application/json'}});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='case_form.json'; a.click(); URL.revokeObjectURL(a.href);
 }}
-
 document.getElementById('caseForm').addEventListener('change', saveDraft);
 window.addEventListener('DOMContentLoaded', loadDraft);
 </script>
@@ -271,8 +287,8 @@ window.addEventListener('DOMContentLoaded', loadDraft);
 
 RESULT_HTML = """
 <h1>📌 ترشيحات أولية</h1>
+<p class="note">قراءة واضحة لما يظهر من النمط العام، لتقطع الخطوة التالية بثقة.</p>
 <ul style="line-height:1.9">{items}</ul>
-<p class="muted">⚠️ هذه النتائج تعليمية/إرشادية فقط. يُفضّل مراجعة مختص.</p>
 <div class="grid-sm">
   <button onclick="window.print()" class="btn">طباعة</button>
   <button class="btn gold" onclick='(function(){{
@@ -290,7 +306,7 @@ def case():
     data = {k: v for k, v in request.form.items()}
     try:
         DSM = importlib.import_module("DSM")
-        picks = DSM.diagnose(data) if hasattr(DSM, "diagnose") else [("تعذر التشخيص", "DSM.diagnose غير متوفر", 0.0)]
+        picks = DSM.diagnose(data) if hasattr(DSM, "diagnose") else [("تعذر الترشيح", "DSM.diagnose غير متوفر", 0.0)]
     except Exception as e:
         picks = [("خطأ", str(e), 0.0)]
     items = "".join([f"<li><b>{name}</b> — {why} <small>(Score: {score:.0f})</small></li>" for name, why, score in picks])
@@ -298,8 +314,8 @@ def case():
 
 # ========= تواصل =========
 CONTACT_HTML = f"""
-<h1>📞 التواصل مع {BRAND_NAME}</h1>
-<p class="muted">اختر الطريقة المناسبة:</p>
+<h1>📞 تواصل معنا</h1>
+<p>نحن هنا لنسندك خطوةً بخطوة — رسالتك محل اهتمام.</p>
 <div class="grid-sm">
   <a class="btn telegram" href="{TELEGRAM_URL}" target="_blank" rel="noopener">✈️ تيليجرام</a>
   <a class="btn whatsapp" href="{WHATSAPP_URL}" target="_blank" rel="noopener">🟢 واتساب</a>
@@ -310,14 +326,14 @@ CONTACT_HTML = f"""
 def contact():
     return site_shell(CONTACT_HTML, "التواصل")
 
-# ========= صفحات الخطأ بتصميم موحّد =========
+# ========= صفحات الخطأ =========
 @app.errorhandler(404)
 def not_found(_):
-    return site_shell("<div class='center'><h2>٤٠٤ — الصفحة غير موجودة</h2><p class='muted'>تحقّق من الرابط أو ارجع إلى <a href='/'>الرئيسية</a>.</p></div>", "404"), 404
+    return site_shell("<div class='center'><h2>٤٠٤ — الصفحة غير موجودة</h2><p>تحقّق من الرابط أو عد للرئيسية.</p></div>", "404"), 404
 
 @app.errorhandler(500)
 def server_err(e):
-    return site_shell(f"<div class='center'><h2>خطأ داخلي</h2><p class='muted'>حدث خطأ غير متوقع.</p><details><summary>تفاصيل للمطور</summary><pre>{e}</pre></details></div>", "خطأ"), 500
+    return site_shell(f"<div class='center'><h2>خطأ داخلي</h2><p>حدث شيء غير متوقع.</p><details><summary>تفاصيل للمطوّر</summary><pre>{e}</pre></details></div>", "خطأ"), 500
 
 # ========= رؤوس أمان وكاش =========
 @app.after_request
@@ -336,4 +352,3 @@ def health():
 # ========= تشغيل محلي =========
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT","10000")))
-   
