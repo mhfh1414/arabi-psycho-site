@@ -1,43 +1,78 @@
-# Addiction.py — خطة علاج الإدمان مختصرة عملية
-
+# Addiction.py — برنامج علاج الإدمان: مراحل + خطة منع انتكاسة قابلة للحفظ
 def main():
     return """
     <h1>🚭 برنامج علاج الإدمان</h1>
-    <p>خطوات واضحة للدعم والتعافي، تُستخدم بالتوازي مع الرعاية الطبية المتخصصة عند الحاجة.</p>
+    <p>خطة بثلاث مراحل: إزالة السُمّية (Detox) → التأهيل (Rehab) → منع الانتكاسة (Relapse Prevention).</p>
 
     <style>
-      .card{background:#fff;border:1px solid #eee;border-radius:12px;padding:12px;margin:10px 0}
-      ul{line-height:1.9}
-      .grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-      .tag{display:inline-block;background:#FFD700;color:#4B0082;padding:2px 8px;border-radius:999px;font-weight:800}
+      .grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+      .box{background:#fafafa;border:1px solid #eee;border-radius:12px;padding:12px}
+      textarea,input{width:100%;border:1px solid #ddd;border-radius:10px;padding:8px}
+      .btn{padding:10px 14px;border-radius:12px;border:0;background:#4B0082;color:#fff;font-weight:700}
+      .btn.gold{background:#FFD700;color:#4B0082}
+      details{background:#fff;border:1px solid #eee;border-radius:12px;margin:10px 0;padding:10px}
+      summary{cursor:pointer;font-weight:800;color:#4B0082}
     </style>
 
-    <div class="grid">
-      <div class="card">
-        <div class="tag">1) التثبيت وإزالة السموم</div>
-        <ul>
-          <li>خطة أمان + تواصل طارئ.</li>
-          <li>استشارة طبيب لسحب آمن (خصوصًا الأفيونات/الكحول/المهدئات).</li>
-          <li>بدائل دوائية عند اللزوم (مثل بوبرينورفين/نالتركسون/أكامبروسيت وفق الطبيب).</li>
-        </ul>
-      </div>
+    <div id="addict">
+      <details open>
+        <summary>1) إزالة السُمّية (Detox) — بإشراف طبي</summary>
+        <div class="grid">
+          <div class="box">
+            <b>معلومات طبية/أدوية (يملؤها طبيب)</b>
+            <textarea name="detox_med" rows="3" placeholder="أدوية انسحاب، علامات حيوية، متابعة المخاطر..."></textarea>
+          </div>
+          <div class="box">
+            <b>دعم يومي</b>
+            <textarea name="detox_support" rows="3" placeholder="شخص داعم، إزالة محفزات/مواد من المنزل، سوائل وغذاء..."></textarea>
+          </div>
+        </div>
+      </details>
 
-      <div class="card">
-        <div class="tag">2) إعادة التأهيل</div>
-        <ul>
-          <li>CBT لمنع الانتكاس: التعرف على المثيرات، مهارات التأقلم، تخطيط المواقف العالية الخطورة.</li>
-          <li>بناء روتين يومي صحي: نوم/رياضة/تغذية/دعم اجتماعي.</li>
-          <li>مجموعات دعم (اختياري): 12 خطوة/بدائل مجتمعية.</li>
-        </ul>
-      </div>
+      <details>
+        <summary>2) التأهيل (Rehab)</summary>
+        <div class="grid">
+          <div class="box">
+            <b>روتين يومي صحّي</b>
+            <textarea name="rehab_routine" rows="3" placeholder="نوم منتظم، رياضة خفيفة، عبادات/تأمل، تواصل اجتماعي صحي..."></textarea>
+          </div>
+          <div class="box">
+            <b>بدائل فورية للاشتهاء</b>
+            <textarea name="rehab_altern" rows="3" placeholder="ماء بارد، استحمام، اتصال بصديق، مشي 10د، تمرين تنفس..."></textarea>
+          </div>
+        </div>
+      </details>
 
-      <div class="card">
-        <div class="tag">3) المتابعة والوقاية</div>
-        <ul>
-          <li>خطة إشارات إنذار مبكر: رغبة شديدة، عزلة، تفكير تبريري.</li>
-          <li>قائمة تواصل فوري (3 أشخاص) + أنشطة بديلة سريعة.</li>
-          <li>قياس أسبوعي للرغبة (0–10) وتعديل الخطة بناءً على النتائج.</li>
-        </ul>
+      <details>
+        <summary>3) منع الانتكاسة (Relapse Prevention)</summary>
+        <div class="grid">
+          <div class="box">
+            <b>إشارات إنذار مبكر</b>
+            <textarea name="rp_triggers" rows="3" placeholder="أماكن/أشخاص/مشاعر..."></textarea>
+          </div>
+          <div class="box">
+            <b>خطة 24 ساعة</b>
+            <textarea name="rp_24h" rows="3" placeholder="ماذا أفعل في أوّل 24 ساعة عند الخطر؟"></textarea>
+          </div>
+          <div class="box">
+            <b>شبكة دعم واتصال</b>
+            <textarea name="rp_supports" rows="3" placeholder="أسماء/أرقام داعمين، مواعيد مجموعات دعم..."></textarea>
+          </div>
+        </div>
+      </details>
+
+      <div style="margin-top:10px">
+        <button class="btn" onclick="saveAdd()">حفظ خطة الإدمان (JSON)</button>
+        <button class="btn gold" onclick="window.print()">طباعة</button>
       </div>
     </div>
+
+    <script>
+      function saveAdd(){
+        const root=document.getElementById('addict');
+        const data={}; root.querySelectorAll('textarea,input').forEach(el=>data[el.name]=el.value||"");
+        const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+        const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='addiction_plan.json'; a.click(); URL.revokeObjectURL(a.href);
+      }
+    </script>
     """
