@@ -1,63 +1,91 @@
-# CBT.py — صفحة CBT تفاعلية (تعليمي/إرشادي)
+# CBT.py — خطط علاج معرفي سلوكي مبسطة قابلة للتطبيق
+
 def main():
     return """
-    <h1>العلاج المعرفي السلوكي (CBT)</h1>
-    <p class="muted">خطة عملية مبسطة: تحديد الأفكار التلقائية، إعادة الهيكلة المعرفية، تجارب سلوكية، تفعيل سلوكي، وتقنيات قلق.</p>
+    <h1>🧠 العلاج المعرفي السلوكي (CBT)</h1>
+    <p>خطط قصيرة تساعدك على البدء فورًا. اختر الخطة وابدأ بتطبيق التمارين يوميًا.</p>
+
     <style>
-      .card{background:#fff;border:1px solid #eee;border-radius:14px;padding:14px;margin:12px 0}
-      .grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-      textarea,input[type=text]{width:100%;padding:8px;border:1px solid #ddd;border-radius:8px}
-      .btn{margin-top:10px;padding:10px 14px;border-radius:12px;border:0;background:#4B0082;color:#fff;font-weight:700}
-      .btn.gold{background:#FFD700;color:#4B0082}
-      .pill{display:inline-block;background:#faf7e6;border:1px solid #eee;border-radius:999px;padding:6px 10px;margin:4px 6px}
+      .card{background:#fff;border:1px solid #eee;border-radius:12px;padding:12px;margin:10px 0}
+      .grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+      .tag{display:inline-block;background:#FFD700;color:#4B0082;padding:2px 8px;border-radius:999px;font-weight:800}
+      ul{line-height:1.9}
+      code{background:#fafafa;border:1px solid #eee;border-radius:6px;padding:2px 6px}
     </style>
 
-    <div class="card">
-      <h3>1) مذكّرة الأفكار (Thought Record)</h3>
-      <div class="grid">
-        <div><label>الموقف:<br><input type="text" id="situation"></label></div>
-        <div><label>المشاعر (0–100):<br><input type="text" id="emotions" placeholder="قلق 70%، حزن 40%"></label></div>
+    <div class="grid">
+      <div class="card">
+        <div class="tag">قلق عام / قلق اجتماعي</div>
+        <ul>
+          <li>مراقبة القلق يوميًا (0–10) + مواقف مثيرة للقلق.</li>
+          <li>تحدّي الأفكار الكارثية: دليل مع/ضد الفكرة، بديل متوازن.</li>
+          <li>تعرّض تدريجي للمواقف المتجنّبة (سلم 10 خطوات) مع منع الأمان الزائف.</li>
+          <li>تنفّس بطني 4-4-6 مرتين يوميًا + استرخاء عضلي.</li>
+          <li>نشاط يومي مُرضٍ (سياق حياة: نوم، غذاء، حركة).</li>
+        </ul>
       </div>
-      <label>الفكرة التلقائية:<br><textarea id="automatic"></textarea></label>
-      <label>الأدلة مع/ضد:<br><textarea id="evidence"></textarea></label>
-      <label>الفكرة البديلة المتوازنة:<br><textarea id="balanced"></textarea></label>
+
+      <div class="card">
+        <div class="tag">نوبات الهلع</div>
+        <ul>
+          <li>تثقيف: أعراض الهلع آمنة وقصيرة.</li>
+          <li>تعرّض داخلي للأحاسيس (دوران/تنفّس سريع) مع منع الهروب.</li>
+          <li>سجلّ الموقف–الفكرة–الشعور–السلوك بعد كل نوبة.</li>
+          <li>تنفّس هادئ + ملاحظة جسدية غير حُكمية.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="tag">اكتئاب</div>
+        <ul>
+          <li>تنشيط سلوكي: جدولة 3 أنشطة مُمتعة/ذات معنى يوميًا.</li>
+          <li>تحدّي أفكار اليأس (تمييز حقائق/تنبؤات/تعميم مفرط).</li>
+          <li>ضبط نمط الحياة: نوم منتظم، ضوء الشمس، حركة خفيفة.</li>
+          <li>تواصل داعم مع شخص موثوق أسبوعيًا.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="tag">OCD</div>
+        <ul>
+          <li>ERP: تعرّض للمثيرات مع <b>منع الاستجابة</b> تدريجيًا.</li>
+          <li>سلم تدرّج (10 عناصر) من الأسهل للأصعب.</li>
+          <li>قبول عدم اليقين + إلغاء الطقوس الصغيرة أولًا.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="tag">PTSD</div>
+        <ul>
+          <li>تنظيم يومي: نوم/أكل/جسد أولًا.</li>
+          <li>تنفّس، تأريض حسي 5–4–3–2–1، تعرّض تدريجي للذكريات بأمان.</li>
+          <li>إدارة التجنّب والشعور بالذنب، كتابة سرد علاجي.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="tag">ADHD</div>
+        <ul>
+          <li>تقسيم المهام 25–5 (بومودورو) + مؤقّت مرئي.</li>
+          <li>بيئة منخفضة المشتتات، قواعد 2–3 أولويات/يوم.</li>
+          <li>لوح مهام: قائمة اليوم + مراجعة أسبوعية.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="tag">اضطرابات الأكل</div>
+        <ul>
+          <li>سجل وجبات ومشاعر، أوقات منتظمة 3+2.</li>
+          <li>علاج تشوّه صورة الجسد (تعرض أمام المرآة بتدرّج).</li>
+          <li>منع التعويض بعد النوبات + خطّة أمان.</li>
+        </ul>
+      </div>
     </div>
 
-    <div class="card">
-      <h3>2) تفعيل سلوكي</h3>
-      <div class="pill">رياضة</div><div class="pill">تواصل اجتماعي</div><div class="pill">نوم منتظم</div><div class="pill">هواية</div>
-      <label>خطة الأسبوع:<br><textarea id="ba_plan" placeholder="متى/أين/مع من/كم دقيقة؟"></textarea></label>
-    </div>
-
-    <div class="card">
-      <h3>3) تجارب سلوكية (للقناعات)</h3>
-      <label>الاعتقاد المستهدف:<br><input type="text" id="belief" placeholder="سيفشل الجميع إن أخطأت"></label>
-      <label>التجربة المقترحة:<br><textarea id="experiment"></textarea></label>
-      <label>النتائج/الملاحظات:<br><textarea id="exp_result"></textarea></label>
-    </div>
-
-    <div class="card">
-      <h3>4) أدوات قلق سريعة</h3>
-      <div class="pill">تنفس 4-7-8</div><div class="pill">أرض نفسك 5-4-3-2-1</div><div class="pill">يقظة ذهنية 3 دقائق</div>
-      <label>مفضلاتي:<br><textarea id="anx_tools"></textarea></label>
-    </div>
-
-    <div style="margin-top:10px">
-      <button class="btn" onclick="window.print()">طباعة</button>
-      <button class="btn gold" onclick="saveCBT()">حفظ JSON</button>
-    </div>
-
-    <script>
-      function saveCBT(){
-        const get=(id)=>document.getElementById(id)?.value||"";
-        const data={
-          situation:get('situation'), emotions:get('emotions'), automatic:get('automatic'),
-          evidence:get('evidence'), balanced:get('balanced'),
-          ba_plan:get('ba_plan'), belief:get('belief'), experiment:get('experiment'),
-          exp_result:get('exp_result'), anx_tools:get('anx_tools')
-        };
-        const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-        const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='cbt_plan.json'; a.click(); URL.revokeObjectURL(a.href);
-      }
-    </script>
+    <h3>نماذج جاهزة</h3>
+    <ul>
+      <li>سجل ABC (موقف–فكرة–شعور–سلوك): اكتب جدولًا يوميًا.</li>
+      <li>سلم تعرّض من 10 درجات (قلق متوقّع لكل خطوة).</li>
+      <li>مخطط أسبوعي: أهداف صغيرة واقعية + مواعيد دعم.</li>
+    </ul>
     """
