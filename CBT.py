@@ -1,91 +1,96 @@
-# CBT.py — خطط علاج معرفي سلوكي مبسطة قابلة للتطبيق
-
+# CBT.py — تمارين وخطط عملية قابلة للحفظ (HTML + JS)
 def main():
     return """
-    <h1>🧠 العلاج المعرفي السلوكي (CBT)</h1>
-    <p>خطط قصيرة تساعدك على البدء فورًا. اختر الخطة وابدأ بتطبيق التمارين يوميًا.</p>
+    <h1>🧠 العلاج المعرفي السلوكي (CBT) — أدوات عملية</h1>
+    <p>اختر الأداة المناسبة، دوّن تطبيقاتك، ثم احفظها كملف JSON لتشاركها مع مختصك.</p>
 
     <style>
-      .card{background:#fff;border:1px solid #eee;border-radius:12px;padding:12px;margin:10px 0}
-      .grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-      .tag{display:inline-block;background:#FFD700;color:#4B0082;padding:2px 8px;border-radius:999px;font-weight:800}
-      ul{line-height:1.9}
-      code{background:#fafafa;border:1px solid #eee;border-radius:6px;padding:2px 6px}
+      details{background:#fff;border:1px solid #eee;border-radius:12px;margin:10px 0;padding:10px}
+      summary{cursor:pointer;font-weight:800;color:#4B0082}
+      .grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+      textarea,input{width:100%;border:1px solid #ddd;border-radius:10px;padding:8px}
+      .btn{padding:10px 14px;border-radius:12px;border:0;background:#4B0082;color:#fff;font-weight:700}
+      .btn.gold{background:#FFD700;color:#4B0082}
+      label{font-weight:700}
+      .box{background:#fafafa;border:1px dashed #eee;border-radius:12px;padding:10px}
     </style>
 
-    <div class="grid">
-      <div class="card">
-        <div class="tag">قلق عام / قلق اجتماعي</div>
-        <ul>
-          <li>مراقبة القلق يوميًا (0–10) + مواقف مثيرة للقلق.</li>
-          <li>تحدّي الأفكار الكارثية: دليل مع/ضد الفكرة، بديل متوازن.</li>
-          <li>تعرّض تدريجي للمواقف المتجنّبة (سلم 10 خطوات) مع منع الأمان الزائف.</li>
-          <li>تنفّس بطني 4-4-6 مرتين يوميًا + استرخاء عضلي.</li>
-          <li>نشاط يومي مُرضٍ (سياق حياة: نوم، غذاء، حركة).</li>
-        </ul>
-      </div>
+    <div id="cbt">
 
-      <div class="card">
-        <div class="tag">نوبات الهلع</div>
-        <ul>
-          <li>تثقيف: أعراض الهلع آمنة وقصيرة.</li>
-          <li>تعرّض داخلي للأحاسيس (دوران/تنفّس سريع) مع منع الهروب.</li>
-          <li>سجلّ الموقف–الفكرة–الشعور–السلوك بعد كل نوبة.</li>
-          <li>تنفّس هادئ + ملاحظة جسدية غير حُكمية.</li>
-        </ul>
-      </div>
+      <details open>
+        <summary>1) تنشيط سلوكي (للانخفاض والانعزال)</summary>
+        <div class="grid">
+          <div class="box">
+            <label>قائمة أنشطة (ممتع/مفيد/قيمة):</label>
+            <textarea name="ba_list" rows="4" placeholder="مثال: مشي 15د، اتصال بصديق، قراءة سورة/كتاب، أعمال منزلية بسيطة..."></textarea>
+          </div>
+          <div class="box">
+            <label>خطة اليوم:</label>
+            <input name="ba_day" placeholder="٣ أنشطة قصيرة موزعة على اليوم"/>
+          </div>
+        </div>
+      </details>
 
-      <div class="card">
-        <div class="tag">اكتئاب</div>
-        <ul>
-          <li>تنشيط سلوكي: جدولة 3 أنشطة مُمتعة/ذات معنى يوميًا.</li>
-          <li>تحدّي أفكار اليأس (تمييز حقائق/تنبؤات/تعميم مفرط).</li>
-          <li>ضبط نمط الحياة: نوم منتظم، ضوء الشمس، حركة خفيفة.</li>
-          <li>تواصل داعم مع شخص موثوق أسبوعيًا.</li>
-        </ul>
-      </div>
+      <details>
+        <summary>2) تحدّي الأفكار (القلق/الاكتئاب)</summary>
+        <div class="grid">
+          <div class="box"><label>الموقف</label><textarea name="c_sit" rows="3"></textarea></div>
+          <div class="box"><label>الفكرة التلقائية</label><textarea name="c_th" rows="3"></textarea></div>
+          <div class="box"><label>الدليل مع/ضد</label><textarea name="c_ev" rows="3"></textarea></div>
+          <div class="box"><label>الفكرة المتوازنة</label><textarea name="c_new" rows="3"></textarea></div>
+        </div>
+      </details>
 
-      <div class="card">
-        <div class="tag">OCD</div>
-        <ul>
-          <li>ERP: تعرّض للمثيرات مع <b>منع الاستجابة</b> تدريجيًا.</li>
-          <li>سلم تدرّج (10 عناصر) من الأسهل للأصعب.</li>
-          <li>قبول عدم اليقين + إلغاء الطقوس الصغيرة أولًا.</li>
-        </ul>
-      </div>
+      <details>
+        <summary>3) تعرّض تدريجي + منع استجابة (الهلع/الوسواس/الرهاب)</summary>
+        <div class="box">
+          <label>سلم التعرّض (من الأقل للأعلى):</label>
+          <textarea name="erp_steps" rows="4" placeholder="10 درجات، مثال للرهاب الاجتماعي: تحية جار، سؤال موظف، مكالمة قصيرة، عرض أمام شخصين..."></textarea>
+          <p>أثناء التعرّض: تنفّس 4-4-6 — ومنع سلوكيات الأمان (الهروب/الطمأنة).</p>
+        </div>
+      </details>
 
-      <div class="card">
-        <div class="tag">PTSD</div>
-        <ul>
-          <li>تنظيم يومي: نوم/أكل/جسد أولًا.</li>
-          <li>تنفّس، تأريض حسي 5–4–3–2–1، تعرّض تدريجي للذكريات بأمان.</li>
-          <li>إدارة التجنّب والشعور بالذنب، كتابة سرد علاجي.</li>
-        </ul>
-      </div>
+      <details>
+        <summary>4) تنظيم الانتباه (ADHD)</summary>
+        <div class="grid">
+          <div class="box">
+            <label>أهم 3 مهام اليوم</label>
+            <textarea name="adhd_top3" rows="3"></textarea>
+          </div>
+          <div class="box">
+            <label>جلسات بومودورو</label>
+            <input name="adhd_pomo" placeholder="مثال: 4×(25د عمل + 5د راحة)"/>
+          </div>
+          <div class="box">
+            <label>تقليل مشتتات</label>
+            <textarea name="adhd_env" rows="3" placeholder="هاتف صامت، تبويب واحد، مؤقت مرئي..."></textarea>
+          </div>
+        </div>
+      </details>
 
-      <div class="card">
-        <div class="tag">ADHD</div>
-        <ul>
-          <li>تقسيم المهام 25–5 (بومودورو) + مؤقّت مرئي.</li>
-          <li>بيئة منخفضة المشتتات، قواعد 2–3 أولويات/يوم.</li>
-          <li>لوح مهام: قائمة اليوم + مراجعة أسبوعية.</li>
-        </ul>
-      </div>
+      <details>
+        <summary>5) التأريض والصدمات (PTSD)</summary>
+        <div class="box">
+          <label>خطة تأريض 5-4-3-2-1</label>
+          <textarea name="ptsd_ground" rows="3" placeholder="5 أشياء تراها، 4 تلمسها، 3 تسمعها، 2 تشمها، 1 تتذوقها"></textarea>
+          <label>سرد آمن (اختياري)</label>
+          <textarea name="ptsd_story" rows="3"></textarea>
+        </div>
+      </details>
 
-      <div class="card">
-        <div class="tag">اضطرابات الأكل</div>
-        <ul>
-          <li>سجل وجبات ومشاعر، أوقات منتظمة 3+2.</li>
-          <li>علاج تشوّه صورة الجسد (تعرض أمام المرآة بتدرّج).</li>
-          <li>منع التعويض بعد النوبات + خطّة أمان.</li>
-        </ul>
+      <div style="margin-top:10px">
+        <button class="btn" onclick="savePlan()">حفظ خطة CBT (JSON)</button>
+        <button class="btn gold" onclick="window.print()">طباعة</button>
       </div>
     </div>
 
-    <h3>نماذج جاهزة</h3>
-    <ul>
-      <li>سجل ABC (موقف–فكرة–شعور–سلوك): اكتب جدولًا يوميًا.</li>
-      <li>سلم تعرّض من 10 درجات (قلق متوقّع لكل خطوة).</li>
-      <li>مخطط أسبوعي: أهداف صغيرة واقعية + مواعيد دعم.</li>
-    </ul>
+    <script>
+      function savePlan(){
+        const root=document.getElementById('cbt');
+        const data={};
+        root.querySelectorAll('textarea,input').forEach(el=>data[el.name]=el.value||"");
+        const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+        const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='cbt_plan.json'; a.click(); URL.revokeObjectURL(a.href);
+      }
+    </script>
     """
