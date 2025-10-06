@@ -1,141 +1,115 @@
-# CBT.py — خطط وتمارين CBT جاهزة مع قوالب وإخراج JSON/طباعة
+# CBT.py — أدوات وخطط CBT: اختيارية + خطط جاهزة + تنزيل JSON/طباعة
 
 def main():
     return """
-<h1>🧠 العلاج المعرفي السلوكي (CBT) — أدوات عملية</h1>
-<p>اختر الأداة المناسبة، اضغط "إدراج قالب"، ثم عدّل بنقاطك. يمكنك حفظ الخطة كملف JSON أو طباعتها.</p>
+    <div class='card'>
+      <h1>🧠 العلاج المعرفي السلوكي (CBT)</h1>
+      <p class='small'>علاج نفسي افتراضي — اختر الأدوات المناسبة لك، ثم احفظ الخطة كملف JSON أو اطبعها. تتوفر أيضًا خطط جاهزة بنقرة.</p>
 
-<style>
-  :root{ --p:#4B0082; --g:#FFD700 }
-  details{background:#fff; border:1px solid #eee; border-radius:12px; padding:10px; margin:12px 0}
-  summary{cursor:pointer; font-weight:800; color:var(--p)}
-  .box{width:100%; min-height:150px; border:1px solid #ddd; border-radius:10px; padding:10px}
-  .action{margin:10px 6px 0 0; padding:9px 14px; border-radius:12px; border:0; font-weight:800; background:var(--p); color:#fff}
-  .alt{background:#5b22a6}
-  .gold{background:var(--g); color:var(--p)}
-  .grid{display:grid; gap:10px; grid-template-columns: repeat(auto-fit, minmax(240px,1fr));}
-  .hint{background:#fff7d1; border:1px dashed #e5c100; padding:8px 12px; border-radius:10px}
-</style>
+      <style>
+        .plan{display:flex;gap:10px;align-items:flex-start;background:#fafafa;border:1px solid #eee;border-radius:12px;padding:10px;margin:8px 0}
+        .plan h4{margin:.2rem 0 .2rem}
+        .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+        .col{flex:1;min-width:260px}
+        .hint{font-size:.9rem;opacity:.85}
+      </style>
 
-<div id="cbt">
+      <div class="grid">
+        <div class="col">
+          <h2>اختر أدواتك</h2>
 
-  <div class="hint">عبارات مُحفِّزة: أنت لست وحدك — خطوة صغيرة ثابتة اليوم أفضل من انتظار الكمال. التقدّم أهم من الكمال.</div>
+          <div id="plans">
+            <div class="plan"><label><input type="checkbox" data-name="تنشيط سلوكي (BA)">
+              <div><h4>تنشيط سلوكي (BA)</h4><div class="hint">قائمة أنشطة ممتعة ومُفيدة. نفّذ 2–3 يوميًا وقيّم المزاج قبل/بعد.</div></div></label></div>
 
-  <details open>
-    <summary>1) تنشيط سلوكي (للإحباط/الاكتئاب)</summary>
-    <textarea id="ba" class="box" placeholder="اكتب جدول نشاطات موجّهة بالقيم (ممتع/مفيد/قيمة)..."></textarea><br>
-    <button class="action" onclick="tplBA()">إدراج قالب</button>
-  </details>
+            <div class="plan"><label><input type="checkbox" data-name="سجل الأفكار (TR)">
+              <div><h4>سجل الأفكار (Thought Record)</h4><div class="hint">الموقف—الفكرة—الدليل معها/ضدها—الفكرة المتوازنة—شدة الانفعال قبل/بعد.</div></div></label></div>
 
-  <details>
-    <summary>2) سجل الأفكار (تحدّي الأفكار السلبية)</summary>
-    <textarea id="cr" class="box" placeholder="موقف → فكرة تلقائية → دليل معها/ضدّها → فكر بديل → شدّة الشعور"></textarea><br>
-    <button class="action" onclick="tplCR()">إدراج قالب</button>
-  </details>
+            <div class="plan"><label><input type="checkbox" data-name="ERP للوسواس">
+              <div><h4>ERP للوسواس القهري</h4><div class="hint">هرم مواقف، تعرّض تدريجي 60–90 دقيقة، مع منع الاستجابة.</div></div></label></div>
 
-  <details>
-    <summary>3) تعرّض ومنع الاستجابة ERP (للوسواس القهري)</summary>
-    <textarea id="erp" class="box" placeholder="سلّم قلق من 0–100، 10 محفزات تصاعدية، مع منع الاستجابة"></textarea><br>
-    <button class="action" onclick="tplERP()">إدراج قالب</button>
-  </details>
+            <div class="plan"><label><input type="checkbox" data-name="تعرّض اجتماعي">
+              <div><h4>تعرّض اجتماعي (الرهاب الاجتماعي)</h4><div class="hint">سُلّم 10 درجات: تواصل بصري → سؤال بسيط → مكالمة → عرض قصير…</div></div></label></div>
 
-  <details>
-    <summary>4) تعرّض اجتماعي/هلع + تنفّس 4-4-6</summary>
-    <textarea id="exp" class="box" placeholder="مواقف اجتماعية/هلع بسلّم صعوبة، تعرّض تدريجي، منع سلوك الأمان"></textarea><br>
-    <button class="action" onclick="tplEXP()">إدراج قالب</button>
-  </details>
+            <div class="plan"><label><input type="checkbox" data-name="تنظيم النوم">
+              <div><h4>تنظيم النوم</h4><div class="hint">ثبات مواقيت، ضوء صباحي، إيقاف الشاشات قبل النوم بساعة.</div></div></label></div>
 
-  <details>
-    <summary>5) تأريض وتنظيم بعد الصدمة (PTSD)</summary>
-    <textarea id="pts" class="box" placeholder="تقنية 5-4-3-2-1، روتين نوم، كتابة سرد آمن تدريجيًا"></textarea><br>
-    <button class="action" onclick="tplPTS()">إدراج قالب</button>
-  </details>
+            <div class="plan"><label><input type="checkbox" data-name="حل المشكلات">
+              <div><h4>حل المشكلات</h4><div class="hint">تعريف المشكلة → أفكار حلول → اختيار وتنفيذ → مراجعة.</div></div></label></div>
 
-  <details>
-    <summary>6) تنظيم الانتباه (ADHD) — بومودورو</summary>
-    <textarea id="adhd" class="box" placeholder="روتين صباحي، 3 أولويات، جلسات 25-5، بيئة قليلة مشتّتات"></textarea><br>
-    <button class="action" onclick="tplADHD()">إدراج قالب</button>
-  </details>
+            <div class="plan"><label><input type="checkbox" data-name="تنفّس + تأريض">
+              <div><h4>تنفّس 4-4-6 + التأريض 5-4-3-2-1</h4><div class="hint">5 دقائق تنفّس + يقظة حسية لخفض الاستثارة.</div></div></label></div>
 
-  <details>
-    <summary>7) نظافة النوم وإدارة الإيقاع</summary>
-    <textarea id="sleep" class="box" placeholder="مواعيد ثابتة، تعريض للضوء صباحًا، تقليل كافيين، طقوس قبل النوم"></textarea><br>
-    <button class="action" onclick="tplSLEEP()">إدراج قالب</button>
-  </details>
+            <div class="plan"><label><input type="checkbox" data-name="مراقبة المزاج">
+              <div><h4>مراقبة المزاج</h4><div class="hint">مقياس 0–10 صباحًا/مساءً مع ملاحظة المحفزات.</div></div></label></div>
+          </div>
 
-  <div class="grid">
-    <button class="action gold" onclick="savePlan()">حفظ الخطة (JSON)</button>
-    <button class="action alt" onclick="window.print()">طباعة</button>
-  </div>
-</div>
+          <div class="tile" style="margin-top:10px">
+            <label>ملاحظات الخطة
+              <textarea id="notes" rows="4" placeholder="مثال: 20 دقيقة مشي يوميًا، سجل أفكار ثلاث مرات بالأسبوع…"></textarea>
+            </label>
+          </div>
 
-<script>
-function tplBA(){
-  document.getElementById('ba').value =
-`هدف الأسبوع: رفع النشاط 30% وتقليل العزلة.
-قائمة أنشطة (ممتع/مفيد/قيمة):
-- ممتع: 15 دقيقة مشي خفيف، 10 دقائق موسيقى، مكالمة صديق.
-- مفيد: غسيل ملابس، ترتيب سطح المكتب، مراجعة بريد.
-- قيمة: قراءة صفحة من القرآن/كتاب قيم، مساعدة أحد بالبيت.
-قاعدة البدء الصغير: أقل من 10 دقائق لكل نشاط.
-قياس المزاج يوميًا 0–10 قبل/بعد.`;
-}
-function tplCR(){
-  document.getElementById('cr').value =
-`اليوم: __ / __
-الموقف: ______________________
-الفكرة التلقائية: "______________________"
-الدليل معها: ____________ / الدليل ضدّها: ____________
-التحريف المعرفي المحتمل: تعميم/تطنيش الإيجابي/كارثية/قراءة أفكار/يجب/أبيض-أسود
-فكر بديل متوازن: "______________________"
-شدّة الشعور قبل %___ وبعد %___`;
-}
-function tplERP(){
-  document.getElementById('erp').value =
-`قائمة ERP (0–100):
-10- لمس مقبض الباب 10 ثوانٍ بدون غسل.
-20- لمس الطاولة العامة دقيقة.
-40- لمس صنبور الحمام 30 ثانية.
-60- لمس حذاء ثم لمس الهاتف.
-80- لمس سلة المهملات/أرض الحمام والجلوس 5 دقائق.
-قاعدة: ممنوع أي طقوس/تطمين حتى يهبط القلق ≤ 30. تسجيل الزمن والنتيجة.`;
-}
-function tplEXP(){
-  document.getElementById('exp').value =
-`قائمة التعرّض:
-10- سؤال بائع عن سلعة.
-20- إرسال رسالة قصيرة لمعارف.
-40- محادثة 3 دقائق مع زميل.
-60- مشاركة رأي قصير في مجموعة.
-80- إلقاء فقرة 2 دقائق أمام 3 أشخاص.
-تنفّس 4-4-6 (شهيق 4، حبس 4، زفير 6) × 5 قبل التعرّض. منع سلوك الأمان (الهروب/التطمين).`;
-}
-function tplPTS(){
-  document.getElementById('pts').value =
-`تأريض 5-4-3-2-1: اذكر 5 أشياء تراها، 4 تلمسها، 3 تسمعها، 2 تشمها، 1 تتذوّقها.
-روتين ثابت: نوم/استيقاظ، وجبات، رياضة خفيفة.
-سرد تدريجي: كتابة القصة على أجزاء قصيرة مع توقف آمن، مراقبة شدة الانزعاج.
-شبكة دعم: شخص موثوق + موعد أسبوعي.`;
-}
-function tplADHD(){
-  document.getElementById('adhd').value =
-`صباحًا: 3 أولويات فقط. مؤقّت بومودورو 25-5 × 4 ثم استراحة 20.
-البيئة: مكتب خالٍ، إشعارات صامتة، سماعات.
-إدارة المهام: تقسيم كل مهمة إلى خطوات 10 دقائق.
-المساء: مراجعة ما تم + تجهيز غدًا.`;
-}
-function tplSLEEP(){
-  document.getElementById('sleep').value =
-`ثابت: وقت نوم/استيقاظ يومي، ضوء صباحي 10 دقائق، آخر كافيين قبل 2 ظهرًا.
-قبل النوم: حمام دافئ/قراءة ورقية/دعاء، بدون شاشات 60 دقيقة.
-الغرفة: ظلام/برودة خفيفة/هادئة. إذا لم تنم خلال 20 دقيقة، انهض لعمل هادئ وارجع.`;
-}
-function savePlan(){
-  const ids=['ba','cr','erp','exp','pts','adhd','sleep'];
-  const data={}; ids.forEach(id=>data[id]=document.getElementById(id).value||'');
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='cbt_plan.json'; a.click();
-  URL.revokeObjectURL(a.href);
-}
-</script>
-"""
+          <div class="row">
+            <button class="btn" onclick="savePlan()">💾 حفظ خطتي (JSON)</button>
+            <button class="btn alt" onclick="window.print()">🖨️ طباعة</button>
+          </div>
+        </div>
+
+        <div class="col">
+          <h2>📦 خطط جاهزة</h2>
+          <div class="row">
+            <button class="btn gold" onclick="downloadTemplate('خطة 7 أيام للاكتئاب', [
+              'تنشيط سلوكي يومي (نشاط ممتع + نشاط مفيد)',
+              'تنظيم النوم (ثبات المواقيت + قطع الشاشات ساعة قبل النوم)',
+              'سجل أفكار 3 مرات/الأسبوع'
+            ])">⬇️ اكتئاب (7 أيام)</button>
+
+            <button class="btn gold" onclick="downloadTemplate('خطة 10 أيام للقلق الاجتماعي', [
+              'سلم تعرّض اجتماعي من 10 درجات',
+              'تجربة درجتين يوميًا مع منع الطمأنة',
+              'تنفّس 4-4-6 صباحًا ومساءً'
+            ])">⬇️ قلق اجتماعي (10 أيام)</button>
+
+            <button class="btn gold" onclick="downloadTemplate('خطة ERP أسبوعين للوسواس', [
+              'بناء هرم مواقف 10 درجات',
+              'ERP يومي 60 دقيقة مع منع الاستجابة',
+              'مراجعة أسبوعية للتقدّم'
+            ])">⬇️ ERP (أسبوعين)</button>
+
+            <button class="btn gold" onclick="downloadTemplate('خطة 14 يوم للتوازن العام', [
+              'تنشيط سلوكي خفيف يومي',
+              'تمرين تنفّس + تأريض مرتين يوميًا',
+              'مراقبة المزاج وتعديل الروتين'
+            ])">⬇️ توازن عام (14 يوم)</button>
+          </div>
+
+          <div class="note" style="margin-top:12px">
+            <b>عبارة داعمة:</b> «خطوة صغيرة اليوم تُسهّل خطوة أكبر غدًا.»
+          </div>
+          <div style="margin-top:10px">
+            <a class="btn gold" href="/book">📅 احجز جلسة</a>
+            <a class="btn" href="/addiction">🚭 انتقل لبرنامج الإدمان</a>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        function savePlan(){
+          const picks=[...document.querySelectorAll('#plans input[type=checkbox]:checked')]
+                      .map(cb=>cb.getAttribute('data-name'));
+          const notes=document.getElementById('notes').value||'';
+          const payload={selected_plans:picks,notes:notes,created_at:new Date().toISOString()};
+          const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+          const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='cbt_plan.json'; a.click();
+          URL.revokeObjectURL(a.href);
+        }
+        function downloadTemplate(name,tasks){
+          const payload={template:name,tasks:tasks,created_at:new Date().toISOString()};
+          const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+          const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name.replace(/\\s+/g,'_')+'.json'; a.click();
+          URL.revokeObjectURL(a.href);
+        }
+      </script>
+    </div>
+    """
