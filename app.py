@@ -1,4 +1,4 @@
-# app.py — عربي سايكو: تخطيط أنيق + دراسة حالة موسّعة + DSM/CBT/إدمان + حجز + نبذة + تواصل + عدّاد زوّار
+# app.py — عربي سايكو: تخطيط أنيق + دراسة حالة موسّعة (تشمل ثنائي القطب) + DSM/CBT/إدمان + حجز + نبذة + تواصل + عدّاد زوّار
 import os, importlib, urllib.parse, json
 from flask import Flask, request, redirect
 try:
@@ -61,7 +61,8 @@ body{{margin:0;background:var(--bg);font-family:"Tajawal","Segoe UI",system-ui,s
 .card{{background:#fff;border:1px solid #eee;border-radius:16px;padding:18px;box-shadow:0 10px 24px rgba(0,0,0,.06)}}
 .grid{{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}}
 .tile{{background:#fff;border:1px solid #eee;border-radius:14px;padding:14px}}
-h1,h2,h3{{margin:.2rem 0 .6rem}} .note{{background:#fff7d1;border:1px dashed #e5c100;border-radius:12px;padding:10px 12px;margin:10px 0}}
+h1,h2,h3{{margin:.2rem 0 .6rem}}
+.note{{background:#fff7d1;border:1px dashed #e5c100;border-radius:12px;padding:10px 12px;margin:10px 0}}
 .btn{{display:inline-block;background:var(--p);color:#fff;text-decoration:none;padding:10px 14px;border-radius:12px;font-weight:800}}
 .btn.alt{{background:#5b22a6}} .btn.gold{{background:var(--g);color:#4b0082}}
 .btn.wa{{background:#25D366}} .btn.tg{{background:#229ED9}}
@@ -212,7 +213,7 @@ def book():
     wa_link = wa_base + ("&" if "?" in wa_base else "?") + f"text={encoded}"
     return redirect(wa_link, code=302)
 
-# ---------------- دراسة الحالة (موسّعة مع أعراض اكتئاب واضحة) ----------------
+# ---------------- دراسة الحالة (موسّعة) ----------------
 def c(data,*keys):  # count true
     return sum(1 for k in keys if data.get(k) is not None)
 
@@ -240,7 +241,7 @@ FORM_HTML = """
         <label class="chk"><input type="checkbox" name="dep_function"> تأثير على الدراسة/العمل/العلاقات</label>
       </div>
 
-      <div class="tile"><h3>القلق/الهلع/الاجتماعي</h3>
+      <div class="tile"><h3>قلق/هلع/اجتماعي</h3>
         <label class="chk"><input type="checkbox" name="worry"> قلق مفرط</label>
         <label class="chk"><input type="checkbox" name="tension"> توتر جسدي</label>
         <label class="chk"><input type="checkbox" name="panic_attacks"> نوبات هلع</label>
@@ -266,6 +267,17 @@ FORM_HTML = """
         <label class="chk"><input type="checkbox" name="duration_ge_6m"> المدّة ≥ 6 أشهر</label>
       </div>
 
+      <div class="tile"><h3>ثنائي القطب / أعراض الهوس</h3>
+        <label class="chk"><input type="checkbox" name="elevated_mood"> مزاج مرتفع/متهوّر</label>
+        <label class="chk"><input type="checkbox" name="decreased_sleep_need"> قلة الحاجة للنوم</label>
+        <label class="chk"><input type="checkbox" name="grandiosity"> شعور بالعظمة</label>
+        <label class="chk"><input type="checkbox" name="racing_thoughts"> أفكار متسارعة</label>
+        <label class="chk"><input type="checkbox" name="pressured_speech"> كلام ضاغط</label>
+        <label class="chk"><input type="checkbox" name="risky_behavior"> سلوك محفوف بالمخاطر/صرف زائد</label>
+        <label class="chk"><input type="checkbox" name="mania_ge_7d"> استمرار الأعراض ≥ 7 أيام</label>
+        <label class="chk"><input type="checkbox" name="mania_hospital"> احتاج دخول/تدخل طبي</label>
+      </div>
+
       <div class="tile"><h3>مواد</h3>
         <label class="chk"><input type="checkbox" name="craving"> اشتهاء</label>
         <label class="chk"><input type="checkbox" name="withdrawal"> انسحاب</label>
@@ -284,7 +296,7 @@ FORM_HTML = """
 def build_recommendations(data):
     picks, go_cbt, go_add = [], [], []
 
-    # ===== اكتئاب (منطق أقرب لـ PHQ-9)
+    # ===== اكتئاب (منطق قريب من PHQ-9)
     dep_core = c(data,"low_mood","anhedonia")
     dep_more = c(data,"fatigue","sleep_issue","appetite_change","psychomotor","worthlessness","poor_concentration","suicidal")
     dep_total = dep_core + dep_more
@@ -337,6 +349,18 @@ def build_recommendations(data):
     elif data.get("delusions") and pc == 1 and dur_ge_1m and not decline:
         picks.append(("اضطراب وهامي", "أوهام ثابتة مع أداء وظيفي مقبول", 60))
 
+    # ===== ثنائي القطب
+    mania_count = c(data,"elevated_mood","decreased_sleep_need","grandiosity","racing_thoughts","pressured_speech","risky_behavior")
+    mania_7d    = bool(data.get("mania_ge_7d"))
+    mania_hosp  = bool(data.get("mania_hospital"))
+
+    if mania_count >= 3 and (mania_7d or mania_hosp):
+        picks.append(("اضطراب ثنائي القطب I (نوبة هوس)", "≥3 أعراض هوس مع مدة ≥7 أيام أو حاجة لتدخل/دخول", 85))
+        go_cbt += ["تنظيم النوم الصارم","روتين يومي ثابت","تثقيف نفسي للأسرة"]
+    elif mania_count >= 3 and dep_core >= 1 and not mania_hosp:
+        picks.append(("ثنائي القطب II (نوبة هوس خفيف + اكتئاب)", "مجموعة أعراض هوس خفيف مع عناصر اكتئاب", 75))
+        go_cbt += ["تنظيم النوم","تخطيط نشاط متوازن","مراقبة المزاج"]
+
     go_cbt = sorted(set(go_cbt)); go_add = sorted(set(go_add))
     return picks, go_cbt, go_add
 
@@ -347,7 +371,22 @@ def render_results(picks, go_cbt, go_add, notes):
     add_block = "<h3>🚭 برنامج الإدمان</h3><a class='btn alt' href='/addiction'>افتح برنامج الإدمان</a>" if go_add else ""
     note_html = f"<h3>ملاحظاتك</h3><div class='tile'>{notes}</div>" if notes else ""
     booking = "<h3>📅 احجز جلسة</h3><a class='btn gold' href='/book'>نموذج الحجز</a>"
-    return "<div class='card'><h1>📌 ترشيحات أولية</h1><ul style='line-height:1.9'>" + items + "</ul>" + cbt_block + add_block + note_html + booking + "</div>"
+    actions = """
+      <div class='row' style='margin-top:10px'>
+        <button class='btn alt' onclick='window.print()'>🖨️ طباعة</button>
+        <button class='btn' onclick='saveJSON()'>💾 تنزيل JSON</button>
+      </div>
+      <script>
+        function saveJSON(){
+          const data={items:[...document.querySelectorAll('ul li')].map(li=>li.innerText),
+                      created_at:new Date().toISOString()};
+          const a=document.createElement('a');
+          a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+          a.download='case_result.json'; a.click(); URL.revokeObjectURL(a.href);
+        }
+      </script>
+    """
+    return "<div class='card'><h1>📌 ترشيحات أولية</h1><ul style='line-height:1.9'>" + items + "</ul>" + cbt_block + add_block + note_html + booking + actions + "</div>"
 
 @app.route("/case", methods=["GET","POST"])
 def case():
@@ -367,7 +406,7 @@ ABOUT_HTML = f"""
   <p>مساحة هادئة ومنظّمة لفهم الأعراض وبناء خطة أولية محترمة للخصوصية.</p>
   <h2>ماذا نقدّم؟</h2>
   <ul>
-    <li><b>دراسة حالة موسّعة:</b> اكتئاب، قلق، وسواس، ذهان، مواد — مع ترشيحات مرتبطة بالأدوات.</li>
+    <li><b>دراسة حالة موسّعة:</b> اكتئاب، قلق، وسواس، ذهان، ثنائي القطب، مواد — مع ترشيحات مرتبطة بالأدوات.</li>
     <li><b>CBT مُيسّر:</b> خطط اختيارية وخطط جاهزة قابلة للتنزيل أو الطباعة.</li>
     <li><b>إدمان:</b> مسار واضح Detox → Rehab → Relapse.</li>
     <li><b>حجز:</b> الأخصائي النفسي/الطبيب النفسي/الأخصائي الاجتماعي.</li>
