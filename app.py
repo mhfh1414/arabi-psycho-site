@@ -1,4 +1,4 @@
-# app.py — عربي سايكو: تخطيط أنيق + دراسة حالة موسّعة (تشمل ثنائي القطب) + DSM/CBT/إدمان + حجز + نبذة + تواصل + عدّاد زوّار
+# app.py — عربي سايكو: واجهة أنيقة + دراسة حالة موسّعة (تشمل ثنائي القطب) + DSM/CBT/إدمان + حجز + نبذة + تواصل + عدّاد زوّار
 import os, importlib, urllib.parse, json
 from flask import Flask, request, redirect
 try:
@@ -8,6 +8,7 @@ except Exception:
 
 app = Flask(__name__)
 
+# -------- إعدادات عامة --------
 BRAND = os.environ.get("BRAND_NAME", "عربي سايكو")
 LOGO  = os.environ.get("LOGO_URL", "https://upload.wikimedia.org/wikipedia/commons/3/36/Emoji_u1f985.svg")
 
@@ -21,7 +22,7 @@ SOCIAL_WA = os.environ.get("SOCIAL_WORKER_WA", "https://wa.me/966530565696")
 TG_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 TG_CHAT_ID   = os.environ.get("TELEGRAM_CHAT_ID")
 
-# ---------------- عدّاد الزوّار ----------------
+# -------- عدّاد الزوّار بسيط (ملف JSON) --------
 COUNTER_FILE = "visitors.json"
 def _load_count():
     try:
@@ -39,39 +40,51 @@ def bump_visitors():
     n = _load_count() + 1
     _save_count(n);  return n
 
-# ---------------- إطار الصفحات ----------------
+# -------- إطار الصفحات (مع خط عربي وشعار ووضع طباعة) --------
 def shell(title: str, content: str, visitors: int | None = None) -> str:
     visitors_html = f"<div class='small' style='margin-top:12px'>👀 عدد الزوّار: <b>{visitors}</b></div>" if visitors is not None else ""
     return f"""<!doctype html><html lang="ar" dir="rtl"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>{title}</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{{--p:#4B0082;--g:#FFD700;--bg:#f8f6ff;--ink:#2b1a4c}}
 *{{box-sizing:border-box}} html,body{{height:100%}}
-body{{margin:0;background:var(--bg);font-family:"Tajawal","Segoe UI",system-ui,sans-serif;color:var(--ink)}}
+body{{margin:0;background:var(--bg);font-family:"Tajawal","Segoe UI",system-ui,sans-serif;color:var(--ink);font-size:16.5px}}
 .layout{{display:grid;grid-template-columns:280px 1fr;min-height:100vh}}
 .side{{background:linear-gradient(180deg,#4b0082,#3a0d72);color:#fff;padding:18px;position:sticky;top:0;height:100vh}}
 .logo{{display:flex;align-items:center;gap:10px;margin-bottom:18px}}
-.logo img{{width:42px;height:42px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.25)}}
-.brand{{font-weight:900;letter-spacing:.3px}}
+.logo img{{width:48px;height:48px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.25)}}
+.brand{{font-weight:900;letter-spacing:.3px;font-size:20px}}
 .nav a{{display:block;color:#fff;text-decoration:none;padding:10px 12px;border-radius:12px;margin:6px 0;font-weight:700;opacity:.95}}
 .nav a:hover{{opacity:1;background:rgba(255,255,255,.12)}}
 .badge{{display:inline-block;background:var(--g);color:#4b0082;border-radius:999px;padding:2px 10px;font-weight:900;font-size:.8rem}}
-.content{{padding:24px}}
-.card{{background:#fff;border:1px solid #eee;border-radius:16px;padding:18px;box-shadow:0 10px 24px rgba(0,0,0,.06)}}
+.content{{padding:26px}}
+.card{{background:#fff;border:1px solid #eee;border-radius:16px;padding:20px;box-shadow:0 10px 24px rgba(0,0,0,.06)}}
 .grid{{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}}
 .tile{{background:#fff;border:1px solid #eee;border-radius:14px;padding:14px}}
-h1,h2,h3{{margin:.2rem 0 .6rem}}
+h1{{font-weight:900;font-size:28px}} h2{{font-weight:800}} h3{{font-weight:800;margin:.2rem 0 .6rem}}
 .note{{background:#fff7d1;border:1px dashed #e5c100;border-radius:12px;padding:10px 12px;margin:10px 0}}
-.btn{{display:inline-block;background:var(--p);color:#fff;text-decoration:none;padding:10px 14px;border-radius:12px;font-weight:800}}
+.btn{{display:inline-block;background:var(--p);color:#fff;text-decoration:none;padding:11px 16px;border-radius:12px;font-weight:800}}
 .btn.alt{{background:#5b22a6}} .btn.gold{{background:var(--g);color:#4b0082}}
 .btn.wa{{background:#25D366}} .btn.tg{{background:#229ED9}}
 label.chk{{display:block;background:#fafafa;border:1px solid #eee;border-radius:10px;padding:8px}}
 input,select,textarea{{width:100%;border:1px solid #ddd;border-radius:10px;padding:10px}}
-.small{{font-size:.92rem;opacity:.85}}
+.small{{font-size:.95rem;opacity:.85}}
 .footer{{text-align:center;color:#fff;margin-top:24px;padding:14px;background:#3a0d72}}
 hr.sep{{border:none;height:1px;background:#eee;margin:14px 0}}
 .row{{display:flex;gap:10px;flex-wrap:wrap}}
+.badge2{{display:inline-block;border:1px solid #eee;background:#fafafa;padding:6px 10px;border-radius:999px;margin:4px 4px 0 0;font-weight:700}}
+.header-result{{display:flex;align-items:center;gap:12px;margin-bottom:10px}}
+.header-result img{{width:44px;height:44px;border-radius:10px}}
+.summary-cards{{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-top:8px}}
+.scard{{background:#fafafa;border:1px solid #eee;border-radius:14px;padding:12px}}
+@media print {{
+  .side, .footer {{ display:none !important; }}
+  .content {{ padding:0 !important; }}
+  body {{ background:#fff; font-size:18px; }}
+  .card {{ box-shadow:none; border:none; }}
+}}
 </style></head><body>
 <div class="layout">
   <aside class="side">
@@ -97,7 +110,7 @@ hr.sep{{border:none;height:1px;background:#eee;margin:14px 0}}
 <div class="footer"><small>© جميع الحقوق محفوظة لـ {BRAND}</small></div>
 </body></html>"""
 
-# ---------------- الرئيسية ----------------
+# -------- الرئيسية --------
 @app.get("/")
 def home():
     visitors = bump_visitors()
@@ -118,7 +131,7 @@ def home():
     """
     return shell("الرئيسية — عربي سايكو", content, visitors)
 
-# ---------------- DSM / CBT / Addiction ----------------
+# -------- ربط DSM / CBT / Addiction من الملفات الخارجية إن وُجدت --------
 @app.get("/dsm")
 def dsm():
     try:
@@ -146,7 +159,7 @@ def addiction():
         html = f"<div class='card'>تعذر تحميل صفحة الإدمان: {e}</div>"
     return shell("علاج الإدمان", html, _load_count())
 
-# ---------------- إشعار تيليجرام (اختياري) ----------------
+# -------- إشعار تيليجرام اختياري --------
 def _telegram_notify(text: str):
     if not (TG_BOT_TOKEN and TG_CHAT_ID and requests):
         return False
@@ -157,7 +170,7 @@ def _telegram_notify(text: str):
     except Exception:
         return False
 
-# ---------------- نموذج الحجز ----------------
+# -------- نموذج الحجز --------
 BOOK_FORM = """
 <div class="card">
   <h1>📅 احجز موعدك</h1>
@@ -213,10 +226,11 @@ def book():
     wa_link = wa_base + ("&" if "?" in wa_base else "?") + f"text={encoded}"
     return redirect(wa_link, code=302)
 
-# ---------------- دراسة الحالة (موسّعة) ----------------
+# -------- أدوات مساعدة لدراسة الحالة --------
 def c(data,*keys):  # count true
     return sum(1 for k in keys if data.get(k) is not None)
 
+# -------- نموذج دراسة الحالة (موسّعة) --------
 FORM_HTML = """
 <div class="card">
   <h1>📝 دراسة الحالة</h1>
@@ -293,10 +307,11 @@ FORM_HTML = """
 </div>
 """
 
+# -------- منطق الترشيحات --------
 def build_recommendations(data):
     picks, go_cbt, go_add = [], [], []
 
-    # ===== اكتئاب (منطق قريب من PHQ-9)
+    # اكتئاب (قريب من PHQ-9)
     dep_core = c(data,"low_mood","anhedonia")
     dep_more = c(data,"fatigue","sleep_issue","appetite_change","psychomotor","worthlessness","poor_concentration","suicidal")
     dep_total = dep_core + dep_more
@@ -316,7 +331,7 @@ def build_recommendations(data):
     if data.get("suicidal"):
         picks.append(("تنبيه أمان", "وجود أفكار إيذاء/انتحار — فضّل تواصلًا فوريًا مع مختص", 99))
 
-    # ===== قلق/هلع/اجتماعي
+    # قلق/هلع/اجتماعي
     if c(data,"worry","tension") >= 2:
         picks.append(("قلق معمّم", "قلق مفرط مع توتر جسدي", 75)); go_cbt += ["تنفّس 4-4-6","منع الطمأنة"]
     if data.get("panic_attacks"):
@@ -324,17 +339,17 @@ def build_recommendations(data):
     if data.get("social_fear"):
         picks.append(("قلق اجتماعي", "خشية تقييم الآخرين وتجنّب", 70)); go_cbt += ["سُلم مواقف اجتماعية"]
 
-    # ===== وسواس/صدمات
+    # وسواس/صدمات
     if data.get("obsessions") and data.get("compulsions"):
         picks.append(("وسواس قهري (OCD)", "وساوس + أفعال قهرية", 80)); go_cbt += ["ERP (التعرّض مع منع الاستجابة)"]
     if c(data,"flashbacks","hypervigilance") >= 2:
         picks.append(("آثار صدمة (PTSD/ASD)", "استرجاعات ويقظة مفرطة", 70)); go_cbt += ["تقنية التأريض 5-4-3-2-1","تنظيم التنفس"]
 
-    # ===== مواد
+    # مواد
     if c(data,"craving","withdrawal","use_harm") >= 2:
         picks.append(("تعاطي مواد", "اشتهاء/انسحاب/استمرار رغم الضرر", 80)); go_add.append("generic")
 
-    # ===== ذهانية/طيف الفصام
+    # ذهانية/طيف الفصام
     pc = c(data,"hallucinations","delusions","disorganized_speech","negative_symptoms","catatonia")
     dur_lt_1m  = bool(data.get("duration_lt_1m"))
     dur_ge_1m  = bool(data.get("duration_ge_1m"))
@@ -349,45 +364,91 @@ def build_recommendations(data):
     elif data.get("delusions") and pc == 1 and dur_ge_1m and not decline:
         picks.append(("اضطراب وهامي", "أوهام ثابتة مع أداء وظيفي مقبول", 60))
 
-    # ===== ثنائي القطب
+    # ثنائي القطب
     mania_count = c(data,"elevated_mood","decreased_sleep_need","grandiosity","racing_thoughts","pressured_speech","risky_behavior")
     mania_7d    = bool(data.get("mania_ge_7d"))
     mania_hosp  = bool(data.get("mania_hospital"))
-
     if mania_count >= 3 and (mania_7d or mania_hosp):
         picks.append(("اضطراب ثنائي القطب I (نوبة هوس)", "≥3 أعراض هوس مع مدة ≥7 أيام أو حاجة لتدخل/دخول", 85))
         go_cbt += ["تنظيم النوم الصارم","روتين يومي ثابت","تثقيف نفسي للأسرة"]
     elif mania_count >= 3 and dep_core >= 1 and not mania_hosp:
-        picks.append(("ثنائي القطب II (نوبة هوس خفيف + اكتئاب)", "مجموعة أعراض هوس خفيف مع عناصر اكتئاب", 75))
+        picks.append(("ثنائي القطب II (هوس خفيف + اكتئاب)", "مجموعة أعراض هوس خفيف مع عناصر اكتئاب", 75))
         go_cbt += ["تنظيم النوم","تخطيط نشاط متوازن","مراقبة المزاج"]
 
     go_cbt = sorted(set(go_cbt)); go_add = sorted(set(go_add))
     return picks, go_cbt, go_add
 
+# -------- صفحة نتائج منسّقة للطباعة والمشاركة --------
 def render_results(picks, go_cbt, go_add, notes):
-    items = "".join([f"<li><b>{t}</b> — {w} <small>(درجة: {s:.0f})</small></li>" for (t,w,s) in picks]) or "<li>لا توجد مؤشرات كافية.</li>"
-    cbt_block = ("<h3>🔧 أدوات CBT المقترحة</h3><ul>" + "".join(f"<li>{x}</li>" for x in go_cbt) +
-                 "</ul><a class='btn' href='/cbt'>انتقل إلى CBT</a>") if go_cbt else ""
-    add_block = "<h3>🚭 برنامج الإدمان</h3><a class='btn alt' href='/addiction'>افتح برنامج الإدمان</a>" if go_add else ""
-    note_html = f"<h3>ملاحظاتك</h3><div class='tile'>{notes}</div>" if notes else ""
-    booking = "<h3>📅 احجز جلسة</h3><a class='btn gold' href='/book'>نموذج الحجز</a>"
-    actions = """
-      <div class='row' style='margin-top:10px'>
-        <button class='btn alt' onclick='window.print()'>🖨️ طباعة</button>
-        <button class='btn' onclick='saveJSON()'>💾 تنزيل JSON</button>
-      </div>
-      <script>
-        function saveJSON(){
-          const data={items:[...document.querySelectorAll('ul li')].map(li=>li.innerText),
-                      created_at:new Date().toISOString()};
-          const a=document.createElement('a');
-          a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
-          a.download='case_result.json'; a.click(); URL.revokeObjectURL(a.href);
-        }
-      </script>
-    """
-    return "<div class='card'><h1>📌 ترشيحات أولية</h1><ul style='line-height:1.9'>" + items + "</ul>" + cbt_block + add_block + note_html + booking + actions + "</div>"
+    items_li = "".join([f"<li><b>{t}</b> — {w} <small>(درجة: {s:.0f})</small></li>" for (t,w,s) in picks]) or "<li>لا توجد مؤشرات كافية.</li>"
+    cbt_badges = "".join([f"<span class='badge2'>🔧 {x}</span>" for x in sorted(set(go_cbt))])
+    add_badge  = "<span class='badge2'>🚭 برنامج الإدمان مُقترح</span>" if go_add else ""
 
+    header = f"""
+    <div class='header-result'>
+      <img src='{LOGO}' alt='logo'/>
+      <div>
+        <div style='font-weight:900;font-size:20px'>{BRAND}</div>
+        <div class='small'>نتيجة دراسة الحالة — تلخيص أولي قابل للطباعة والمشاركة</div>
+      </div>
+    </div>
+    """
+
+    summary = f"""
+    <div class='summary-cards'>
+      <div class='scard'><b>الترشيحات</b><br/><span class='small'>{len(picks)} نتيجة</span></div>
+      <div class='scard'><b>CBT المقترح</b><br/>{(cbt_badges or "<span class='small'>لا شيء محدد</span>")}</div>
+      <div class='scard'><b>الإدمان</b><br/>{(add_badge or "<span class='small'>لا مؤشرات</span>")}</div>
+    </div>
+    """
+
+    note_html = f"<div class='tile' style='margin-top:10px'><b>ملاحظاتك:</b><br/>{notes}</div>" if notes else ""
+
+    actions = f"""
+    <div class='row' style='margin-top:12px'>
+      <button class='btn alt' onclick='window.print()'>🖨️ طباعة</button>
+      <button class='btn' onclick='saveJSON()'>💾 تنزيل JSON</button>
+      <a class='btn wa' id='share-wa' target='_blank' rel='noopener'>🟢 مشاركة واتساب</a>
+      <a class='btn tg' id='share-tg' target='_blank' rel='noopener'>✈️ مشاركة تيليجرام</a>
+      <a class='btn gold' href='/book'>📅 حجز سريع</a>
+      <a class='btn' href='/cbt'>🧠 فتح CBT</a>
+      <a class='btn alt' href='/addiction'>🚭 برنامج الإدمان</a>
+    </div>
+    <script>
+      function buildShareText(){{
+        const items=[...document.querySelectorAll('#diag-items li')].map(li=>'- '+li.innerText).join('\\n');
+        const notes={json.dumps(notes or "")!r};
+        let msg = 'نتيجة دراسة الحالة — {BRAND}\\n' + items;
+        if(notes) msg += '\\n\\nملاحظات: ' + notes;
+        return msg;
+      }}
+      function saveJSON(){{
+        const data={{items:[...document.querySelectorAll('#diag-items li')].map(li=>li.innerText),
+                     cbt:[...document.querySelectorAll('.badge2')].map(b=>b.innerText),
+                     notes:{json.dumps(notes or "")!r},
+                     created_at:new Date().toISOString()}};
+        const a=document.createElement('a');
+        a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{{type:'application/json'}}));
+        a.download='case_result.json'; a.click(); URL.revokeObjectURL(a.href);
+      }}
+      const text = encodeURIComponent(buildShareText());
+      document.getElementById('share-wa').href = '{WA_URL.split("?")[0]}' + '?text=' + text;
+      document.getElementById('share-tg').href = 'https://t.me/share/url?url=' + encodeURIComponent('') + '&text=' + text;
+    </script>
+    """
+
+    return f"""
+    <div class='card'>
+      {header}
+      {summary}
+      <h2 style='margin-top:12px'>📌 الترشيحات</h2>
+      <ul id='diag-items' style='line-height:1.9'>{items_li}</ul>
+      {note_html}
+      {actions}
+    </div>
+    """
+
+# -------- المسار: دراسة الحالة --------
 @app.route("/case", methods=["GET","POST"])
 def case():
     if request.method == "GET":
@@ -397,7 +458,7 @@ def case():
     notes = (request.form.get("notes") or "").strip()
     return shell("نتيجة الترشيح", render_results(picks, go_cbt, go_add, notes), _load_count())
 
-# ---------------- نبذة ----------------
+# -------- نبذة --------
 ABOUT_HTML = f"""
 <div class="card">
   <h1>ℹ️ نبذة عن {BRAND}</h1>
@@ -421,12 +482,11 @@ ABOUT_HTML = f"""
   </div>
 </div>
 """
-
 @app.get("/about")
 def about():
     return shell("نبذة — عربي سايكو", ABOUT_HTML, _load_count())
 
-# ---------------- تواصل ----------------
+# -------- تواصل --------
 @app.get("/contact")
 def contact():
     html = f"""
@@ -443,10 +503,11 @@ def contact():
     """
     return shell("التواصل", html, _load_count())
 
-# ---------------- صحة ----------------
+# -------- صحة الخدمة --------
 @app.get("/health")
 def health():
     return {"status":"ok"}, 200
 
+# -------- تشغيل محلي --------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT","10000")))
