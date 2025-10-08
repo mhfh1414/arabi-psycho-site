@@ -1,7 +1,8 @@
-# app.py — عربي سايكو (نسخة ملف واحد): واجهة أنيقة + دراسة حالة موسّعة + DSM/CBT/إدمان + حجز + عدّاد زوّار
-import os, urllib.parse, json
-from flask import Flask, request, redirect
+# app.py — عربي سايكو: تخطيط أنيق + دراسة حالة موسّعة (تشمل ثنائي القطب) + DSM/CBT/إدمان
+# + حجز + نبذة + تواصل + عدّاد زوّار + صفحة نتائج احترافية للطباعة/المشاركة/JSON
 
+import os, importlib, urllib.parse, json
+from flask import Flask, request, redirect
 try:
     import requests
 except Exception:
@@ -9,21 +10,23 @@ except Exception:
 
 app = Flask(__name__)
 
-# ===== إعدادات عامة
+# ---------------- إعدادات عامة ----------------
 BRAND = os.environ.get("BRAND_NAME", "عربي سايكو")
 LOGO  = os.environ.get("LOGO_URL", "https://upload.wikimedia.org/wikipedia/commons/3/36/Emoji_u1f985.svg")
 
 TG_URL = os.environ.get("TELEGRAM_URL", "https://t.me/arabipsycho")
 WA_URL = os.environ.get("WHATSAPP_URL", "https://wa.me/966530565696?text=%D8%B9%D8%B1%D8%A8%D9%8A%20%D8%B3%D8%A7%D9%8A%D9%83%D9%88")
 
+# روابط التحويل حسب نوع الموعد
 PSYCHO_WA = os.environ.get("PSYCHOLOGIST_WA", "https://wa.me/966530565696")
 PSYCH_WA  = os.environ.get("PSYCHIATRIST_WA", "https://wa.me/966530565696")
 SOCIAL_WA = os.environ.get("SOCIAL_WORKER_WA", "https://wa.me/966530565696")
 
+# للتنبيه عبر بوت تيليجرام (اختياري)
 TG_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 TG_CHAT_ID   = os.environ.get("TELEGRAM_CHAT_ID")
 
-# ===== عدّاد الزوّار (ملف محلي)
+# ---------------- عدّاد الزوّار ----------------
 COUNTER_FILE = "visitors.json"
 def _load_count():
     try:
@@ -42,7 +45,7 @@ def bump_visitors():
     _save_count(n)
     return n
 
-# ===== إطار موحّد لكل الصفحات
+# ---------------- إطار الصفحات (UI + طباعة) ----------------
 def shell(title: str, content: str, visitors: int | None = None) -> str:
     visitors_html = f"<div class='small' style='margin-top:12px'>👀 عدد الزوّار: <b>{visitors}</b></div>" if visitors is not None else ""
     return f"""<!doctype html><html lang="ar" dir="rtl"><head>
@@ -65,7 +68,7 @@ body{{margin:0;background:var(--bg);font-family:"Tajawal","Segoe UI",system-ui,s
 .grid{{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}}
 .tile{{background:#fff;border:1px solid #eee;border-radius:14px;padding:14px}}
 h1{{font-weight:900;font-size:28px}} h2{{font-weight:800;margin:.2rem 0 .6rem}} h3{{font-weight:800;margin:.2rem 0 .6rem}}
-.note{{background:#fff7d1;border:1px dashed #e5c100;border-radius:12px;padding:10px 12px;margin:10px 0}}
+.note{{background:#fff7د1;border:1px dashed #e5c100;border-radius:12px;padding:10px 12px;margin:10px 0}}
 .btn{{display:inline-block;background:var(--p);color:#fff;text-decoration:none;padding:11px 16px;border-radius:12px;font-weight:800}}
 .btn.alt{{background:#5b22a6}} .btn.gold{{background:var(--g);color:#4b0082}}
 .btn.wa{{background:#25D366}} .btn.tg{{background:#229ED9}}
@@ -91,8 +94,7 @@ hr.sep{{border:none;height:1px;background:#eee;margin:14px 0}}
   h1{{font-size:26px}} h2{{font-size:22px}} h3{{font-size:18px}}
   ul{{padding-inline-start:20px}}
 }}
-</style>
-</head><body>
+</style></head><body>
 <div class="layout">
   <aside class="side">
     <div class="logo"><img src="{LOGO}" alt="شعار"/><div>
@@ -117,7 +119,7 @@ hr.sep{{border:none;height:1px;background:#eee;margin:14px 0}}
 <div class="footer"><small>© جميع الحقوق محفوظة لـ {BRAND}</small></div>
 </body></html>"""
 
-# ===== الرئيسية
+# ---------------- الرئيسية ----------------
 @app.get("/")
 def home():
     visitors = bump_visitors()
@@ -128,27 +130,58 @@ def home():
     </div>
     <div class="grid">
       <div class="tile"><h3>📝 دراسة الحالة</h3><p class="small">قسّم الأعراض بدقة؛ تربطك بنتائج CBT والإدمان.</p><a class="btn gold" href="/case">ابدأ الآن</a></div>
-      <div class="tile"><h3>📘 مرجع DSM</h3><p class="small">قوائم تغطي المزاج والقلق والوسواس والذهان وثنائي القطب والمواد…</p><a class="btn alt" href="/dsm">فتح DSM</a></div>
-      <div class="tile"><h3>🧠 CBT</h3><p class="small">أدوات اختيارية + خطط جاهزة واضحة.</p><a class="btn" href="/cbt">افتح CBT</a></div>
+      <div class="tile"><h3>📘 مرجع DSM</h3><p class="small">قوائم تغطي المزاج والقلق والوسواس والذهان والمواد…</p><a class="btn alt" href="/dsm">فتح DSM</a></div>
+      <div class="tile"><h3>🧠 CBT</h3><p class="small">أدوات اختيارية + خطط جاهزة واضحة (تنزيل/طباعة).</p><a class="btn" href="/cbt">افتح CBT</a></div>
       <div class="tile"><h3>🚭 برنامج الإدمان</h3><p class="small">Detox → Rehab → Relapse بخيارات واضحة.</p><a class="btn" href="/addiction">افتح الإدمان</a></div>
       <div class="tile"><h3>📅 احجز موعدًا</h3><p class="small">الأخصائي النفسي / الطبيب النفسي / الأخصائي الاجتماعي.</p><a class="btn gold" href="/book">نموذج الحجز</a></div>
+      <div class="tile"><h3>ℹ️ نبذة</h3><p class="small">رسالتنا، منهجيتنا، والخصوصية.</p><a class="btn alt" href="/about">اقرأ النبذة</a></div>
       <div class="tile"><h3>تواصل سريع</h3><a class="btn tg" href="{TG_URL}" target="_blank" rel="noopener">تيليجرام عربي سايكو</a> <a class="btn wa" href="{WA_URL}" target="_blank" rel="noopener">واتساب</a></div>
     </div>
     """
     return shell("الرئيسية — عربي سايكو", content, visitors)
 
-# ===== إشعار تيليجرام (اختياري)
+# ---------------- DSM / CBT / Addiction ----------------
+@app.get("/dsm")
+def dsm():
+    try:
+        DSM = importlib.import_module("DSM")
+        html = DSM.main() if hasattr(DSM, "main") else "<div class='card'>DSM غير متوفر.</div>"
+    except Exception as e:
+        html = f"<div class='card'>تعذر تحميل DSM: {e}</div>"
+    return shell("DSM — مرجع", html, _load_count())
+
+@app.get("/cbt")
+def cbt():
+    try:
+        CBT = importlib.import_module("CBT")
+        html = CBT.main() if hasattr(CBT, "main") else "<div class='card'>CBT غير متوفر.</div>"
+    except Exception as e:
+        html = f"<div class='card'>تعذر تحميل CBT: {e}</div>"
+    return shell("CBT — خطط وتمارين", html, _load_count())
+
+@app.get("/addiction")
+def addiction():
+    try:
+        ADD = importlib.import_module("Addiction")
+        html = ADD.main() if hasattr(ADD, "main") else "<div class='card'>صفحة الإدمان غير متوفرة.</div>"
+    except Exception as e:
+        html = f"<div class='card'>تعذر تحميل صفحة الإدمان: {e}</div>"
+    return shell("علاج الإدمان", html, _load_count())
+
+# ---------------- إشعار تيليجرام (اختياري) ----------------
 def _telegram_notify(text: str):
     if not (TG_BOT_TOKEN and TG_CHAT_ID and requests):
         return False
     try:
-        requests.post(f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage",
-                      data={"chat_id": TG_CHAT_ID, "text": text})
+        requests.post(
+            f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage",
+            data={"chat_id": TG_CHAT_ID, "text": text}
+        )
         return True
     except Exception:
         return False
 
-# ===== نموذج الحجز
+# ---------------- نموذج الحجز ----------------
 BOOK_FORM = """
 <div class="card">
   <h1>📅 احجز موعدك</h1>
@@ -204,9 +237,9 @@ def book():
     wa_link = wa_base + ("&" if "?" in wa_base else "?") + f"text={encoded}"
     return redirect(wa_link, code=302)
 
-# ===== دراسة الحالة (موسّعة تشمل ثنائي القطب)
-def _c(d,*keys):  # count checked
-    return sum(1 for k in keys if d.get(k) is not None)
+# ---------------- دراسة الحالة (موسّعة تشمل ثنائي القطب) ----------------
+def c(data,*keys):  # count true
+    return sum(1 for k in keys if data.get(k) is not None)
 
 FORM_HTML = """
 <div class="card">
@@ -287,46 +320,46 @@ FORM_HTML = """
 def build_recommendations(data):
     picks, go_cbt, go_add = [], [], []
 
-    # اكتئاب
-    dep_core = _c(data,"low_mood","anhedonia")
-    dep_more = _c(data,"fatigue","sleep_issue","appetite_change","psychomotor","worthlessness","poor_concentration","suicidal")
+    # ===== اكتئاب (منطق قريب لـ PHQ-9)
+    dep_core = c(data,"low_mood","anhedonia")
+    dep_more = c(data,"fatigue","sleep_issue","appetite_change","psychomotor","worthlessness","poor_concentration","suicidal")
     dep_total = dep_core + dep_more
     dep_2w = bool(data.get("dep_2w"))
     dep_fx = bool(data.get("dep_function"))
 
     if dep_total >= 5 and dep_2w and dep_core >= 1:
         picks.append(("نوبة اكتئابية جسيمة (MDD)", "≥5 أعراض لمدة ≥ أسبوعين مع تأثير وظيفي", 90 if dep_fx else 80))
-        go_cbt += ["تنشيط سلوكي","سجل الأفكار","تنظيم النوم","حل المشكلات"]
+        go_cbt += ["تنشيط سلوكي", "سجل الأفكار", "تنظيم النوم", "حل المشكلات"]
     elif dep_total >= 3 and dep_2w:
         picks.append(("نوبة اكتئابية خفيفة/متوسطة", "مجموعة أعراض مستمرة أسبوعين", 70))
-        go_cbt += ["تنشيط سلوكي","سجل الأفكار","مراقبة المزاج"]
+        go_cbt += ["تنشيط سلوكي", "سجل الأفكار", "مراقبة المزاج"]
     elif dep_core >= 1 and dep_total >= 2:
         picks.append(("مزاج منخفض/فتور", "كتلة أعراض مزاجية جزئية", 55))
-        go_cbt += ["تنشيط سلوكي","روتين يومي لطيف"]
+        go_cbt += ["تنشيط سلوكي", "روتين يومي لطيف"]
 
     if data.get("suicidal"):
         picks.append(("تنبيه أمان", "وجود أفكار إيذاء/انتحار — فضّل تواصلًا فوريًا مع مختص", 99))
 
-    # قلق/هلع/اجتماعي
-    if _c(data,"worry","tension") >= 2:
+    # ===== قلق/هلع/اجتماعي
+    if c(data,"worry","tension") >= 2:
         picks.append(("قلق معمّم", "قلق مفرط مع توتر جسدي", 75)); go_cbt += ["تنفّس 4-4-6","منع الطمأنة"]
     if data.get("panic_attacks"):
         picks.append(("نوبات هلع", "نوبات مفاجئة مع خوف من التكرار", 70)); go_cbt += ["تعرّض داخلي","منع السلوكيات الآمنة"]
     if data.get("social_fear"):
         picks.append(("قلق اجتماعي", "خشية تقييم الآخرين وتجنّب", 70)); go_cbt += ["سُلم مواقف اجتماعية"]
 
-    # وسواس/صدمات
+    # ===== وسواس/صدمات
     if data.get("obsessions") and data.get("compulsions"):
         picks.append(("وسواس قهري (OCD)", "وساوس + أفعال قهرية", 80)); go_cbt += ["ERP (التعرّض مع منع الاستجابة)"]
-    if _c(data,"flashbacks","hypervigilance") >= 2:
+    if c(data,"flashbacks","hypervigilance") >= 2:
         picks.append(("آثار صدمة (PTSD/ASD)", "استرجاعات ويقظة مفرطة", 70)); go_cbt += ["تقنية التأريض 5-4-3-2-1","تنظيم التنفس"]
 
-    # مواد
-    if _c(data,"craving","withdrawal","use_harm") >= 2:
+    # ===== مواد
+    if c(data,"craving","withdrawal","use_harm") >= 2:
         picks.append(("تعاطي مواد", "اشتهاء/انسحاب/استمرار رغم الضرر", 80)); go_add.append("generic")
 
-    # ذهانية/فصام
-    pc = _c(data,"hallucinations","delusions","disorganized_speech","negative_symptoms","catatonia")
+    # ===== ذهانية/طيف الفصام
+    pc = c(data,"hallucinations","delusions","disorganized_speech","negative_symptoms","catatonia")
     dur_lt_1m  = bool(data.get("duration_lt_1m"))
     dur_ge_1m  = bool(data.get("duration_ge_1m"))
     dur_ge_6m  = bool(data.get("duration_ge_6m"))
@@ -340,24 +373,30 @@ def build_recommendations(data):
     elif data.get("delusions") and pc == 1 and dur_ge_1m and not decline:
         picks.append(("اضطراب وهامي", "أوهام ثابتة مع أداء وظيفي مقبول", 60))
 
-    # ثنائي القطب
-    mania_count = _c(data,"elevated_mood","decreased_sleep_need","grandiosity","racing_thoughts","pressured_speech","risky_behavior")
+    # ===== ثنائي القطب
+    mania_count = c(data,"elevated_mood","decreased_sleep_need","grandiosity","racing_thoughts","pressured_speech","risky_behavior")
     mania_7d    = bool(data.get("mania_ge_7d"))
     mania_hosp  = bool(data.get("mania_hospital"))
+
     if mania_count >= 3 and (mania_7d or mania_hosp):
         picks.append(("اضطراب ثنائي القطب I (نوبة هوس)", "≥3 أعراض هوس مع مدة ≥7 أيام أو حاجة لتدخل/دخول", 85))
         go_cbt += ["تنظيم النوم الصارم","روتين يومي ثابت","تثقيف نفسي للأسرة"]
     elif mania_count >= 3 and dep_core >= 1 and not mania_hosp:
-        picks.append(("ثنائي القطب II (هوس خفيف + اكتئاب)", "مجموعة أعراض هوس خفيف مع عناصر اكتئاب", 75))
+        picks.append(("ثنائي القطب II (نوبة هوس خفيف + اكتئاب)", "مجموعة أعراض هوس خفيف مع عناصر اكتئاب", 75))
         go_cbt += ["تنظيم النوم","تخطيط نشاط متوازن","مراقبة المزاج"]
 
-    go_cbt = sorted(set(go_cbt)); go_add = sorted(set(go_add))
+    go_cbt = sorted(set(go_cbt))
+    go_add = sorted(set(go_add))
     return picks, go_cbt, go_add
 
-# صفحة نتائج منسّقة + مشاركة/طباعة/تنزيل
+# ===== صفحة نتيجة منسّقة للطباعة والمشاركة =====
 def render_results(picks, go_cbt, go_add, notes):
-    items_li = "".join([f"<li><b>{t}</b> — {w} <span class='small'>(درجة: {s:.0f})</span></li>" for (t,w,s) in picks]) or "<li>لا توجد مؤشرات كافية.</li>"
-    cbt_badges = "".join([f"<span class='badge2'>🔧 {x}</span>" for x in sorted(set(go_cbt))])
+    items_li = "".join([
+        f"<li><b>{t}</b> — {w} <span class='small'>(درجة: {s:.0f})</span></li>"
+        for (t,w,s) in picks
+    ]) or "<li>لا توجد مؤشرات كافية.</li>"
+
+    cbt_badges = "".join([f"<span class='badge2'>🔧 {x}</span>" for x in go_cbt])
     add_badge  = "<span class='badge2'>🚭 برنامج الإدمان مُقترح</span>" if go_add else ""
 
     header = f"""
@@ -440,166 +479,20 @@ def case():
     notes = (request.form.get("notes") or "").strip()
     return shell("نتيجة الترشيح", render_results(picks, go_cbt, go_add, notes), _load_count())
 
-# ===== صفحة DSM (مبسطة داخل الملف)
-DSM_HTML = """
-<div class="card">
-  <h1>📘 مرجع DSM (مبسّط)</h1>
-  <div class="grid">
-    <div class="tile"><h3>اضطرابات المزاج</h3><ul>
-      <li>نوبة اكتئابية جسيمة (MDD)</li>
-      <li>اضطراب اكتئابي مستمر (Dysthymia)</li>
-      <li>ثنائي القطب I و II (هوس/هوس خفيف + نوبات اكتئاب)</li>
-    </ul></div>
-    <div class="tile"><h3>القلق</h3><ul>
-      <li>قلق معمّم (GAD)</li>
-      <li>نوبات هلع</li>
-      <li>قلق اجتماعي</li>
-    </ul></div>
-    <div class="tile"><h3>الوسواس والصدمة</h3><ul>
-      <li>وسواس قهري (OCD)</li>
-      <li>اضطراب ما بعد الصدمة (PTSD)</li>
-    </ul></div>
-    <div class="tile"><h3>الذهان</h3><ul>
-      <li>فصام</li>
-      <li>فصامي وجداني</li>
-      <li>اضطراب ذهاني وجيز / وهامي</li>
-    </ul></div>
-    <div class="tile"><h3>المواد</h3><ul>
-      <li>اضطرابات استخدام المواد (الكحول/المنبّهات/الأفيونات..)</li>
-    </ul></div>
-  </div>
-  <div class="note small">هذه إشارات تثقيفية عامة وليست تشخيصًا طبّيًا.</div>
-</div>
-"""
-@app.get("/dsm")
-def dsm():
-    return shell("DSM — مرجع", DSM_HTML, _load_count())
-
-# ===== صفحة CBT (أدوات + خطط جاهزة بوضوح)
-CBT_HTML = """
-<div class="card">
-  <h1>🧠 CBT — أدوات وخطط جاهزة</h1>
-  <div class="grid">
-    <div class="tile">
-      <h3>اختر أدواتك</h3>
-      <ul style="line-height:1.9">
-        <li>🔧 تنشيط سلوكي (قائمة نشاط ممتع + مفيد)</li>
-        <li>🔧 سجل الأفكار (TR: الموقف - الفكرة - الدليل - البديل)</li>
-        <li>🔧 تنظيم النوم (ثبات المواعيد + روتين قبل النوم + تقليل الشاشات)</li>
-        <li>🔧 تعرّض داخلي للهلع + منع السلوكيات الآمنة</li>
-        <li>🔧 ERP للوسواس (التعرّض مع منع الاستجابة)</li>
-        <li>🔧 سُلّم مواقف اجتماعية + تدريج التعرّض</li>
-        <li>🔧 حل المشكلات بخطوات (تعريف/أفكار/اختيار/تجربة/مراجعة)</li>
-      </ul>
-    </div>
-    <div class="tile">
-      <h3>خطط جاهزة وواضحة</h3>
-      <div class="tile" style="margin-bottom:10px">
-        <b>خطة 7 أيام للاكتئاب</b>
-        <ul>
-          <li>تنشيط سلوكي يومي (ممتع + مفيد)</li>
-          <li>سجل أفكار 3 مرات/الأسبوع</li>
-          <li>تنظيم النوم: ثبات المواعيد + قطع الشاشات ساعة قبل النوم</li>
-        </ul>
-        <div class="row">
-          <button class="btn" onclick="downloadPlan('خطة 7 أيام للاكتئاب', ['تنشيط سلوكي يومي (ممتع + مفيد)','سجل أفكار 3 مرات/الأسبوع','تنظيم النوم: ثبات المواعيد + قطع الشاشات'])">تنزيل الخطة</button>
-        </div>
-      </div>
-
-      <div class="tile" style="margin-bottom:10px">
-        <b>خطة 10 أسابيع للقلق الاجتماعي</b>
-        <ul>
-          <li>سُلّم 10 مواقف من 4/10 إلى 9/10</li>
-          <li>تعرّض تدريجي + منع الطمأنة</li>
-          <li>تمارين تنفس 4-4-6 يوميًا</li>
-        </ul>
-        <div class="row">
-          <button class="btn" onclick="downloadPlan('خطة 10 أسابيع للقلق الاجتماعي', ['سُلّم 10 مواقف','تعرّض تدريجي + منع الطمأنة','تنفّس 4-4-6 يوميًا'])">تنزيل الخطة</button>
-        </div>
-      </div>
-
-      <div class="tile">
-        <b>ERP أسبوعين للوسواس</b>
-        <ul>
-          <li>بناء هرم 10 درجات</li>
-          <li>ERP يومي 60–90 دقيقة + منع الاستجابة</li>
-          <li>مراجعة أسبوعية</li>
-        </ul>
-        <div class="row">
-          <button class="btn" onclick="downloadPlan('ERP أسبوعين للوسواس', ['بناء هرم 10 درجات','ERP يومي 60–90 دقيقة + منع الاستجابة','مراجعة أسبوعية'])">تنزيل الخطة</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <script>
-    function downloadPlan(template, tasks){
-      const data={template, tasks, created_at:new Date().toISOString()};
-      const a=document.createElement('a');
-      a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
-      a.download=template.replaceAll(' ','_')+'.json';
-      a.click(); URL.revokeObjectURL(a.href);
-    }
-  </script>
-</div>
-"""
-@app.get("/cbt")
-def cbt():
-    return shell("CBT — خطط وتمارين", CBT_HTML, _load_count())
-
-# ===== صفحة الإدمان (واضحة 100%)
-ADDICTION_HTML = """
-<div class="card">
-  <h1>🚭 برنامج الإدمان — Detox → Rehab → Relapse</h1>
-  <div class="grid">
-    <div class="tile">
-      <h3>1) إزالة السمية (Detox) — بإشراف طبي</h3>
-      <ul>
-        <li>فحص طبي + بروتوكول الانسحاب بأمان</li>
-        <li>أدوية مساندة حسب التشخيص</li>
-        <li>علامات تحذير ومتى نطلب إسعاف</li>
-      </ul>
-      <div class="row"><button class="btn" onclick="dwn('Detox', ['فحص طبي','خطة انسحاب بأمان','أدوية مساندة','علامات التحذير'])">تنزيل خطة Detox</button></div>
-    </div>
-
-    <div class="tile">
-      <h3>2) التأهيل (Rehab)</h3>
-      <ul>
-        <li>CBT للإدمان (دوافع/محفزات/بدائل)</li>
-        <li>خطة يومية: نوم/طعام/نشاط/رياضة</li>
-        <li>مجموعات دعم + إشراك الأسرة</li>
-      </ul>
-      <div class="row"><button class="btn" onclick="dwn('Rehab', ['CBT للإدمان','خطة يومية','مجموعات دعم','إشراك الأسرة'])">تنزيل خطة Rehab</button></div>
-    </div>
-
-    <div class="tile">
-      <h3>3) منع الانتكاسة (Relapse Prevention)</h3>
-      <ul>
-        <li>قائمة محفزات شخصية + خطط بديلة</li>
-        <li>اتفاق دعم يومي (شخص/مجموعة)</li>
-        <li>خطة طوارئ 24 ساعة</li>
-      </ul>
-      <div class="row"><button class="btn" onclick="dwn('Relapse_Prevention', ['محفزات + بدائل','اتفاق دعم يومي','خطة طوارئ 24 ساعة'])">تنزيل خطة Relapse</button></div>
-    </div>
-  </div>
-  <script>
-    function dwn(template, tasks){
-      const data={template, tasks, created_at:new Date().toISOString()};
-      const a=document.createElement('a');
-      a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
-      a.download=template+'.json'; a.click(); URL.revokeObjectURL(a.href);
-    }
-  </script>
-</div>
-"""
-@app.get("/addiction")
-def addiction():
-    return shell("علاج الإدمان", ADDICTION_HTML, _load_count())
-
-# ===== نبذة/تواصل
+# ---------------- نبذة ----------------
 ABOUT_HTML = f"""
 <div class="card">
   <h1>ℹ️ نبذة عن {BRAND}</h1>
   <p class="small">«نراك بعيون الاحترام، ونساندك بخطوات عملية.» — علاج نفسي افتراضي يربط بين دراسة الحالة وCBT وبرنامج الإدمان والحجز السريع.</p>
+  <h2>رسالتنا</h2>
+  <p>مساحة هادئة ومنظّمة لفهم الأعراض وبناء خطة أولية محترمة للخصوصية.</p>
+  <h2>ماذا نقدّم؟</h2>
+  <ul>
+    <li><b>دراسة حالة موسّعة:</b> اكتئاب، قلق، وسواس، ذهان، ثنائي القطب، مواد — مع ترشيحات مرتبطة بالأدوات.</li>
+    <li><b>CBT مُيسّر:</b> خطط اختيارية وخطط جاهزة قابلة للتنزيل أو الطباعة.</li>
+    <li><b>إدمان:</b> مسار واضح Detox → Rehab → Relapse.</li>
+    <li><b>حجز:</b> الأخصائي النفسي/الطبيب النفسي/الأخصائي الاجتماعي.</li>
+  </ul>
   <div class="row">
     <a class="btn gold" href="/case">📝 ابدأ دراسة الحالة</a>
     <a class="btn" href="/cbt">🧠 أدوات CBT</a>
@@ -614,6 +507,7 @@ ABOUT_HTML = f"""
 def about():
     return shell("نبذة — عربي سايكو", ABOUT_HTML, _load_count())
 
+# ---------------- تواصل ----------------
 @app.get("/contact")
 def contact():
     html = f"""
@@ -630,11 +524,11 @@ def contact():
     """
     return shell("التواصل", html, _load_count())
 
-# ===== صحّة الخدمة
+# ---------------- صحة ----------------
 @app.get("/health")
 def health():
     return {"status":"ok"}, 200
 
-# ===== تشغيل
+# ---------------- تشغيل ----------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT","10000")))
