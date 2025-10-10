@@ -1,221 +1,205 @@
-# CBT.py — CBT واضح ومقسم: بدء سريع، اختيار الأدوات، خطط جاهزة، تتبّع تقدّم وتنزيل JSON
+# cbt.py — صفحة CBT كبلوپرنت مستقل (15 خطة + جداول 7/10/14 + دمج خطتين)
+from flask import Blueprint, current_app, Markup
 
-def main():
-    return """
-    <div class='card'>
-      <h1>🧠 العلاج المعرفي السلوكي (CBT) — خطة عملية واضحة</h1>
-      <p class='small'>علاج نفسي افتراضي: اختر الأدوات المناسبة لك، أو ابدأ بخطة جاهزة، ثم تابِع تقدّمك ونزّل الخطة.</p>
+cbt_bp = Blueprint("cbt", __name__)
 
-      <style>
-        .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
-        .tab{padding:8px 12px;border-radius:10px;border:1px solid #ddd;cursor:pointer;font-weight:800}
-        .tab.active{background:#4B0082;color:#fff;border-color:#4B0082}
-        .sec{display:none;margin-top:10px}
-        .sec.active{display:block}
-        .grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-        .tool{background:#fafafa;border:1px solid #eee;border-radius:12px;padding:10px}
-        .tool h4{margin:.2rem 0 .3rem}
-        .hint{font-size:.92rem;opacity:.85}
-        .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-        table{width:100%;border-collapse:collapse}
-        th,td{border:1px solid #eee;padding:8px;text-align:center}
-        th{background:#f7f3ff}
-        .btn{display:inline-block;background:#4B0082;color:#fff;text-decoration:none;padding:10px 14px;border-radius:12px;font-weight:800}
-        .btn.alt{background:#5b22a6} .btn.gold{background:#FFD700;color:#4B0082}
-      </style>
+def _page(content_html: str) -> str:
+    shell = current_app.config["SHELL"]
+    load_count = current_app.config["LOAD_COUNT"]
+    return shell("CBT — خطط وتمارين", content_html, load_count())
 
-      <div class="tabs">
-        <div class="tab active" data-target="#t1">🚀 بدء سريع</div>
-        <div class="tab" data-target="#t2">🧰 اختر أدواتك</div>
-        <div class="tab" data-target="#t3">📦 خطط جاهزة</div>
-        <div class="tab" data-target="#t4">📊 تتبّع التقدّم</div>
-        <div class="tab" data-target="#t5">ℹ️ إرشادات</div>
-      </div>
+def _brand():
+    return current_app.config["BRAND"], current_app.config["WA_URL"]
 
-      <!-- t1 -->
-      <div id="t1" class="sec active">
-        <h2>خمس خطوات مباشرة اليوم</h2>
-        <ol>
-          <li>اختر نشاطًا ممتعًا + نشاطًا مفيدًا (20–30 دقيقة لكلٍ).</li>
-          <li>سجّل موقفًا وفكرة تلقائية واحدة في <b>سجلّ الأفكار</b> مع الدليل معها/ضدها.</li>
-          <li>تنفّس 4-4-6 خمس دقائق صباحًا ومساءً + تمرين <b>التأريض 5-4-3-2-1</b> عند القلق.</li>
-          <li>نم مبكّرًا: اغلاق الشاشات قبل النوم بساعة، وثبّت موعد الاستيقاظ.</li>
-          <li>قيّم مزاجك 0–10 صباحًا ومساءً. <u>التحسّن يُقاس بالتكرار.</u></li>
-        </ol>
-        <div class="row">
-          <a class="btn" href="#t2" onclick="openTab('#t2')">انتقل لاختيار الأدوات</a>
-          <a class="btn gold" href="#t3" onclick="openTab('#t3')">اختر خطة جاهزة</a>
-        </div>
-      </div>
+CBT_HTML = """
+<div class="card">
+  <h1>🧠 العلاج المعرفي السلوكي (CBT)</h1>
+  <p class="small">اختر خطة/خطة+خطة ثم أنشئ جدول 7/10/14 يوم، مع مربعات إنجاز وتنزيل/طباعة/مشاركة.</p>
 
-      <!-- t2 -->
-      <div id="t2" class="sec">
-        <h2>اختر أدواتك</h2>
-        <div id="tools" class="grid">
-          <label class="tool"><input type="checkbox" data-name="تنشيط سلوكي"> 
-            <h4>تنشيط سلوكي (BA)</h4><div class="hint">قائمة نشاط ممتع + نشاط مفيد يوميًا، وتقييم المزاج قبل/بعد.</div>
-          </label>
-          <label class="tool"><input type="checkbox" data-name="سجلّ الأفكار (TR)">
-            <h4>سجلّ الأفكار (Thought Record)</h4><div class="hint">الموقف → الفكرة → الدليل معها/ضدها → الفكرة المتوازنة → شدة الانفعال.</div>
-          </label>
-          <label class="tool"><input type="checkbox" data-name="ERP للوسواس">
-            <h4>ERP للوسواس القهري</h4><div class="hint">بناء هرم 10 درجات + تعرّض تدريجي 60–90 دقيقة مع منع الاستجابة.</div>
-          </label>
-          <label class="tool"><input type="checkbox" data-name="تعرّض اجتماعي">
-            <h4>تعرّض اجتماعي (قلق اجتماعي)</h4><div class="hint">سُلّم مواقف من 10 درجات؛ درجتان يوميًا مع منع الطمأنة.</div>
-          </label>
-          <label class="tool"><input type="checkbox" data-name="تنظيم النوم">
-            <h4>تنظيم النوم</h4><div class="hint">ثبات مواقيت + ضوء صباحي + تقليل منبّهات + قطع الشاشات.</div>
-          </label>
-          <label class="tool"><input type="checkbox" data-name="حلّ المشكلات">
-            <h4>حلّ المشكلات</h4><div class="hint">تعريف المشكلة → خيارات → اختيار → تنفيذ → مراجعة.</div>
-          </label>
-          <label class="tool"><input type="checkbox" data-name="تنفّس + تأريض">
-            <h4>تنفّس 4-4-6 + تأريض 5-4-3-2-1</h4><div class="hint">خفض الاستثارة والعودة للحظة الراهنة.</div>
-          </label>
-          <label class="tool"><input type="checkbox" data-name="مراقبة المزاج">
-            <h4>مراقبة المزاج</h4><div class="hint">مقياس 0–10 مرتين يوميًا مع ملاحظات قصيرة.</div>
-          </label>
-        </div>
+  <h2>خطط جاهزة (15 خطة)</h2>
+  <div class="grid">
 
-        <div class="tool" style="margin-top:10px">
-          <label>ملاحظاتك
-            <textarea id="notes" rows="4" placeholder="مثال: مشي 20 دقيقة + مكالمة صديق + سجلّ أفكار مساء الثلاثاء"></textarea>
-          </label>
-        </div>
-        <div class="row">
-          <button class="btn" onclick="saveCBT()">💾 حفظ خطتي (JSON)</button>
-          <button class="btn alt" onclick="window.print()">🖨️ طباعة</button>
-        </div>
-      </div>
+    <div class="tile"><h3>BA — تنشيط سلوكي</h3><ol>
+      <li>جدولة 3 نشاطات مُجزية/ممتعة يوميًا.</li><li>قياس مزاج قبل/بعد (0–10).</li><li>رفع الصعوبة تدريجيًا.</li></ol>
+      <div class="row"><button class="btn alt" onclick="pick('ba')">اختيار</button><button class="btn" onclick="dl('ba')">تنزيل JSON</button></div></div>
 
-      <!-- t3 -->
-      <div id="t3" class="sec">
-        <h2>خطط جاهزة وواضحة</h2>
-        <div class="grid">
-          <div class="tool">
-            <h4>📅 خطة 7 أيام للاكتئاب</h4>
-            <ul>
-              <li>يوميًا: نشاط ممتع + نشاط مفيد (20–30 د).</li>
-              <li>3× أسبوعيًا: سجلّ أفكار لموقف مزعج.</li>
-              <li>روتين نوم ثابت وقطع الشاشات قبل النوم بساعة.</li>
-            </ul>
-            <button class="btn gold" onclick="tpl('خطة 7 أيام للاكتئاب',[
-              'تنشيط سلوكي يومي (ممتع + مفيد)',
-              'سجلّ أفكار 3 مرات/الأسبوع',
-              'تنظيم النوم: ثبات المواقيت + قطع الشاشات'
-            ])">⬇️ تنزيل الخطة</button>
-          </div>
+    <div class="tile"><h3>TR — سجل أفكار (إعادة هيكلة)</h3><ol>
+      <li>موقف ← فكرة تلقائية.</li><li>دلائل مع/ضد.</li><li>بديل متوازن + تجربة سلوكية.</li></ol>
+      <div class="row"><button class="btn alt" onclick="pick('thought_record')">اختيار</button><button class="btn" onclick="dl('thought_record')">تنزيل JSON</button></div></div>
 
-          <div class="tool">
-            <h4>📅 خطة 10 أيام للقلق الاجتماعي</h4>
-            <ul>
-              <li>بناء سُلّم 10 مواقف من الأسهل للأصعب.</li>
-              <li>درجتان يوميًا مع منع الطمأنة.</li>
-              <li>تنفّس 4-4-6 صباحًا ومساءً.</li>
-            </ul>
-            <button class="btn gold" onclick="tpl('خطة 10 أيام للقلق الاجتماعي',[
-              'سُلّم 10 مواقف اجتماعية',
-              'تنفيذ درجتين يوميًا + منع الطمأنة',
-              'تنفّس 4-4-6 صباحًا ومساءً'
-            ])">⬇️ تنزيل الخطة</button>
-          </div>
+    <div class="tile"><h3>SH — نظافة النوم</h3><ol>
+      <li>أوقات ثابتة للنوم/الاستيقاظ.</li><li>إيقاف الشاشات 60د قبل النوم.</li><li>كافيين قبل 6س = لا.</li></ol>
+      <div class="row"><button class="btn alt" onclick="pick('sleep_hygiene')">اختيار</button><button class="btn" onclick="dl('sleep_hygiene')">تنزيل JSON</button></div></div>
 
-          <div class="tool">
-            <h4>📅 ERP أسبوعين للوسواس</h4>
-            <ul>
-              <li>هرم 10 درجات (منع الاستجابة).</li>
-              <li>جلسة ERP يومية 60–90 دقيقة.</li>
-              <li>مراجعة أسبوعية للتقدّم.</li>
-            </ul>
-            <button class="btn gold" onclick="tpl('ERP أسبوعين للوسواس',[
-              'بناء هرم 10 درجات',
-              'ERP يومي 60–90 دقيقة + منع الاستجابة',
-              'مراجعة أسبوعية'
-            ])">⬇️ تنزيل الخطة</button>
-          </div>
+    <div class="tile"><h3>IE — تعرّض داخلي للهلع</h3><ol>
+      <li>إحداث تسارع نبض/دوخة آمنة.</li><li>منع الطمأنة والسلوكيات الآمنة.</li><li>التكرار حتى انطفاء القلق.</li></ol>
+      <div class="row"><button class="btn alt" onclick="pick('interoceptive_exposure')">اختيار</button><button class="btn" onclick="dl('interoceptive_exposure')">تنزيل JSON</button></div></div>
 
-          <div class="tool">
-            <h4>📅 خطة 14 يوم للتوازن العام</h4>
-            <ul>
-              <li>تنشيط سلوكي خفيف يومي.</li>
-              <li>تنفّس + تأريض مرتين يوميًا.</li>
-              <li>مراقبة المزاج وتعديل الروتين.</li>
-            </ul>
-            <button class="btn gold" onclick="tpl('خطة 14 يوم للتوازن العام',[
-              'تنشيط سلوكي خفيف يومي',
-              'تنفّس + تأريض مرتين يوميًا',
-              'مراقبة المزاج وتعديل الروتين'
-            ])">⬇️ تنزيل الخطة</button>
-          </div>
-        </div>
-      </div>
+    <div class="tile"><h3>GE — تعرّض تدرّجي (رُهاب/اجتماعي)</h3><ol>
+      <li>سُلّم مواقف 0→100.</li><li>تعرّض من الأسهل للأصعب.</li><li>منع تجنّب/طمأنة.</li></ol>
+      <div class="row"><button class="btn alt" onclick="pick('graded_exposure')">اختيار</button><button class="btn" onclick="dl('graded_exposure')">تنزيل JSON</button></div></div>
 
-      <!-- t4 -->
-      <div id="t4" class="sec">
-        <h2>تتبّع التقدّم الأسبوعي</h2>
-        <table id="track">
-          <thead><tr><th>اليوم</th><th>نشاط ممتع</th><th>نشاط مفيد</th><th>سجلّ أفكار</th><th>ERP/تعرّض</th><th>مزاج صباح</th><th>مزاج مساء</th></tr></thead>
-          <tbody></tbody>
-        </table>
-        <div class="row" style="margin-top:10px">
-          <button class="btn" onclick="addRow()">➕ إضافة يوم</button>
-          <button class="btn alt" onclick="saveTracking()">💾 حفظ التقدّم (JSON)</button>
-        </div>
-      </div>
+    <div class="tile"><h3>ERP — وسواس قهري</h3><ol>
+      <li>قائمة وساوس/طقوس.</li><li>تعرّض + منع الاستجابة (3× أسبوع).</li><li>قياس القلق قبل/بعد.</li></ol>
+      <div class="row"><button class="btn alt" onclick="pick('ocd_erp')">اختيار</button><button class="btn" onclick="dl('ocd_erp')">تنزيل JSON</button></div></div>
 
-      <!-- t5 -->
-      <div id="t5" class="sec">
-        <h2>عبارات داعمة وإرشادات</h2>
-        <ul>
-          <li>«التكرار يبني عادة، والعادة تفتح باب التغيير.»</li>
-          <li>قسّم الهدف الكبير إلى خطوات صغيرة قابلة للتنفيذ.</li>
-          <li>دوّن ما نجح اليوم ولو كان بسيطًا — التقدّم يُلاحظ.</li>
-        </ul>
-        <div class="row"><a class="btn gold" href="/book">📅 احجز جلسة</a></div>
-      </div>
+    <div class="tile"><h3>PTSD — تأريض وتنظيم</h3><ol>
+      <li>5-4-3-2-1 يوميًا.</li><li>تنفّس هادئ ×10.</li><li>روتين أمان قبل النوم.</li></ol>
+      <div class="row"><button class="btn alt" onclick="pick('ptsd_grounding')">اختيار</button><button class="btn" onclick="dl('ptsd_grounding')">تنزيل JSON</button></div></div>
 
-      <script>
-        function openTab(sel){
-          document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-          document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
-          document.querySelector('.tab[data-target="'+sel+'"]').classList.add('active');
-          document.querySelector(sel).classList.add('active');
-          history.replaceState(null,'',sel);
-        }
-        document.querySelectorAll('.tab').forEach(t=>{
-          t.addEventListener('click',()=>openTab(t.getAttribute('data-target')));
-        });
-        if(location.hash && document.querySelector(location.hash)) openTab(location.hash);
+    <div class="tile"><h3>PS — حل المشكلات</h3><ol>
+      <li>تعريف المشكلة بدقة.</li><li>عصف حلول وتقييم.</li><li>خطة تنفيذ + مراجعة.</li></ol>
+      <div class="row"><button class="btn alt" onclick="pick('problem_solving')">اختيار</button><button class="btn" onclick="dl('problem_solving')">تنزيل JSON</button></div></div>
 
-        function saveCBT(){
-          const picks=[...document.querySelectorAll('#tools input[type=checkbox]:checked')].map(cb=>cb.getAttribute('data-name'));
-          const notes=document.getElementById('notes')?.value||'';
-          const payload={selected:picks,notes,created_at:new Date().toISOString()};
-          const a=document.createElement('a');
-          a.href=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));
-          a.download='cbt_plan.json'; a.click(); URL.revokeObjectURL(a.href);
-        }
-        function tpl(name,tasks){
-          const payload={template:name,tasks,created_at:new Date().toISOString()};
-          const a=document.createElement('a');
-          a.href=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));
-          a.download=name.replace(/\\s+/g,'_')+'.json'; a.click(); URL.revokeObjectURL(a.href);
-        }
-        function addRow(){
-          const tbody=document.querySelector('#track tbody');
-          const r=tbody.insertRow();
-          const days=['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'];
-          const next=tbody.rows.length-1; const day=days[next%7];
-          r.innerHTML='<td>'+day+'</td>'+('<td contenteditable></td>'.repeat(7-1));
-        }
-        function saveTracking(){
-          const rows=[...document.querySelectorAll('#track tbody tr')].map(tr=>[...tr.children].map(td=>td.innerText));
-          const payload={week:rows,created_at:new Date().toISOString()};
-          const a=document.createElement('a');
-          a.href=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));
-          a.download='cbt_tracking.json'; a.click(); URL.revokeObjectURL(a.href);
-        }
-      </script>
+    <div class="tile"><h3>WT — وقت القلق</h3><ol>
+      <li>تأجيل القلق لوقت محدد.</li><li>تدوين وسياق.</li><li>عودة للنشاط.</li></ol>
+      <div class="row"><button class="btn alt" onclick="pick('worry_time')">اختيار</button><button class="btn" onclick="dl('worry_time')">تنزيل JSON</button></div></div>
+
+    <div class="tile"><h3>MB — يقظة ذهنية</h3><ol>
+      <li>تنفّس واعٍ 5 دقائق.</li><li>فحص جسدي مختصر.</li><li>وعي غير حاكم بالأفكار.</li></ol>
+      <div class="row"><button class="btn alt" onclick="pick('mindfulness')">اختيار</button><button class="btn" onclick="dl('mindfulness')">تنزيل JSON</button></div></div>
+
+    <div class="tile"><h3>BE — تجارب سلوكية</h3><ol>
+      <li>صياغة فرضية.</li><li>تجربة صغيرة.</li><li>مراجعة الدلائل.</li></ol>
+      <div class="row"><button class="btn alt" onclick="pick('behavioral_experiments')">اختيار</button><button class="btn" onclick="dl('behavioral_experiments')">تنزيل JSON</button></div></div>
+
+    <div class="tile"><h3>SA — إيقاف سلوكيات آمنة</h3><ol>
+      <li>حصر السلوكيات.</li><li>تقليل تدريجي.</li><li>بدائل تكيفية.</li></ol>
+      <div class="row"><button class="btn alt" onclick="pick('safety_behaviors')">اختيار</button><button class="btn" onclick="dl('safety_behaviors')">تنزيل JSON</button></div></div>
+
+    <div class="tile"><h3>IPSRT — روتين ثنائي القطب</h3><ol>
+      <li>ثبات نوم/طعام/نشاط.</li><li>مراقبة مزاج يومي 0–10.</li><li>إشارات إنذار مبكر.</li></ol>
+      <div class="row"><button class="btn alt" onclick="pick('bipolar_routine')">اختيار</button><button class="btn" onclick="dl('bipolar_routine')">تنزيل JSON</button></div></div>
+
+    <div class="tile"><h3>RP — منع الانتكاس (إدمان)</h3><ol>
+      <li>قائمة مثيرات شخصية.</li><li>خطة بدائل لحظية.</li><li>شبكة تواصل فوري.</li></ol>
+      <div class="row"><button class="btn alt" onclick="pick('relapse_prevention')">اختيار</button><button class="btn" onclick="dl('relapse_prevention')">تنزيل JSON</button></div></div>
+
+    <div class="tile"><h3>SS — مهارات اجتماعية</h3><ol>
+      <li>رسائل حازمة (أنا أشعر… لأن… أطلب…).</li><li>تواصل بصري/نبرة.</li><li>تعرّض اجتماعي قصير.</li></ol>
+      <div class="row"><button class="btn alt" onclick="pick('social_skills')">اختيار</button><button class="btn" onclick="dl('social_skills')">تنزيل JSON</button></div></div>
+
+  </div>
+
+  <h2 style="margin-top:18px">📅 مولّد جدول الأيام (يدعم دمج خطتين)</h2>
+  <div class="tile">
+    <div class="row">
+      <label>الخطة A:
+        <select id="planA"></select>
+      </label>
+      <label>الخطة B (اختياري):
+        <select id="planB"><option value="">— بدون —</option></select>
+      </label>
+      <label>المدّة:
+        <select id="daysSelect">
+          <option value="7">7 أيام</option>
+          <option value="10">10 أيام</option>
+          <option value="14">14 يوم</option>
+        </select>
+      </label>
+      <button class="btn gold" onclick="buildChecklist()">إنشاء الجدول</button>
+      <button class="btn alt" onclick="window.print()">طباعة</button>
+      <button class="btn" onclick="saveChecklist()">تنزيل JSON</button>
+      <a class="btn wa" id="share-wa" target="_blank" rel="noopener">واتساب</a>
+      <a class="btn tg" id="share-tg" target="_blank" rel="noopener">تيليجرام</a>
     </div>
-    """
+    <div id="checklist" style="margin-top:12px"></div>
+  </div>
+
+  <div class="row" style="margin-top:12px">
+    <a class="btn gold" href="/case">اربط مع دراسة الحالة</a>
+    <a class="btn" href="/book">📅 احجز جلسة</a>
+  </div>
+
+  <script>
+    const PLANS = {{
+      ba: {{title:"BA — تنشيط سلوكي",steps:["3 نشاطات مجزية","قياس مزاج قبل/بعد","رفع الصعوبة تدريجيًا"]}},
+      thought_record: {{title:"TR — سجل أفكار",steps:["موقف→فكرة","دلائل مع/ضد","بديل متوازن/تجربة"]}},
+      sleep_hygiene: {{title:"SH — نظافة النوم",steps:["مواعيد ثابتة","قطع الشاشات 60د","لا كافيين 6س قبل"]}},
+      interoceptive_exposure: {{title:"IE — تعرّض داخلي",steps:["إحداث إحساس آمن","منع الطمأنة","تكرار حتى الانطفاء"]}},
+      graded_exposure: {{title:"GE — تعرّض تدرّجي",steps:["سُلّم 0→100","تعرّض تصاعدي","منع التجنّب/الطمأنة"]}},
+      ocd_erp: {{title:"ERP — وسواس قهري",steps:["قائمة وساوس/طقوس","ERP 3× أسبوع","قياس القلق قبل/بعد"]}},
+      ptsd_grounding: {{title:"PTSD — تأريض/تنظيم",steps:["5-4-3-2-1","تنفّس هادئ ×10","روتين أمان"]}},
+      problem_solving: {{title:"PS — حلّ المشكلات",steps:["تعريف دقيق","عصف وتقييم","خطة ومراجعة"]}},
+      worry_time: {{title:"WT — وقت القلق",steps:["تأجيل القلق","تدوين وسياق","عودة للنشاط"]}},
+      mindfulness: {{title:"MB — يقظة ذهنية",steps:["تنفّس 5د","فحص جسدي","وعي غير حاكم"]}},
+      behavioral_experiments: {{title:"BE — تجارب سلوكية",steps:["فرضية","تجربة صغيرة","مراجعة دلائل"]}},
+      safety_behaviors: {{title:"SA — إيقاف سلوكيات آمنة",steps:["حصر السلوكيات","تقليل تدريجي","بدائل تكيفية"]}},
+      bipolar_routine: {{title:"IPSRT — روتين ثنائي القطب",steps:["ثبات نوم/طعام/نشاط","مراقبة مزاج يومي","إشارات مبكرة"]}},
+      relapse_prevention: {{title:"RP — منع الانتكاس (إدمان)",steps:["مثيرات شخصية","بدائل فورية","شبكة تواصل"]}},
+      social_skills: {{title:"SS — مهارات اجتماعية",steps:["رسائل حازمة","تواصل بصري/نبرة","تعرّض اجتماعي"]}},
+    }};
+
+    // تعبئة القوائم
+    const WA_BASE = "{WA_URL}";
+    const BRAND = "{BRAND}";
+    const selectA=document.getElementById('planA');
+    const selectB=document.getElementById('planB');
+    for(const k in PLANS){{
+      const o1=document.createElement('option');o1.value=k;o1.textContent=PLANS[k].title;selectA.appendChild(o1);
+      const o2=document.createElement('option');o2.value=k;o2.textContent=PLANS[k].title;selectB.appendChild(o2.cloneNode(true));
+    }}
+    selectA.value='ba';
+
+    function pick(key){{ selectA.value=key; window.scrollTo({{top:document.getElementById('daysSelect').offsetTop-60,behavior:'smooth'}}); }}
+    function dl(key){{
+      const data=PLANS[key]||{{}};
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{{type:'application/json'}}));
+      a.download= key + ".json"; a.click(); URL.revokeObjectURL(a.href);
+    }}
+
+    function buildChecklist(){{
+      const a = selectA.value;
+      const b = selectB.value;
+      const days = parseInt(document.getElementById('daysSelect').value,10);
+      const A = PLANS[a]; const B = PLANS[b] || null;
+
+      const steps = [...A.steps, ...(B?B.steps:[])];
+      const titles = [A.title].concat(B?[B.title]:[]).join(" + ");
+
+      let html="<h3 style='margin:6px 0'>"+titles+" — جدول "+days+" يوم</h3>";
+      html += "<table class='table'><thead><tr><th>اليوم</th>";
+      steps.forEach((s,i)=> html += "<th>"+(i+1)+". "+s+"</th>");
+      html += "</tr></thead><tbody>";
+      for(let d=1; d<=days; d++) {{
+        html+="<tr><td><b>"+d+"</b></td>";
+        for(let i=0;i<steps.length;i++) html+="<td><input type='checkbox' /></td>";
+        html+="</tr>";
+      }}
+      html+="</tbody></table>";
+      document.getElementById('checklist').innerHTML=html;
+
+      const msg = "خطة CBT: "+titles+"\\nمدة: "+days+" يوم\\n— من "+BRAND;
+      const text = encodeURIComponent(msg);
+      document.getElementById('share-wa').href=WA_BASE.split("?")[0]+'?text='+text;
+      document.getElementById('share-tg').href='https://t.me/share/url?url='+encodeURIComponent('')+'&text='+text;
+    }}
+
+    function saveChecklist(){{
+      const rows = document.querySelectorAll('#checklist tbody tr');
+      if(!rows.length) return;
+      const head = document.querySelector('#checklist h3')?.innerText || '';
+      const [titlePart, daysPart] = head.split(' — جدول ');
+      const days = parseInt((daysPart||'7').split(' ')[0],10);
+      const headerCells = [...document.querySelectorAll('#checklist thead th')].slice(1).map(th=>th.innerText);
+      const progress = [];
+      rows.forEach((tr, idx)=>{{
+        const day=idx+1;
+        const done=[...tr.querySelectorAll('input[type=checkbox]')].map(ch=>ch.checked);
+        progress.push({{day, done}});
+      }});
+      const data = {{ title:titlePart, steps:headerCells, days, progress, created_at: new Date().toISOString() }};
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{{type:'application/json'}}));
+      a.download='cbt_checklist.json'; a.click(); URL.revokeObjectURL(a.href);
+    }}
+  </script>
+</div>
+"""
+
+@cbt_bp.get("/cbt")
+def cbt_page():
+    brand, wa = _brand()
+    html = CBT_HTML.replace("{BRAND}", brand).replace("{WA_URL}", wa)
+    return _page(Markup(html))
