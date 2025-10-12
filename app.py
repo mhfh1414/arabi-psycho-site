@@ -70,4 +70,37 @@ return HTML_BASE.format(title="دراسة الحالة", heading="نموذج د�
 
 @app.post("/case") def case_submit(): data = {k: request.form.get(k,"") for k in ["name","age","phone","symptoms","duration","meds"]} pretty = json.dumps(data, ensure_ascii=False, indent=2) content = f""" <h3>✅ تم الاستلام</h3> <pre>{pretty}</pre> <form method='GET' action='/case/download'> {''.join([f"<input type='hidden' name='{k}' value='{v}'>" for k,v in data.items()])} <button type='submit'>تنزيل JSON</button> </form> <a class='button' href='/case'>رجوع للنموذج</a> """ return HTML_BASE.format(title="نتيجة الحالة", heading="النتيجة", content=content)
 
-@app.get("/case/download") def case_download(): payload = {k: request.args.get(k,"") for k in ["name","age","phone","symptoms","duration","meds"]} blob = json
+@app.get("/case/download") def case_download(): payload = {k: request.args.get(k,"") for k in ["name","age","phone","symptoms","duration","meds"]} blob = json.dumps(payload, ensure_ascii=False, indent=2) r = make_response(blob) r.headers['Content-Type'] = 'application/json; charset=utf-8' r.headers['Content-Disposition'] = 'attachment; filename="case.json"' return r
+
+============================ خطة CBT ============================
+
+@app.get("/cbt") def cbt_form(): form = """ <form method='POST' action='/cbt'> <label>الموقف</label> <textarea name='situation' rows='3' required></textarea>
+
+<label>الفكرة التلقائية</label>
+  <textarea name='thought' rows='2' required></textarea>
+
+  <label>شدة الانفعال (0–100)</label>
+  <input name='emotion_intensity' type='number' min='0' max='100' required>
+
+  <label>الدليل مع/ضد الفكرة</label>
+  <textarea name='evidence' rows='3'></textarea>
+
+  <label>إعادة الهيكلة المعرفية (فكرة بديلة)</label>
+  <textarea name='reframe' rows='3' required></textarea>
+
+  <label>شدة الانفعال بعد التعديل (0–100)</label>
+  <input name='post_intensity' type='number' min='0' max='100' required>
+
+  <button type='submit'>حفظ الخطة</button>
+</form>
+"""
+return HTML_BASE.format(title="خطة CBT", heading="نموذج CBT", content=form)
+
+@app.post("/cbt") def cbt_submit(): data = {k: request.form.get(k,"") for k in ["situation","thought","emotion_intensity","evidence","reframe","post_intensity"]} pretty = json.dumps(data, ensure_ascii=False, indent=2) content = f""" <h3>✅ تم حفظ خطة CBT</h3> <pre>{pretty}</pre> <form method='GET' action='/cbt/download'> {''.join([f"<input type='hidden' name='{k}' value='{v}'>" for k,v in data.items()])} <button type='submit'>تنزيل JSON</button> </form> <a class='button' href='/cbt'>رجوع للنموذج</a> """ return HTML_BASE.format(title="نتيجة CBT", heading="النتيجة", content=content)
+
+@app.get("/cbt/download") def cbt_download(): payload = {k: request.args.get(k,"") for k in ["situation","thought","emotion_intensity","evidence","reframe","post_intensity"]} blob = json.dumps(payload, ensure_ascii=False, indent=2) r = make_response(blob) r.headers['Content-Type'] = 'application/json; charset=utf-8' r.headers['Content-Disposition'] = 'attachment; filename="cbt.json"' return r
+
+============================ تشغيل محلي أو عبر Render ============================
+
+if name == 'main': app.run(host='0.0.0.0', port=5000)
+ 
