@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# app.py - Arabi Psycho (v2.1)
-# إزالة أخطاء f-string في كتل HTML/JS الكبيرة + تحسينات سابقة
+# app.py - Arabi Psycho (v2.3 • Stable+Functional)
+# إصلاح عدم فعالية الصفحات عبر ضبط رؤوس الأمان (CSP) + الحفاظ على كل الميزات
 
 import os, urllib.parse, json, tempfile
 from datetime import datetime
@@ -225,7 +225,7 @@ CBT_HTML = """
       <div class="row"><button class="btn alt" onclick="pick('worry_time')">اختيار</button><button class="btn" onclick="dl('worry_time')">تنزيل JSON</button></div></div>
 
     <div class="tile"><h3>MB — يقظة ذهنية</h3><ol>
-      <li>تنفّس واعٍ 5 دقائق.</li><li>فحص جسدي مختصر.</li><li>وعي غير حاكم بالأفكار.</li></ol>
+      <li>تنفّس واعٍ 5 دقائق.</li><li>فحص جسدي مختصر.</li><li>وعي غير حاكم</li></ol>
       <div class="row"><button class="btn alt" onclick="pick('mindfulness')">اختيار</button><button class="btn" onclick="dl('mindfulness')">تنزيل JSON</button></div></div>
 
     <div class="tile"><h3>BE — تجارب سلوكية</h3><ol>
@@ -237,15 +237,15 @@ CBT_HTML = """
       <div class="row"><button class="btn alt" onclick="pick('safety_behaviors')">اختيار</button><button class="btn" onclick="dl('safety_behaviors')">تنزيل JSON</button></div></div>
 
     <div class="tile"><h3>IPSRT — روتين ثنائي القطب</h3><ol>
-      <li>ثبات نوم/طعام/نشاط.</li><li>مراقبة مزاج يومي 0–10.</li><li>إشارات إنذار مبكر.</li></ol>
+      <li>ثبات نوم/طعام/نشاط.</li><li>مراقبة مزاج يومي 0–10.</li><li>إشارات مبكرة.</li></ol>
       <div class="row"><button class="btn alt" onclick="pick('bipolar_routine')">اختيار</button><button class="btn" onclick="dl('bipolar_routine')">تنزيل JSON</button></div></div>
 
     <div class="tile"><h3>RP — منع الانتكاس (إدمان)</h3><ol>
-      <li>قائمة مثيرات شخصية.</li><li>خطة بدائل لحظية.</li><li>شبكة تواصل فوري.</li></ol>
+      <li>قائمة مثيرات شخصية.</li><li>بدائل فورية.</li><li>شبكة تواصل.</li></ol>
       <div class="row"><button class="btn alt" onclick="pick('relapse_prevention')">اختيار</button><button class="btn" onclick="dl('relapse_prevention')">تنزيل JSON</button></div></div>
 
     <div class="tile"><h3>SS — مهارات اجتماعية</h3><ol>
-      <li>رسائل حازمة (أنا أشعر… لأن… أطلب…).</li><li>تواصل بصري/نبرة.</li><li>تعرّض اجتماعي قصير.</li></ol>
+      <li>رسائل حازمة.</li><li>تواصل بصري/نبرة.</li><li>تعرّض اجتماعي.</li></ol>
       <div class="row"><button class="btn alt" onclick="pick('social_skills')">اختيار</button><button class="btn" onclick="dl('social_skills')">تنزيل JSON</button></div></div>
 
   </div>
@@ -470,7 +470,7 @@ def book():
     wa_link = wa_base + ("&" if "?" in wa_base else "?") + f"text={encoded}"
     return redirect(wa_link, code=302)
 
-# ================= دراسة الحالة (كتلة بدون f + JS محفوظ) =================
+# ================= دراسة الحالة =================
 def c(data,*keys):  # count true
     return sum(1 for k in keys if data.get(k) is not None)
 
@@ -749,10 +749,19 @@ def health():
 def not_found(_):
     return shell("غير موجود", "<div class='card'><h1>الصفحة غير موجودة</h1><p class='small'>تفضل بالعودة للرئيسية.</p><a class='btn' href='/'>العودة</a></div>", _load_count()), 404
 
-# ================= رؤوس أمان =================
+# ================= رؤوس أمان (CSP مُفعِّلة للـJS/تنزيلات) =================
 @app.after_request
 def add_headers(resp):
-    csp = "default-src 'self' 'unsafe-inline' data: blob: https://t.me https://wa.me https://api.whatsapp.com; img-src 'self' data: blob: *; connect-src 'self';"
+    csp = "; ".join([
+        "default-src 'self' data: blob: https://t.me https://wa.me https://api.whatsapp.com",
+        "script-src 'self' 'unsafe-inline' blob:",
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self' data: blob: *",
+        "connect-src 'self'",
+        "form-action 'self' https://wa.me https://api.whatsapp.com",
+        "frame-ancestors 'self'",
+        "base-uri 'self'"
+    ])
     resp.headers['Content-Security-Policy'] = csp
     resp.headers['X-Content-Type-Options'] = 'nosniff'
     resp.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
