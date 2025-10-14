@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # app.py - Arabi Psycho (v2.1)
-# نسخة محسّنة: حفظ تلقائي، مشاركة محسّنة، API خفيفة، رؤوس أمان، وعدّاد زوّار بكتابة ذرّية
+# إزالة أخطاء f-string في كتل HTML/JS الكبيرة + تحسينات سابقة
 
 import os, urllib.parse, json, tempfile
 from datetime import datetime
@@ -27,13 +27,11 @@ def _atomic_write(path: str, data: dict):
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False)
-            f.flush()
-            os.fsync(f.fileno())
+            f.flush(); os.fsync(f.fileno())
         os.replace(tmp, path)
     finally:
         try:
-            if os.path.exists(tmp):
-                os.remove(tmp)
+            if os.path.exists(tmp): os.remove(tmp)
         except Exception:
             pass
 
@@ -181,8 +179,8 @@ DSM_HTML = """
 def dsm():
     return shell("DSM — مرجع", DSM_HTML, _load_count())
 
-# ================= CBT (خطط + جدول + حفظ تلقائي + مشاركة) =================
-CBT_HTML = f"""
+# ================= CBT (كتلة نصية بدون f + حقن يدوي) =================
+CBT_HTML = """
 <div class="card">
   <h1>🧠 العلاج المعرفي السلوكي (CBT)</h1>
   <p class="small">اختر خطة/خطة+خطة ثم أنشئ جدول أيام 7/10/14 تلقائيًا مع مربعات إنجاز وتنزيل/طباعة/مشاركة. <b>الاختيارات تُحفظ تلقائيًا في جهازك</b>.</p>
@@ -283,28 +281,27 @@ CBT_HTML = f"""
   </div>
 
   <script>
-    const PLANS = {{
-      ba: {{title:"BA — تنشيط سلوكي",steps:["3 نشاطات مجزية","قياس مزاج قبل/بعد","رفع الصعوبة تدريجيًا"]}},
-      thought_record: {{title:"TR — سجل أفكار",steps:["موقف→فكرة","دلائل مع/ضد","بديل متوازن/تجربة"]}},
-      sleep_hygiene: {{title:"SH — نظافة النوم",steps:["مواعيد ثابتة","قطع الشاشات 60د","لا كافيين 6س قبل"]}},
-      interoceptive_exposure: {{title:"IE — تعرّض داخلي",steps:["إحداث إحساس آمن","منع الطمأنة","تكرار حتى الانطفاء"]}},
-      graded_exposure: {{title:"GE — تعرّض تدرّجي",steps:["سُلّم 0→100","تعرّض تصاعدي","منع التجنّب/الطمأنة"]}},
-      ocd_erp: {{title:"ERP — وسواس قهري",steps:["قائمة وساوس/طقوس","ERP 3× أسبوع","قياس القلق قبل/بعد"]}},
-      ptsd_grounding: {{title:"PTSD — تأريض/تنظيم",steps:["5-4-3-2-1","تنفّس هادئ ×10","روتين أمان"]}},
-      problem_solving: {{title:"PS — حلّ المشكلات",steps:["تعريف دقيق","عصف وتقييم","خطة ومراجعة"]}},
-      worry_time: {{title:"WT — وقت القلق",steps:["تأجيل القلق","تدوين وسياق","عودة للنشاط"]}},
-      mindfulness: {{title:"MB — يقظة ذهنية",steps:["تنفّس 5د","فحص جسدي","وعي غير حاكم"]}},
-      behavioral_experiments: {{title:"BE — تجارب سلوكية",steps:["فرضية","تجربة صغيرة","مراجعة دلائل"]}},
-      safety_behaviors: {{title:"SA — إيقاف سلوكيات آمنة",steps:["حصر السلوكيات","تقليل تدريجي","بدائل تكيفية"]}},
-      bipolar_routine: {{title:"IPSRT — روتين ثنائي القطب",steps:["ثبات نوم/طعام/نشاط","مراقبة مزاج يومي","إشارات مبكرة"]}},
-      relapse_prevention: {{title:"RP — منع الانتكاس (إدمان)",steps:["مثيرات شخصية","بدائل فورية","شبكة تواصل"]}},
-      social_skills: {{title:"SS — مهارات اجتماعية",steps:["رسائل حازمة","تواصل بصري/نبرة","تعرّض اجتماعي"]}},
-    }};
+    const PLANS = {
+      ba: {title:"BA — تنشيط سلوكي",steps:["3 نشاطات مجزية","قياس مزاج قبل/بعد","رفع الصعوبة تدريجيًا"]},
+      thought_record: {title:"TR — سجل أفكار",steps:["موقف→فكرة","دلائل مع/ضد","بديل متوازن/تجربة"]},
+      sleep_hygiene: {title:"SH — نظافة النوم",steps:["مواعيد ثابتة","قطع الشاشات 60د","لا كافيين 6س قبل"]},
+      interoceptive_exposure: {title:"IE — تعرّض داخلي",steps:["إحداث إحساس آمن","منع الطمأنة","تكرار حتى الانطفاء"]},
+      graded_exposure: {title:"GE — تعرّض تدرّجي",steps:["سُلّم 0→100","تعرّض تصاعدي","منع التجنّب/الطمأنة"]},
+      ocd_erp: {title:"ERP — وسواس قهري",steps:["قائمة وساوس/طقوس","ERP 3× أسبوع","قياس القلق قبل/بعد"]},
+      ptsd_grounding: {title:"PTSD — تأريض/تنظيم",steps:["5-4-3-2-1","تنفّس هادئ ×10","روتين أمان"]},
+      problem_solving: {title:"PS — حلّ المشكلات",steps:["تعريف دقيق","عصف وتقييم","خطة ومراجعة"]},
+      worry_time: {title:"WT — وقت القلق",steps:["تأجيل القلق","تدوين وسياق","عودة للنشاط"]},
+      mindfulness: {title:"MB — يقظة ذهنية",steps:["تنفّس 5د","فحص جسدي","وعي غير حاكم"]},
+      behavioral_experiments: {title:"BE — تجارب سلوكية",steps:["فرضية","تجربة صغيرة","مراجعة دلائل"]},
+      safety_behaviors: {title:"SA — إيقاف سلوكيات آمنة",steps:["حصر السلوكيات","تقليل تدريجي","بدائل تكيفية"]},
+      bipolar_routine: {title:"IPSRT — روتين ثنائي القطب",steps:["ثبات نوم/طعام/نشاط","مراقبة مزاج يومي","إشارات مبكرة"]},
+      relapse_prevention: {title:"RP — منع الانتكاس (إدمان)",steps:["مثيرات شخصية","بدائل فورية","شبكة تواصل"]},
+      social_skills: {title:"SS — مهارات اجتماعية",steps:["رسائل حازمة","تواصل بصري/نبرة","تعرّض اجتماعي"]},
+    };
 
     const selectA=document.getElementById('planA');
     const selectB=document.getElementById('planB');
 
-    // ملء القوائم + استرجاع آخر اختيار
     (function fill(){
       for(const k in PLANS){
         const o=document.createElement('option'); o.value=k; o.textContent=PLANS[k].title; selectA.appendChild(o);
@@ -317,16 +314,16 @@ CBT_HTML = f"""
     })();
 
     function persist(){
-      const state={{planA:selectA.value, planB:selectB.value||'', days:parseInt(document.getElementById('daysSelect').value,10)||7}};
+      const state={planA:selectA.value, planB:selectB.value||'', days:parseInt(document.getElementById('daysSelect').value,10)||7};
       localStorage.setItem('cbt_state', JSON.stringify(state));
     }
 
-    function pick(key){ selectA.value=key; persist(); window.scrollTo({{top:document.getElementById('daysSelect').offsetTop-60,behavior:'smooth'}}); }
+    function pick(key){ selectA.value=key; persist(); window.scrollTo({top:document.getElementById('daysSelect').offsetTop-60,behavior:'smooth'}); }
 
     function dl(key){
       const data=PLANS[key]||{};
       const a=document.createElement('a');
-      a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{{type:'application/json'}}));
+      a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
       a.download= key + ".json"; a.click(); URL.revokeObjectURL(a.href);
     }
 
@@ -341,11 +338,11 @@ CBT_HTML = f"""
       html += "<table class='table'><thead><tr><th>اليوم</th>";
       steps.forEach((s,i)=> html += "<th>"+(i+1)+". "+s+"</th>");
       html += "</tr></thead><tbody>";
-      for(let d=1; d<=days; d++) {{
+      for(let d=1; d<=days; d++) {
         html+="<tr><td><b>"+d+"</b></td>";
         for(let i=0;i<steps.length;i++) html+="<td><input type='checkbox' /></td>";
         html+="</tr>";
-      }}
+      }
       html+="</tbody></table>";
       document.getElementById('checklist').innerHTML=html;
       updateShareLinks(titles, days);
@@ -362,30 +359,36 @@ CBT_HTML = f"""
       rows.forEach((tr, idx)=>{
         const day=idx+1;
         const done=[...tr.querySelectorAll('input[type=checkbox]')].map(ch=>ch.checked);
-        progress.push({{day, done}});
+        progress.push({day, done});
       });
-      const data = {{ title:titlePart, steps:headerCells, days, progress, created_at: new Date().toISOString(), build: window.__BUILD__ }};
+      const data = { title:titlePart, steps:headerCells, days, progress, created_at: new Date().toISOString(), build: window.__BUILD__ };
       const a=document.createElement('a');
-      a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{{type:'application/json'}}));
+      a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
       a.download='cbt_checklist.json'; a.click(); URL.revokeObjectURL(a.href);
     }
 
     function updateShareLinks(title, days){
       const url = location.origin + '/cbt';
-      const msg = "خطة CBT: "+title+"\\nمدة: "+days+" يوم\\n— من {BRAND}\\n"+url;
+      const msg = "خطة CBT: "+title+"\\nمدة: "+days+" يوم\\n— من [[BRAND]]\\n"+url;
       const text = encodeURIComponent(msg);
-      document.getElementById('share-wa').href='{WA_URL.split("?")[0]}'+'?text='+text;
+      document.getElementById('share-wa').href='[[WA_BASE]]'+'?text='+text;
       document.getElementById('share-tg').href='https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+text;
     }
   </script>
 </div>
 """
+
 @app.get("/cbt")
 def cbt():
-    return shell("CBT — خطط وتمارين", CBT_HTML, _load_count())
+    html = (
+        CBT_HTML
+        .replace('[[BRAND]]', BRAND)
+        .replace('[[WA_BASE]]', WA_URL.split("?")[0])
+    )
+    return shell("CBT — خطط وتمارين", html, _load_count())
 
 # ================= برنامج الإدمان =================
-ADDICTION_HTML = f"""
+ADDICTION_HTML = """
 <div class="card">
   <h1>🚭 برنامج الإدمان — مسار واضح</h1>
   <p class="small">تقييم → سحب آمن → تأهيل → رعاية لاحقة → خطة منع الانتكاس.</p>
@@ -407,7 +410,7 @@ def addiction():
     return shell("علاج الإدمان", ADDICTION_HTML, _load_count())
 
 # ================= نموذج الحجز =================
-BOOK_FORM = f"""
+BOOK_FORM = """
 <div class="card">
   <h1>📅 احجز موعدك</h1>
   <div class="note">«موعدٌ واحد قد يغيّر مسار أسبوعك.»</div>
@@ -434,7 +437,7 @@ BOOK_FORM = f"""
           <option value="تيليجرام">تيليجرام</option>
         </select></label>
       </div>
-      <div class="tile"><label>رقم التواصل<input name="phone" required placeholder="9665xxxxxxxx" pattern="\\d{{9,15}}"></label></div>
+      <div class="tile"><label>رقم التواصل<input name="phone" required placeholder="9665xxxxxxxx" pattern="\\d{9,15}"></label></div>
       <div class="tile"><label>أفضل وقت للتواصل<input name="best_time" placeholder="مساءً 7-9"></label></div>
     </div>
     <div class="tile" style="margin-top:10px"><label>نبذة موجزة<textarea name="summary" rows="5" placeholder="اكتب بإيجاز ما يهمك متابعته في الجلسة"></textarea></label></div>
@@ -443,7 +446,7 @@ BOOK_FORM = f"""
   <script>
     function validateBook(){
       const phone=document.querySelector('[name="phone"]');
-      if(!/^\\d{{9,15}}$/.test(phone.value||'')){ alert('الرجاء إدخال رقم صحيح (9–15 رقم).'); return false; }
+      if(!/^\\d{9,15}$/.test(phone.value||'')){ alert('الرجاء إدخال رقم صحيح (9–15 رقم).'); return false; }
       return true;
     }
   </script>
@@ -467,7 +470,7 @@ def book():
     wa_link = wa_base + ("&" if "?" in wa_base else "?") + f"text={encoded}"
     return redirect(wa_link, code=302)
 
-# ================= دراسة الحالة =================
+# ================= دراسة الحالة (كتلة بدون f + JS محفوظ) =================
 def c(data,*keys):  # count true
     return sum(1 for k in keys if data.get(k) is not None)
 
@@ -548,18 +551,19 @@ FORM_HTML = """
     function persistCase(){
       const form=document.querySelector('form[action="/case"]');
       const data={};
-      form.querySelectorAll('input[type=checkbox]').forEach(ch=>{{ if(ch.checked) data[ch.name]=true; }});
+      form.querySelectorAll('input[type=checkbox]').forEach(ch=>{ if(ch.checked) data[ch.name]=true; });
       data.notes=form.querySelector('[name=notes]')?.value||'';
       localStorage.setItem(KEY, JSON.stringify(data));
     }
     (function restore(){
-      try{{ const data=JSON.parse(localStorage.getItem(KEY)||'{}');
-        Object.keys(data).forEach(k=>{{
+      try{
+        const data=JSON.parse(localStorage.getItem(KEY)||'{}');
+        Object.keys(data).forEach(k=>{
           const el=document.querySelector('[name="'+k+'"]');
           if(el && el.type==='checkbox') el.checked=true;
-        }});
-        if(data.notes){{ const n=document.querySelector('[name=notes]'); if(n) n.value=data.notes; }}
-      }}catch(e){{}}
+        });
+        if(data.notes){ const n=document.querySelector('[name=notes]'); if(n) n.value=data.notes; }
+      }catch(e){}
     })();
   </script>
 </div>
