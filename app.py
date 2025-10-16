@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# app.py — Arabi Psycho (v2.5.1 One-File, Py3.8+)
+# app.py — Arabi Psycho (v2.6 One-File, Safe for Render)
 
 import os, json, tempfile, urllib.parse
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Tuple
 from flask import Flask, request, redirect, jsonify
 
 app = Flask(__name__)
@@ -59,7 +59,6 @@ def shell(title: str, content: str, visitors: Optional[int] = None) -> str:
     visitors_html = f"<div class='small' style='margin-top:12px'>👀 عدد الزوّار: <b>{visitors}</b></div>" if visitors is not None else ""
     return f"""<!doctype html><html lang="ar" dir="rtl"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<meta name="theme-color" content="#4B0082"/>
 <title>{title}</title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/><meta http-equiv="Expires" content="0"/>
@@ -82,7 +81,7 @@ body{{margin:0;background:var(--bg);font-family:"Tajawal","Segoe UI",system-ui,s
 .tile{{background:#fff;border:1px solid #eee;border-radius:14px;padding:14px}}
 h1{{font-weight:900;font-size:28px}} h2{{font-weight:800;margin:.2rem 0 .6rem}} h3{{font-weight:800;margin:.2rem 0 .6rem}}
 .note{{background:#fff7d1;border:1px dashed #e5c100;border-radius:12px;padding:10px 12px;margin:10px 0}}
-.btn{{display:inline-block;background:var(--p);color:#fff;text-decoration:none;padding:11px 16px;border-radius:12px;font-weight:800;cursor:pointer}}
+.btn{{display:inline-block;background:var(--p);color:#fff;text-decoration:none;padding:11px 16px;border-radius:12px;font-weight:800}}
 .btn.alt{{background:#5b22a6}} .btn.gold{{background:var(--g);color:#4b0082}}
 .btn.wa{{background:#25D366}} .btn.tg{{background:#229ED9}}
 label.chk{{display:block;background:#fafafa;border:1px solid #eee;border-radius:10px;padding:8px}}
@@ -345,7 +344,12 @@ CBT_HTML = """
       }}
       html+="</tbody></table>";
       document.getElementById('checklist').innerHTML=html;
-      updateShareLinks(titles, days);
+
+      const url = location.origin + '/cbt';
+      const msg = "خطة CBT: "+titles+"\\nمدة: "+days+" يوم\\n— من {BRAND}\\n"+url;
+      const text = encodeURIComponent(msg);
+      document.getElementById('share-wa').href='{WA_URL.split("?")[0]}'+'?text='+text;
+      document.getElementById('share-tg').href='https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+text;
     }}
 
     function saveChecklist(){{
@@ -361,18 +365,10 @@ CBT_HTML = """
         const done=[...tr.querySelectorAll('input[type=checkbox]')].map(ch=>ch.checked);
         progress.push({{day, done}});
       }});
-      const data = {{ title:titlePart, steps:headerCells, days, progress, created_at: new Date().toISOString(), build: window.__BUILD__ }};
+      const data = {{ title:head.replace(' — جدول '+days+' يوم',''), steps:headerCells, days, progress, created_at: new Date().toISOString(), build: window.__BUILD__ }};
       const a=document.createElement('a');
       a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{{type:'application/json'}}));
       a.download='cbt_checklist.json'; a.click(); URL.revokeObjectURL(a.href);
-    }}
-
-    function updateShareLinks(title, days){{
-      const url = location.origin + '/cbt';
-      const msg = "خطة CBT: "+title+"\\nمدة: "+days+" يوم\\n— من {BRAND}\\n"+url;
-      const text = encodeURIComponent(msg);
-      document.getElementById('share-wa').href='{WA_URL.split("?")[0]}'+'?text='+text;
-      document.getElementById('share-tg').href='https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+text;
     }}
   </script>
 </div>
@@ -380,6 +376,7 @@ CBT_HTML = """
 
 @app.get("/cbt")
 def cbt():
+    # لا حاجة لاستبدال لأننا ضمّنا BRAND/WA داخل السكربت بشكل آمن
     return shell("CBT — خطط وتمارين", CBT_HTML, _load_count())
 
 # ========= برنامج الإدمان =========
@@ -452,7 +449,7 @@ def book():
     if request.method == "GET":
         return shell("احجز موعد", BOOK_FORM, _load_count())
     f = request.form
-    name, typ = (f.get("name","").strip(), f.get("type","").strip())
+    name, age, typ = (f.get("name","").strip(), f.get("age","").strip(), f.get("type","").strip())
     channel, phone, best_time, summary = (f.get("channel","").strip(), f.get("phone","").strip(),
                                           f.get("best_time","").strip(), f.get("summary","").strip())
     msg = ( "طلب حجز جديد — عربي سايكو\n"
@@ -462,7 +459,7 @@ def book():
     if "الطبيب" in typ: wa_base = PSYCH_WA
     elif "الاجتماعي" in typ: wa_base = SOCIAL_WA
     else: wa_base = PSYCHO_WA
-    wa_link = wa_base.split("?")[0] + ("&" if "?" in wa_base else "?") + f"text={encoded}"
+    wa_link = wa_base + ("&" if "?" in wa_base else "?") + f"text={encoded}"
     return redirect(wa_link, code=302)
 
 # ========= دراسة الحالة =========
@@ -564,7 +561,7 @@ FORM_HTML = """
 </div>
 """
 
-def build_recommendations(data):
+def build_recommendations(data) -> Tuple[List[Tuple[str,str,int]], List[str], List[str]]:
     picks, go_cbt, go_add = [], [], []
 
     dep_core = c(data,"low_mood","anhedonia")
@@ -618,10 +615,24 @@ def build_recommendations(data):
     go_cbt = sorted(set(go_cbt))
     return picks, go_cbt, go_add
 
-def render_results(picks, go_cbt, go_add, notes):
+def render_results(picks, go_cbt, go_add, notes, base_url: str):
+    # قائمة العناصر كنص
+    lines = [f"- {t} — {w} (درجة: {s:.0f})" for (t,w,s) in picks] or ["- لا توجد مؤشرات كافية."]
     items_li = "".join([f"<li><b>{t}</b> — {w} <span class='small'>(درجة: {s:.0f})</span></li>" for (t,w,s) in picks]) or "<li>لا توجد مؤشرات كافية.</li>"
-    cbt_badges = "".join([f"<span class='badge2'>🔧 {x}</span>" for x in go_cbt])
-    add_badge  = "<span class='badge2'>🚭 برنامج الإدمان مُقترح</span>" if go_add else ""
+    cbt_badges = "".join([f"<span class='badge2'>🔧 {x}</span>" for x in go_cbt]) or "<span class='small'>—</span>"
+    add_badge  = "<span class='badge2'>🚭 برنامج الإدمان مُقترح</span>" if go_add else "<span class='small'>—</span>"
+
+    # نص المشاركة جاهز من الخادم (بدون سكربت)
+    share_text = "نتيجة دراسة الحالة — {brand}\n\n{items}".format(
+        brand=BRAND, items="\n".join(lines)
+    )
+    if notes.strip():
+        share_text += "\n\nملاحظات: " + notes.strip()
+    share_text += "\n" + base_url.rstrip("/") + "/case"
+
+    wa_share = WA_URL.split("?")[0] + "?text=" + urllib.parse.quote_plus(share_text)
+    tg_share = "https://t.me/share/url?url=" + urllib.parse.quote_plus(base_url.rstrip("/") + "/case") + "&text=" + urllib.parse.quote_plus(share_text)
+
     header = f"""
     <div class='header-result'>
       <img src='{LOGO}' alt='logo' onerror="this.style.display='none'">
@@ -631,57 +642,28 @@ def render_results(picks, go_cbt, go_add, notes):
     summary = f"""
     <div class='summary-cards'>
       <div class='scard'><b>الترشيحات</b><br/><span class='small'>{len(picks)} نتيجة</span></div>
-      <div class='scard'><b>CBT المقترح</b><br/>{(cbt_badges or "<span class='small'>—</span>")}</div>
-      <div class='scard'><b>الإدمان</b><br/>{(add_badge or "<span class='small'>—</span>")}</div>
+      <div class='scard'><b>CBT المقترح</b><br/>{cbt_badges}</div>
+      <div class='scard'><b>الإدمان</b><br/>{add_badge}</div>
     </div>"""
-    note_html = f"<div class='tile' style='margin-top:10px'><b>ملاحظاتك:</b><br/>{notes}</div>" if notes else ""
+    note_html = f"<div class='tile' style='margin-top:10px'><b>ملاحظاتك:</b><br/>{notes}</div>" if notes.strip() else ""
     actions = f"""
     <div class='row screen-only' style='margin-top:12px'>
       <button class='btn alt' onclick='window.print()'>🖨️ طباعة</button>
-      <button class='btn' onclick='saveJSON()'>💾 تنزيل JSON</button>
-      <button class='btn' onclick='copyAll()'>📋 نسخ النتائج</button>
-      <a class='btn wa' id='share-wa' target='_blank' rel='noopener'>🟢 مشاركة واتساب</a>
-      <a class='btn tg' id='share-tg' target='_blank' rel='noopener'>✈️ مشاركة تيليجرام</a>
+      <a class='btn wa' href='{wa_share}' target='_blank' rel='noopener'>🟢 مشاركة واتساب</a>
+      <a class='btn tg' href='{tg_share}' target='_blank' rel='noopener'>✈️ مشاركة تيليجرام</a>
       <a class='btn gold' href='/book'>📅 حجز سريع</a>
       <a class='btn' href='/cbt'>🧠 فتح CBT</a>
-      <a class='btn' href='/'>⬅️ رجوع للرئيسية</a>
     </div>
-    <div class='print-only small' style='margin-top:8px'>تم إنشاء هذا الملخّص بواسطة <b>{BRAND}</b> — {TG_URL}</div>
-    <script>
-      function buildShareText(){
-        const items=[...document.querySelectorAll('#diag-items li')].map(li=>'- '+li.innerText).join('\\n');
-        const notes={json.dumps(notes or "")!r};
-        let msg='نتيجة دراسة الحالة — {BRAND}\\n\\n'+items;
-        if(notes) msg+='\\n\\nملاحظات: '+notes;
-        msg += '\\n' + location.origin + '/case';
-        return msg;
-      }
-      function saveJSON(){
-        const data={{items:[...document.querySelectorAll('#diag-items li')].map(li=>li.innerText),
-                     cbt:[...document.querySelectorAll('.badge2')].map(b=>b.innerText),
-                     notes:{json.dumps(notes or "")!r},
-                     created_at:new Date().toISOString(), build: window.__BUILD__}};
-        const a=document.createElement('a');
-        a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{{type:'application/json'}}));
-        a.download='case_result.json'; a.click(); URL.revokeObjectURL(a.href);
-      }
-      function copyAll(){{
-        const txt = buildShareText();
-        navigator.clipboard?.writeText(txt).then(()=>alert('تم نسخ النتائج')).catch(()=>{{prompt('انسخ يدويًا:', txt)}});
-      }}
-      const text=encodeURIComponent(buildShareText());
-      document.getElementById('share-wa').href='{WA_URL.split("?")[0]}'+'?text='+text;
-      document.getElementById('share-tg').href='https://t.me/share/url?url='+encodeURIComponent(location.origin+'/case')+'&text='+text;
-    </script>"""
+    <div class='print-only small' style='margin-top:8px'>تم إنشاء هذا الملخّص بواسطة <b>{BRAND}</b> — {TG_URL}</div>"""
     return f"""
     <div class='card'>
       {header}{summary}
       <h2 style='margin-top:12px'>📌 الترشيحات</h2>
       <ol id='diag-items' style='line-height:1.95; padding-inline-start: 20px'>{items_li}</ol>
       <h3>🔧 أدوات CBT المقترحة</h3>
-      <div>{cbt_badges or "<span class='small'>لا توجد أدوات محددة</span>"}</div>
+      <div>{cbt_badges}</div>
       <h3 style='margin-top:10px'>🚭 الإدمان</h3>
-      <div>{add_badge or "<span class='small'>لا مؤشرات</span>"}</div>
+      <div>{add_badge}</div>
       {note_html}{actions}
     </div>"""
 
@@ -692,7 +674,9 @@ def case():
     data  = {k: v for k, v in request.form.items()}
     picks, go_cbt, go_add = build_recommendations(data)
     notes = (request.form.get("notes") or "").strip()
-    return shell("نتيجة الترشيح", render_results(picks, go_cbt, go_add, notes), _load_count())
+    base_url = request.host_url
+    html = render_results(picks, go_cbt, go_add, notes, base_url)
+    return shell("نتيجة الترشيح", html, _load_count())
 
 # ========= تواصل =========
 @app.get("/contact")
@@ -747,8 +731,7 @@ def not_found(_):
 # ========= رؤوس أمان =========
 @app.after_request
 def add_headers(resp):
-    # موازنة بين الأمان وعمل الأزرار/السكربتات
-    csp = "default-src 'self' 'unsafe-inline' data: blob: https://t.me https://telegram.me https://wa.me https://api.whatsapp.com; img-src 'self' data: blob: *; connect-src 'self';"
+    csp = "default-src 'self' 'unsafe-inline' data: blob: https://t.me https://wa.me https://api.whatsapp.com; img-src 'self' data: blob: *; connect-src 'self';"
     resp.headers['Content-Security-Policy'] = csp
     resp.headers['X-Content-Type-Options'] = 'nosniff'
     resp.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
