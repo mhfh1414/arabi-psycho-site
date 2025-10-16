@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# app.py — Arabi Psycho (v2.6 One-File, Stable)
+# app.py — Arabi Psycho (v2.7 One-File, Stable)
 
 import os, json, tempfile, urllib.parse
 from datetime import datetime
@@ -57,7 +57,6 @@ CACHE_BUST = os.environ.get("CACHE_BUST", datetime.utcnow().strftime("%Y%m%d%H%M
 
 def shell(title: str, content: str, visitors: Optional[int] = None) -> str:
     visitors_html = f"<div class='small' style='margin-top:12px'>👀 عدد الزوّار: <b>{visitors}</b></div>" if visitors is not None else ""
-    # ملاحظة: لا f-strings داخل سكربتات كبيرة إلا عند الحاجة، وتمت مضاعفة الأقواس حيث يلزم.
     return f"""<!doctype html><html lang="ar" dir="rtl"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>{title}</title>
@@ -281,7 +280,7 @@ CBT_HTML = """
   </div>
 
   <script>
-    // ⚠️ مهم: السكربت يعمل لأننا فعّلنا CSP: script-src 'self' 'unsafe-inline'
+    // يعمل مع CSP لأننا نسمح بالـ inline scripts
     const PLANS = {{
       ba: {{title:"BA — تنشيط سلوكي",steps:["3 نشاطات مجزية","قياس مزاج قبل/بعد","رفع الصعوبة تدريجيًا"]}},
       thought_record: {{title:"TR — سجل أفكار",steps:["موقف→فكرة","دلائل مع/ضد","بديل متوازن/تجربة"]}},
@@ -381,7 +380,6 @@ CBT_HTML = """
 
 @app.get("/cbt")
 def cbt():
-    # لا حاجة لاستبدالات إضافية لأننا ضمّنا BRAND/WA في السكربت أعلاه بشكل آمن
     return shell("CBT — خطط وتمارين", CBT_HTML, _load_count())
 
 # ========= برنامج الإدمان =========
@@ -500,6 +498,7 @@ FORM_HTML = """
         <label class="chk"><input type="checkbox" name="tension"> توتر جسدي</label>
         <label class="chk"><input type="checkbox" name="panic_attacks"> نوبات هلع</label>
         <label class="chk"><input type="checkbox" name="social_fear"> خوف من تقييم اجتماعي</label>
+        <label class="chk"><input type="checkbox" name="health_anxiety"> قلق صحّي/تفحّص زائد</label>
       </div>
 
       <div class="tile"><h3>وسواس وصدمات</h3>
@@ -507,6 +506,7 @@ FORM_HTML = """
         <label class="chk"><input type="checkbox" name="compulsions"> أفعال قهرية</label>
         <label class="chk"><input type="checkbox" name="flashbacks"> استرجاعات/كوابيس</label>
         <label class="chk"><input type="checkbox" name="hypervigilance"> يقظة مفرطة</label>
+        <label class="chk"><input type="checkbox" name="avoidance"> تجنّب مثيرات/أماكن</label>
       </div>
 
       <div class="tile"><h3>ذهانية / طيف الفصام</h3>
@@ -530,6 +530,13 @@ FORM_HTML = """
         <label class="chk"><input type="checkbox" name="risky_behavior"> سلوك محفوف بالمخاطر/صرف زائد</label>
         <label class="chk"><input type="checkbox" name="mania_ge_7d"> استمرار الأعراض ≥ 7 أيام</label>
         <label class="chk"><input type="checkbox" name="mania_hospital"> احتاج دخول/تدخل طبي</label>
+      </div>
+
+      <div class="tile"><h3>نوم/انتباه/حزن</h3>
+        <label class="chk"><input type="checkbox" name="insomnia"> أرق مزمن</label>
+        <label class="chk"><input type="checkbox" name="adhd_inattention"> تشتت/نسيان (انتباه)</label>
+        <label class="chk"><input type="checkbox" name="adhd_hyper"> نشاط/اندفاعية زائدة</label>
+        <label class="chk"><input type="checkbox" name="grief_acute"> حزن حاد بعد فقد</label>
       </div>
 
       <div class="tile"><h3>مواد</h3>
@@ -595,12 +602,23 @@ def build_recommendations(data):
         picks.append(("نوبات هلع", "نوبات مفاجئة مع خوف من التكرار", 70)); go_cbt += ["IE — تعرّض داخلي","SA — إيقاف سلوكيات آمنة"]
     if data.get("social_fear"):
         picks.append(("قلق اجتماعي", "خشية تقييم الآخرين وتجنّب", 70)); go_cbt += ["GE — تعرّض اجتماعي","SS — مهارات اجتماعية","TR — سجل أفكار"]
+    if data.get("health_anxiety"):
+        picks.append(("قلق صحي", "انشغال زائد بالأمراض/تفحّص مستمر", 65)); go_cbt += ["TR — سجل أفكار","BE — تجارب سلوكية","WT — وقت القلق"]
 
     # وسواس/صدمات
     if data.get("obsessions") and data.get("compulsions"):
         picks.append(("وسواس قهري (OCD)", "وساوس + أفعال قهرية", 80)); go_cbt += ["ERP — وسواس","SA — إيقاف سلوكيات آمنة"]
-    if c(data,"flashbacks","hypervigilance") >= 2:
-        picks.append(("آثار صدمة (PTSD/ASD)", "استرجاعات ويقظة مفرطة", 70)); go_cbt += ["PTSD — تأريض/تنظيم","MB — يقظة"]
+    if c(data,"flashbacks","hypervigilance","avoidance") >= 2:
+        picks.append(("آثار صدمة (PTSD/ASD)", "استرجاعات/يقظة/تجنّب", 70)); go_cbt += ["PTSD — تأريض/تنظيم","MB — يقظة"]
+
+    # نوم/ADHD/حزن
+    if data.get("insomnia"):
+        picks.append(("أرق مزمن", "صعوبات نوم مستمرة", 60)); go_cbt += ["SH — نظافة النوم"]
+    adhd_sum = c(data,"adhd_inattention","adhd_hyper")
+    if adhd_sum >= 1:
+        picks.append(("سمات ADHD", "انتباه/اندفاعية بارزة", 55)); go_cbt += ["PS — حلّ المشكلات","روتين يومي لطيف"]
+    if data.get("grief_acute"):
+        picks.append(("حزن حاد", "تكيّف بعد فقد", 50)); go_cbt += ["MB — يقظة","SS — مهارات اجتماعية"]
 
     # مواد
     if c(data,"craving","withdrawal","use_harm") >= 2:
@@ -711,7 +729,7 @@ def contact():
     </div>"""
     return shell("التواصل", html, _load_count())
 
-# ========= API/Health/404 =========
+# ========= API/Health =========
 @app.get("/api/health")
 def api_health():
     return jsonify({"ok": True, "brand": BRAND, "build": CACHE_BUST}), 200
@@ -744,7 +762,7 @@ def health():
 # ========= رؤوس أمان =========
 @app.after_request
 def add_headers(resp):
-    # كان بعض الهوستنج يحجب تنفيذ الجافاسكربت لأن script-src غير محدّد
+    # السماح للـ inline JS/CSS الضرورية لتشغيل CBT/Case
     csp = (
         "default-src 'self' data: blob: https://t.me https://wa.me https://api.whatsapp.com; "
         "script-src 'self' 'unsafe-inline' data: blob: https://t.me https://wa.me https://api.whatsapp.com; "
@@ -761,5 +779,4 @@ def add_headers(resp):
 
 # ========= تشغيل =========
 if __name__ == "__main__":
-    # للتشغيل المحلي:  python app.py
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT","10000")))
