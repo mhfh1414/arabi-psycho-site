@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# app.py — Arabi Psycho (v2.5 One-File, Py3.8+)
+# app.py — Arabi Psycho (v2.5.1 One-File, Py3.8+)
 
 import os, json, tempfile, urllib.parse
 from datetime import datetime
@@ -59,6 +59,7 @@ def shell(title: str, content: str, visitors: Optional[int] = None) -> str:
     visitors_html = f"<div class='small' style='margin-top:12px'>👀 عدد الزوّار: <b>{visitors}</b></div>" if visitors is not None else ""
     return f"""<!doctype html><html lang="ar" dir="rtl"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="theme-color" content="#4B0082"/>
 <title>{title}</title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/><meta http-equiv="Expires" content="0"/>
@@ -81,7 +82,7 @@ body{{margin:0;background:var(--bg);font-family:"Tajawal","Segoe UI",system-ui,s
 .tile{{background:#fff;border:1px solid #eee;border-radius:14px;padding:14px}}
 h1{{font-weight:900;font-size:28px}} h2{{font-weight:800;margin:.2rem 0 .6rem}} h3{{font-weight:800;margin:.2rem 0 .6rem}}
 .note{{background:#fff7d1;border:1px dashed #e5c100;border-radius:12px;padding:10px 12px;margin:10px 0}}
-.btn{{display:inline-block;background:var(--p);color:#fff;text-decoration:none;padding:11px 16px;border-radius:12px;font-weight:800}}
+.btn{{display:inline-block;background:var(--p);color:#fff;text-decoration:none;padding:11px 16px;border-radius:12px;font-weight:800;cursor:pointer}}
 .btn.alt{{background:#5b22a6}} .btn.gold{{background:var(--g);color:#4b0082}}
 .btn.wa{{background:#25D366}} .btn.tg{{background:#229ED9}}
 label.chk{{display:block;background:#fafafa;border:1px solid #eee;border-radius:10px;padding:8px}}
@@ -280,53 +281,53 @@ CBT_HTML = """
   </div>
 
   <script>
-    const PLANS = {
-      ba: {title:"BA — تنشيط سلوكي",steps:["3 نشاطات مجزية","قياس مزاج قبل/بعد","رفع الصعوبة تدريجيًا"]},
-      thought_record: {title:"TR — سجل أفكار",steps:["موقف→فكرة","دلائل مع/ضد","بديل متوازن/تجربة"]},
-      sleep_hygiene: {title:"SH — نظافة النوم",steps:["مواعيد ثابتة","قطع الشاشات 60د","لا كافيين 6س قبل"]},
-      interoceptive_exposure: {title:"IE — تعرّض داخلي",steps:["إحداث إحساس آمن","منع الطمأنة","تكرار حتى الانطفاء"]},
-      graded_exposure: {title:"GE — تعرّض تدرّجي",steps:["سُلّم 0→100","تعرّض تصاعدي","منع التجنّب/الطمأنة"]},
-      ocd_erp: {title:"ERP — وسواس قهري",steps:["قائمة وساوس/طقوس","ERP 3× أسبوع","قياس القلق قبل/بعد"]},
-      ptsd_grounding: {title:"PTSD — تأريض/تنظيم",steps:["5-4-3-2-1","تنفّس هادئ ×10","روتين أمان"]},
-      problem_solving: {title:"PS — حلّ المشكلات",steps:["تعريف دقيق","عصف وتقييم","خطة ومراجعة"]},
-      worry_time: {title:"WT — وقت القلق",steps:["تأجيل القلق","تدوين وسياق","عودة للنشاط"]},
-      mindfulness: {title:"MB — يقظة ذهنية",steps:["تنفّس 5د","فحص جسدي","وعي غير حاكم"]},
-      behavioral_experiments: {title:"BE — تجارب سلوكية",steps:["فرضية","تجربة صغيرة","مراجعة دلائل"]},
-      safety_behaviors: {title:"SA — إيقاف سلوكيات آمنة",steps:["حصر السلوكيات","تقليل تدريجي","بدائل تكيفية"]},
-      bipolar_routine: {title:"IPSRT — روتين ثنائي القطب",steps:["ثبات نوم/طعام/نشاط","مراقبة مزاج يومي","إشارات مبكرة"]},
-      relapse_prevention: {title:"RP — منع الانتكاس (إدمان)",steps:["مثيرات شخصية","بدائل فورية","شبكة تواصل"]},
-      social_skills: {title:"SS — مهارات اجتماعية",steps:["رسائل حازمة","تواصل بصري/نبرة","تعرّض اجتماعي"]},
-    };
+    const PLANS = {{
+      ba: {{title:"BA — تنشيط سلوكي",steps:["3 نشاطات مجزية","قياس مزاج قبل/بعد","رفع الصعوبة تدريجيًا"]}},
+      thought_record: {{title:"TR — سجل أفكار",steps:["موقف→فكرة","دلائل مع/ضد","بديل متوازن/تجربة"]}},
+      sleep_hygiene: {{title:"SH — نظافة النوم",steps:["مواعيد ثابتة","قطع الشاشات 60د","لا كافيين 6س قبل"]}},
+      interoceptive_exposure: {{title:"IE — تعرّض داخلي",steps:["إحداث إحساس آمن","منع الطمأنة","تكرار حتى الانطفاء"]}},
+      graded_exposure: {{title:"GE — تعرّض تدرّجي",steps:["سُلّم 0→100","تعرّض تصاعدي","منع التجنّب/الطمأنة"]}},
+      ocd_erp: {{title:"ERP — وسواس قهري",steps:["قائمة وساوس/طقوس","ERP 3× أسبوع","قياس القلق قبل/بعد"]}},
+      ptsd_grounding: {{title:"PTSD — تأريض/تنظيم",steps:["5-4-3-2-1","تنفّس هادئ ×10","روتين أمان"]}},
+      problem_solving: {{title:"PS — حلّ المشكلات",steps:["تعريف دقيق","عصف وتقييم","خطة ومراجعة"]}},
+      worry_time: {{title:"WT — وقت القلق",steps:["تأجيل القلق","تدوين وسياق","عودة للنشاط"]}},
+      mindfulness: {{title:"MB — يقظة ذهنية",steps:["تنفّس 5د","فحص جسدي","وعي غير حاكم"]}},
+      behavioral_experiments: {{title:"BE — تجارب سلوكية",steps:["فرضية","تجربة صغيرة","مراجعة دلائل"]}},
+      safety_behaviors: {{title:"SA — إيقاف سلوكيات آمنة",steps:["حصر السلوكيات","تقليل تدريجي","بدائل تكيفية"]}},
+      bipolar_routine: {{title:"IPSRT — روتين ثنائي القطب",steps:["ثبات نوم/طعام/نشاط","مراقبة مزاج يومي","إشارات مبكرة"]}},
+      relapse_prevention: {{title:"RP — منع الانتكاس (إدمان)",steps:["مثيرات شخصية","بدائل فورية","شبكة تواصل"]}},
+      social_skills: {{title:"SS — مهارات اجتماعية",steps:["رسائل حازمة","تواصل بصري/نبرة","تعرّض اجتماعي"]}},
+    }};
 
     const selectA=document.getElementById('planA');
     const selectB=document.getElementById('planB');
 
-    (function fill(){
-      for(const k in PLANS){
+    (function fill(){{
+      for(const k in PLANS){{
         const o=document.createElement('option'); o.value=k; o.textContent=PLANS[k].title; selectA.appendChild(o);
         const o2=document.createElement('option'); o2.value=k; o2.textContent=PLANS[k].title; selectB.appendChild(o2);
-      }
-      const saved=JSON.parse(localStorage.getItem('cbt_state')||'{}');
+      }}
+      const saved=JSON.parse(localStorage.getItem('cbt_state')||'{{}}');
       selectA.value=saved.planA||'ba';
       if(saved.planB) selectB.value=saved.planB;
       if(saved.days) document.getElementById('daysSelect').value=String(saved.days);
-    })();
+    }})();
 
-    function persist(){
-      const state={planA:selectA.value, planB:selectB.value||'', days:parseInt(document.getElementById('daysSelect').value,10)||7};
+    function persist(){{
+      const state={{planA:selectA.value, planB:selectB.value||'', days:parseInt(document.getElementById('daysSelect').value,10)||7}};
       localStorage.setItem('cbt_state', JSON.stringify(state));
-    }
+    }}
 
-    function pick(key){ selectA.value=key; persist(); window.scrollTo({top:document.getElementById('daysSelect').offsetTop-60,behavior:'smooth'}); }
+    function pick(key){{ selectA.value=key; persist(); window.scrollTo({{top:document.getElementById('daysSelect').offsetTop-60,behavior:'smooth'}}); }}
 
-    function dl(key){
-      const data=PLANS[key]||{};
+    function dl(key){{
+      const data=PLANS[key]||{{}};
       const a=document.createElement('a');
-      a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+      a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{{type:'application/json'}}));
       a.download= key + ".json"; a.click(); URL.revokeObjectURL(a.href);
-    }
+    }}
 
-    function buildChecklist(){
+    function buildChecklist(){{
       persist();
       const a = selectA.value; const b = selectB.value; const days = parseInt(document.getElementById('daysSelect').value,10);
       const A = PLANS[a]; const B = PLANS[b] || null;
@@ -337,17 +338,17 @@ CBT_HTML = """
       html += "<table class='table'><thead><tr><th>اليوم</th>";
       steps.forEach((s,i)=> html += "<th>"+(i+1)+". "+s+"</th>");
       html += "</tr></thead><tbody>";
-      for(let d=1; d<=days; d++) {
+      for(let d=1; d<=days; d++) {{
         html+="<tr><td><b>"+d+"</b></td>";
         for(let i=0;i<steps.length;i++) html+="<td><input type='checkbox' /></td>";
         html+="</tr>";
-      }
+      }}
       html+="</tbody></table>";
       document.getElementById('checklist').innerHTML=html;
       updateShareLinks(titles, days);
-    }
+    }}
 
-    function saveChecklist(){
+    function saveChecklist(){{
       const rows = document.querySelectorAll('#checklist tbody tr');
       if(!rows.length) return;
       const head = document.querySelector('#checklist h3')?.innerText || '';
@@ -355,32 +356,31 @@ CBT_HTML = """
       const days = parseInt((daysPart||'7').split(' ')[0],10);
       const headerCells = [...document.querySelectorAll('#checklist thead th')].slice(1).map(th=>th.innerText);
       const progress = [];
-      rows.forEach((tr, idx)=>{
+      rows.forEach((tr, idx)=>{{
         const day=idx+1;
         const done=[...tr.querySelectorAll('input[type=checkbox]')].map(ch=>ch.checked);
-        progress.push({day, done});
-      });
-      const data = { title:titlePart, steps:headerCells, days, progress, created_at: new Date().toISOString(), build: window.__BUILD__ };
+        progress.push({{day, done}});
+      }});
+      const data = {{ title:titlePart, steps:headerCells, days, progress, created_at: new Date().toISOString(), build: window.__BUILD__ }};
       const a=document.createElement('a');
-      a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+      a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{{type:'application/json'}}));
       a.download='cbt_checklist.json'; a.click(); URL.revokeObjectURL(a.href);
-    }
+    }}
 
-    function updateShareLinks(title, days){
+    function updateShareLinks(title, days){{
       const url = location.origin + '/cbt';
-      const msg = "خطة CBT: "+title+"\\nمدة: "+days+" يوم\\n— من [[BRAND]]\\n"+url;
+      const msg = "خطة CBT: "+title+"\\nمدة: "+days+" يوم\\n— من {BRAND}\\n"+url;
       const text = encodeURIComponent(msg);
-      document.getElementById('share-wa').href='[[WA_BASE]]'+'?text='+text;
+      document.getElementById('share-wa').href='{WA_URL.split("?")[0]}'+'?text='+text;
       document.getElementById('share-tg').href='https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+text;
-    }
+    }}
   </script>
 </div>
 """
 
 @app.get("/cbt")
 def cbt():
-    html = CBT_HTML.replace('[[BRAND]]', BRAND).replace('[[WA_BASE]]', WA_URL.split("?")[0])
-    return shell("CBT — خطط وتمارين", html, _load_count())
+    return shell("CBT — خطط وتمارين", CBT_HTML, _load_count())
 
 # ========= برنامج الإدمان =========
 ADDICTION_HTML = """
@@ -452,7 +452,7 @@ def book():
     if request.method == "GET":
         return shell("احجز موعد", BOOK_FORM, _load_count())
     f = request.form
-    name, age, typ = (f.get("name","").strip(), f.get("age","").strip(), f.get("type","").strip())
+    name, typ = (f.get("name","").strip(), f.get("type","").strip())
     channel, phone, best_time, summary = (f.get("channel","").strip(), f.get("phone","").strip(),
                                           f.get("best_time","").strip(), f.get("summary","").strip())
     msg = ( "طلب حجز جديد — عربي سايكو\n"
@@ -462,7 +462,7 @@ def book():
     if "الطبيب" in typ: wa_base = PSYCH_WA
     elif "الاجتماعي" in typ: wa_base = SOCIAL_WA
     else: wa_base = PSYCHO_WA
-    wa_link = wa_base + ("&" if "?" in wa_base else "?") + f"text={encoded}"
+    wa_link = wa_base.split("?")[0] + ("&" if "?" in wa_base else "?") + f"text={encoded}"
     return redirect(wa_link, code=302)
 
 # ========= دراسة الحالة =========
@@ -639,10 +639,12 @@ def render_results(picks, go_cbt, go_add, notes):
     <div class='row screen-only' style='margin-top:12px'>
       <button class='btn alt' onclick='window.print()'>🖨️ طباعة</button>
       <button class='btn' onclick='saveJSON()'>💾 تنزيل JSON</button>
+      <button class='btn' onclick='copyAll()'>📋 نسخ النتائج</button>
       <a class='btn wa' id='share-wa' target='_blank' rel='noopener'>🟢 مشاركة واتساب</a>
       <a class='btn tg' id='share-tg' target='_blank' rel='noopener'>✈️ مشاركة تيليجرام</a>
       <a class='btn gold' href='/book'>📅 حجز سريع</a>
       <a class='btn' href='/cbt'>🧠 فتح CBT</a>
+      <a class='btn' href='/'>⬅️ رجوع للرئيسية</a>
     </div>
     <div class='print-only small' style='margin-top:8px'>تم إنشاء هذا الملخّص بواسطة <b>{BRAND}</b> — {TG_URL}</div>
     <script>
@@ -663,6 +665,10 @@ def render_results(picks, go_cbt, go_add, notes):
         a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{{type:'application/json'}}));
         a.download='case_result.json'; a.click(); URL.revokeObjectURL(a.href);
       }
+      function copyAll(){{
+        const txt = buildShareText();
+        navigator.clipboard?.writeText(txt).then(()=>alert('تم نسخ النتائج')).catch(()=>{{prompt('انسخ يدويًا:', txt)}});
+      }}
       const text=encodeURIComponent(buildShareText());
       document.getElementById('share-wa').href='{WA_URL.split("?")[0]}'+'?text='+text;
       document.getElementById('share-tg').href='https://t.me/share/url?url='+encodeURIComponent(location.origin+'/case')+'&text='+text;
@@ -741,7 +747,8 @@ def not_found(_):
 # ========= رؤوس أمان =========
 @app.after_request
 def add_headers(resp):
-    csp = "default-src 'self' 'unsafe-inline' data: blob: https://t.me https://wa.me https://api.whatsapp.com; img-src 'self' data: blob: *; connect-src 'self';"
+    # موازنة بين الأمان وعمل الأزرار/السكربتات
+    csp = "default-src 'self' 'unsafe-inline' data: blob: https://t.me https://telegram.me https://wa.me https://api.whatsapp.com; img-src 'self' data: blob: *; connect-src 'self';"
     resp.headers['Content-Security-Policy'] = csp
     resp.headers['X-Content-Type-Options'] = 'nosniff'
     resp.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
