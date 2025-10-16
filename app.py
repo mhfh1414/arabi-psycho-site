@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-# app.py — Arabi Psycho (v2.6 One-File, Safe for Render)
+# app.py — Arabi Psycho (v2.6 One-File, Py3.8+)
+# توسيع الأعراض + إصلاح الأقواس في قوالب HTML/JS الكبيرة (بدون f-strings)
 
 import os, json, tempfile, urllib.parse
 from datetime import datetime
-from typing import Optional, List, Tuple
+from typing import Optional
 from flask import Flask, request, redirect, jsonify
 
 app = Flask(__name__)
@@ -56,6 +57,7 @@ def bump_visitors() -> int:
 CACHE_BUST = os.environ.get("CACHE_BUST", datetime.utcnow().strftime("%Y%m%d%H%M%S"))
 
 def shell(title: str, content: str, visitors: Optional[int] = None) -> str:
+    # انتبه: هنا f-string لكن كل أقواس CSS مزدوجة {{ }} لتجنب مشاكل الأقواس
     visitors_html = f"<div class='small' style='margin-top:12px'>👀 عدد الزوّار: <b>{visitors}</b></div>" if visitors is not None else ""
     return f"""<!doctype html><html lang="ar" dir="rtl"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
@@ -186,7 +188,6 @@ CBT_HTML = """
 
   <h2>خطط جاهزة (15 خطة)</h2>
   <div class="grid">
-
     <div class="tile"><h3>BA — تنشيط سلوكي</h3><ol>
       <li>جدولة 3 نشاطات مُجزية/ممتعة يوميًا.</li><li>قياس مزاج قبل/بعد (0–10).</li><li>رفع الصعوبة تدريجيًا.</li></ol>
       <div class="row"><button class="btn alt" onclick="pick('ba')">اختيار</button><button class="btn" onclick="dl('ba')">تنزيل JSON</button></div></div>
@@ -246,7 +247,6 @@ CBT_HTML = """
     <div class="tile"><h3>SS — مهارات اجتماعية</h3><ol>
       <li>رسائل حازمة (أنا أشعر… لأن… أطلب…).</li><li>تواصل بصري/نبرة.</li><li>تعرّض اجتماعي قصير.</li></ol>
       <div class="row"><button class="btn alt" onclick="pick('social_skills')">اختيار</button><button class="btn" onclick="dl('social_skills')">تنزيل JSON</button></div></div>
-
   </div>
 
   <h2 style="margin-top:18px">📅 مولّد جدول الأيام (يدعم دمج خطتين)</h2>
@@ -344,20 +344,15 @@ CBT_HTML = """
       }}
       html+="</tbody></table>";
       document.getElementById('checklist').innerHTML=html;
-
-      const url = location.origin + '/cbt';
-      const msg = "خطة CBT: "+titles+"\\nمدة: "+days+" يوم\\n— من {BRAND}\\n"+url;
-      const text = encodeURIComponent(msg);
-      document.getElementById('share-wa').href='{WA_URL.split("?")[0]}'+'?text='+text;
-      document.getElementById('share-tg').href='https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+text;
+      updateShareLinks(titles, days);
     }}
 
     function saveChecklist(){{
       const rows = document.querySelectorAll('#checklist tbody tr');
       if(!rows.length) return;
       const head = document.querySelector('#checklist h3')?.innerText || '';
-      const [titlePart, daysPart] = head.split(' — جدول ');
-      const days = parseInt((daysPart||'7').split(' ')[0],10);
+      const parts = head.split(' — جدول ');
+      const days = parseInt((parts[1]||'7').split(' ')[0],10);
       const headerCells = [...document.querySelectorAll('#checklist thead th')].slice(1).map(th=>th.innerText);
       const progress = [];
       rows.forEach((tr, idx)=>{{
@@ -365,10 +360,18 @@ CBT_HTML = """
         const done=[...tr.querySelectorAll('input[type=checkbox]')].map(ch=>ch.checked);
         progress.push({{day, done}});
       }});
-      const data = {{ title:head.replace(' — جدول '+days+' يوم',''), steps:headerCells, days, progress, created_at: new Date().toISOString(), build: window.__BUILD__ }};
+      const data = {{ title:parts[0]||'', steps:headerCells, days, progress, created_at: new Date().toISOString(), build: window.__BUILD__ }};
       const a=document.createElement('a');
       a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{{type:'application/json'}}));
       a.download='cbt_checklist.json'; a.click(); URL.revokeObjectURL(a.href);
+    }}
+
+    function updateShareLinks(title, days){{
+      const url = location.origin + '/cbt';
+      const msg = "خطة CBT: "+title+"\\nمدة: "+days+" يوم\\n— من [[BRAND]]\\n"+url;
+      const text = encodeURIComponent(msg);
+      document.getElementById('share-wa').href='[[WA_BASE]]'+'?text='+text;
+      document.getElementById('share-tg').href='https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+text;
     }}
   </script>
 </div>
@@ -376,8 +379,8 @@ CBT_HTML = """
 
 @app.get("/cbt")
 def cbt():
-    # لا حاجة لاستبدال لأننا ضمّنا BRAND/WA داخل السكربت بشكل آمن
-    return shell("CBT — خطط وتمارين", CBT_HTML, _load_count())
+    html = CBT_HTML.replace('[[BRAND]]', BRAND).replace('[[WA_BASE]]', WA_URL.split("?")[0])
+    return shell("CBT — خطط وتمارين", html, _load_count())
 
 # ========= برنامج الإدمان =========
 ADDICTION_HTML = """
@@ -466,22 +469,27 @@ def book():
 def c(data,*keys):
     return sum(1 for k in keys if data.get(k) is not None)
 
+# ——— نموذج موسّع
 FORM_HTML = """
 <div class="card">
   <h1>📝 دراسة الحالة</h1>
-  <div class="small">قسّم الأعراض بدقة؛ ستظهر ترشيحات أولية وروابط لأدوات CBT وبرنامج الإدمان والحجز. <b>اختياراتك تُحفظ تلقائيًا</b>.</div>
+  <div class="small">ضع علامة على ما ينطبق؛ ستظهر ترشيحات أولية وروابط لأدوات CBT والحجز. <b>اختياراتك تُحفظ تلقائيًا</b>.</div>
 
   <form method="post" action="/case" oninput="persistCase()">
     <div class="grid">
+
       <div class="tile"><h3>المزاج العام</h3>
         <label class="chk"><input type="checkbox" name="low_mood"> مزاج منخفض معظم اليوم</label>
         <label class="chk"><input type="checkbox" name="anhedonia"> فقدان المتعة</label>
+        <label class="chk"><input type="checkbox" name="irritability"> تهيّج/عصبية</label>
+        <label class="chk"><input type="checkbox" name="hopeless"> شعور باليأس</label>
         <label class="chk"><input type="checkbox" name="fatigue"> إرهاق/انخفاض طاقة</label>
         <label class="chk"><input type="checkbox" name="sleep_issue"> نوم مضطرب</label>
         <label class="chk"><input type="checkbox" name="appetite_change"> تغيّر الشهية/الوزن</label>
+        <label class="chk"><input type="checkbox" name="pain_somatic"> آلام/أعراض جسدية بلا سبب واضح</label>
       </div>
 
-      <div class="tile"><h3>اكتئاب — أعراض إضافية</h3>
+      <div class="tile"><h3>اكتئاب — معايير إضافية</h3>
         <label class="chk"><input type="checkbox" name="psychomotor"> تباطؤ/انفعال حركي</label>
         <label class="chk"><input type="checkbox" name="worthlessness"> شعور بالذنب/عدم القيمة</label>
         <label class="chk"><input type="checkbox" name="poor_concentration"> تركيز ضعيف/تردّد</label>
@@ -491,24 +499,29 @@ FORM_HTML = """
       </div>
 
       <div class="tile"><h3>قلق/هلع/اجتماعي</h3>
-        <label class="chk"><input type="checkbox" name="worry"> قلق مفرط</label>
-        <label class="chk"><input type="checkbox" name="tension"> توتر جسدي</label>
+        <label class="chk"><input type="checkbox" name="worry"> قلق مفرط/تفكير متواصل</label>
+        <label class="chk"><input type="checkbox" name="restless"> توتر/تململ</label>
+        <label class="chk"><input type="checkbox" name="muscle_tension"> شدّ عضلي</label>
         <label class="chk"><input type="checkbox" name="panic_attacks"> نوبات هلع</label>
+        <label class="chk"><input type="checkbox" name="agoraphobia"> رهاب الأماكن/الخروج وحدك</label>
         <label class="chk"><input type="checkbox" name="social_fear"> خوف من تقييم اجتماعي</label>
+        <label class="chk"><input type="checkbox" name="health_anxiety"> قلق صحي/تفكير مرضي</label>
+        <label class="chk"><input type="checkbox" name="insomnia"> أرق مزمن</label>
       </div>
 
       <div class="tile"><h3>وسواس وصدمات</h3>
-        <label class="chk"><input type="checkbox" name="obsessions"> أفكار مُلِحّة</label>
-        <label class="chk"><input type="checkbox" name="compulsions"> أفعال قهرية</label>
+        <label class="chk"><input type="checkbox" name="obsessions"> أفكار مُلِحّة/اقتحامية</label>
+        <label class="chk"><input type="checkbox" name="compulsions"> أفعال قهرية (غسل/فحص/ترتيب..)</label>
         <label class="chk"><input type="checkbox" name="flashbacks"> استرجاعات/كوابيس</label>
-        <label class="chk"><input type="checkbox" name="hypervigilance"> يقظة مفرطة</label>
+        <label class="chk"><input type="checkbox" name="avoidance"> تجنّب مواقف/ذكريات</label>
+        <label class="chk"><input type="checkbox" name="hypervigilance"> يقظة مفرطة/استثارة</label>
       </div>
 
       <div class="tile"><h3>ذهانية / طيف الفصام</h3>
         <label class="chk"><input type="checkbox" name="hallucinations"> هلوسات</label>
         <label class="chk"><input type="checkbox" name="delusions"> أوهام ثابتة</label>
         <label class="chk"><input type="checkbox" name="disorganized_speech"> تفكير/كلام غير منظّم</label>
-        <label class="chk"><input type="checkbox" name="negative_symptoms"> أعراض سلبية</label>
+        <label class="chk"><input type="checkbox" name="negative_symptoms"> أعراض سلبية (انسحاب/بلادة)</label>
         <label class="chk"><input type="checkbox" name="catatonia"> سمات كاتاتونية</label>
         <label class="chk"><input type="checkbox" name="decline_function"> تدهور وظيفي</label>
         <label class="chk"><input type="checkbox" name="duration_lt_1m"> المدّة &lt; شهر</label>
@@ -516,13 +529,15 @@ FORM_HTML = """
         <label class="chk"><input type="checkbox" name="duration_ge_6m"> المدّة ≥ 6 أشهر</label>
       </div>
 
-      <div class="tile"><h3>ثنائي القطب / أعراض الهوس</h3>
+      <div class="tile"><h3>ثنائي القطب / الهوس</h3>
         <label class="chk"><input type="checkbox" name="elevated_mood"> مزاج مرتفع/متهوّر</label>
         <label class="chk"><input type="checkbox" name="decreased_sleep_need"> قلة الحاجة للنوم</label>
         <label class="chk"><input type="checkbox" name="grandiosity"> شعور بالعظمة</label>
         <label class="chk"><input type="checkbox" name="racing_thoughts"> أفكار متسارعة</label>
         <label class="chk"><input type="checkbox" name="pressured_speech"> كلام ضاغط</label>
         <label class="chk"><input type="checkbox" name="risky_behavior"> سلوك محفوف بالمخاطر/صرف زائد</label>
+        <label class="chk"><input type="checkbox" name="increased_goal"> نشاط/مشاريع مفرط</label>
+        <label class="chk"><input type="checkbox" name="distractibility"> تشتت انتباه</label>
         <label class="chk"><input type="checkbox" name="mania_ge_7d"> استمرار الأعراض ≥ 7 أيام</label>
         <label class="chk"><input type="checkbox" name="mania_hospital"> احتاج دخول/تدخل طبي</label>
       </div>
@@ -530,8 +545,17 @@ FORM_HTML = """
       <div class="tile"><h3>مواد</h3>
         <label class="chk"><input type="checkbox" name="craving"> اشتهاء</label>
         <label class="chk"><input type="checkbox" name="withdrawal"> انسحاب</label>
+        <label class="chk"><input type="checkbox" name="tolerance"> تحمّل/زيادة الجرعة</label>
         <label class="chk"><input type="checkbox" name="use_harm"> استخدام رغم الضرر</label>
+        <label class="chk"><input type="checkbox" name="time_spent"> وقت طويل للحصول/استخدام/تعافي</label>
       </div>
+
+      <div class="tile"><h3>انتباه/اندفاع (بالغين)</h3>
+        <label class="chk"><input type="checkbox" name="adhd_inattention"> تشتت/نسيان/تأجيل مزمن</label>
+        <label class="chk"><input type="checkbox" name="adhd_hyper"> اندفاع/قلق حركة</label>
+        <label class="chk"><input type="checkbox" name="adhd_since_child"> منذ الطفولة ويؤثر على الأداء</label>
+      </div>
+
     </div>
 
     <div class="tile" style="margin-top:10px"><label>ملاحظاتك<textarea name="notes" rows="4" placeholder="أي تفاصيل إضافية مهمة لك" oninput="persistCase()"></textarea></label></div>
@@ -561,17 +585,19 @@ FORM_HTML = """
 </div>
 """
 
-def build_recommendations(data) -> Tuple[List[Tuple[str,str,int]], List[str], List[str]]:
+def build_recommendations(data):
     picks, go_cbt, go_add = [], [], []
 
+    # اكتئاب
     dep_core = c(data,"low_mood","anhedonia")
-    dep_more = c(data,"fatigue","sleep_issue","appetite_change","psychomotor","worthlessness","poor_concentration","suicidal")
+    dep_more = c(data,"irritability","hopeless","fatigue","sleep_issue","appetite_change",
+                 "psychomotor","worthlessness","poor_concentration","suicidal","pain_somatic")
     dep_total = dep_core + dep_more
     dep_2w = bool(data.get("dep_2w"))
     dep_fx = bool(data.get("dep_function"))
     if dep_total >= 5 and dep_2w and dep_core >= 1:
         picks.append(("نوبة اكتئابية جسيمة (MDD)", "≥5 أعراض لمدة ≥ أسبوعين مع تأثير وظيفي", 90 if dep_fx else 80))
-        go_cbt += ["BA — تنشيط سلوكي","TR — سجل أفكار","SH — نظافة النوم","PS — حل المشكلات"]
+        go_cbt += ["BA — تنشيط سلوكي","TR — سجل أفكار","SH — نظافة النوم","PS — حل المشكلات","MB — يقظة"]
     elif dep_total >= 3 and dep_2w:
         picks.append(("نوبة اكتئابية خفيفة/متوسطة", "مجموعة أعراض مستمرة أسبوعين", 70))
         go_cbt += ["BA — تنشيط سلوكي","TR — سجل أفكار","مراقبة مزاج"]
@@ -582,22 +608,35 @@ def build_recommendations(data) -> Tuple[List[Tuple[str,str,int]], List[str], Li
     if data.get("suicidal"):
         picks.append(("تنبيه أمان", "وجود أفكار إيذاء/انتحار — فضّل تواصلًا فوريًا مع مختص", 99))
 
-    if c(data,"worry","tension") >= 2:
-        picks.append(("قلق معمّم", "قلق مفرط مع توتر جسدي", 75)); go_cbt += ["WT — وقت القلق","MB — يقظة","PS — حل المشكلات"]
+    # قلق/هلع/اجتماعي
+    if c(data,"worry","restless","muscle_tension") >= 2:
+        picks.append(("قلق معمّم", "قلق زائد مع توتر جسدي/أرق", 75)); go_cbt += ["WT — وقت القلق","MB — يقظة","PS — حل المشكلات"]
     if data.get("panic_attacks"):
-        picks.append(("نوبات هلع", "نوبات مفاجئة مع خوف من التكرار", 70)); go_cbt += ["IE — تعرّض داخلي","SA — إيقاف سلوكيات آمنة"]
+        picks.append(("نوبات هلع", "نوبات مفاجئة مع خشية التكرار", 70)); go_cbt += ["IE — تعرّض داخلي","SA — إيقاف سلوكيات آمنة"]
+    if data.get("agoraphobia"):
+        picks.append(("رُهاب ساحات/الخروج", "خشية الهلع خارج المنزل", 65)); go_cbt += ["GE — تعرّض تدرّجي","MB — يقظة"]
     if data.get("social_fear"):
         picks.append(("قلق اجتماعي", "خشية تقييم الآخرين وتجنّب", 70)); go_cbt += ["GE — تعرّض اجتماعي","SS — مهارات اجتماعية","TR — سجل أفكار"]
+    if data.get("health_anxiety"):
+        picks.append(("قلق صحي", "انشغال بصحة/أمراض", 60)); go_cbt += ["TR — سجل أفكار","BE — تجارب سلوكية"]
 
+    # أرق
+    if data.get("insomnia"):
+        go_cbt += ["SH — نظافة النوم"]
+
+    # وسواس/صدمات
     if data.get("obsessions") and data.get("compulsions"):
         picks.append(("وسواس قهري (OCD)", "وساوس + أفعال قهرية", 80)); go_cbt += ["ERP — وسواس","SA — إيقاف سلوكيات آمنة"]
-    if c(data,"flashbacks","hypervigilance") >= 2:
-        picks.append(("آثار صدمة (PTSD/ASD)", "استرجاعات ويقظة مفرطة", 70)); go_cbt += ["PTSD — تأريض/تنظيم","MB — يقظة"]
+    if c(data,"flashbacks","avoidance","hypervigilance") >= 2:
+        picks.append(("آثار صدمة (PTSD/ASD)", "استرجاعات/تجنّب/يقظة", 70)); go_cbt += ["PTSD — تأريض/تنظيم","MB — يقظة"]
 
-    if c(data,"craving","withdrawal","use_harm") >= 2:
-        picks.append(("تعاطي مواد", "اشتهاء/انسحاب/استمرار رغم الضرر", 80)); go_cbt += ["RP — منع الانتكاس","PS — حل المشكلات"]
+    # مواد
+    if c(data,"craving","withdrawal","tolerance","use_harm","time_spent") >= 2:
+        picks.append(("تعاطي مواد", "معايير متعدّدة (اشتهاء/انسحاب/تحمّل..)", 80))
+        go_cbt += ["RP — منع الانتكاس","PS — حل المشكلات"]
         go_add.append("برنامج الإدمان")
 
+    # ذهانية/طيف الفصام
     pc = c(data,"hallucinations","delusions","disorganized_speech","negative_symptoms","catatonia")
     dur_lt_1m  = bool(data.get("duration_lt_1m"))
     dur_ge_1m  = bool(data.get("duration_ge_1m"))
@@ -612,26 +651,20 @@ def build_recommendations(data) -> Tuple[List[Tuple[str,str,int]], List[str], Li
     elif data.get("delusions") and pc == 1 and dur_ge_1m and not decline:
         picks.append(("اضطراب وهامي", "أوهام ثابتة مع أداء وظيفي مقبول", 60))
 
+    # ADHD مختصر
+    if (data.get("adhd_inattention") or data.get("adhd_hyper")) and data.get("adhd_since_child"):
+        picks.append(("سمات ADHD-بالغين", "انتباه/اندفاع منذ الطفولة مع أثر وظيفي", 60))
+        go_cbt += ["PS — حل المشكلات","مراقبة مزاج"]
+
     go_cbt = sorted(set(go_cbt))
     return picks, go_cbt, go_add
 
-def render_results(picks, go_cbt, go_add, notes, base_url: str):
-    # قائمة العناصر كنص
-    lines = [f"- {t} — {w} (درجة: {s:.0f})" for (t,w,s) in picks] or ["- لا توجد مؤشرات كافية."]
+def render_results(picks, go_cbt, go_add, notes):
+    # نبني القالب بدون f-strings لتجنّب مشاكل الأقواس في JS
     items_li = "".join([f"<li><b>{t}</b> — {w} <span class='small'>(درجة: {s:.0f})</span></li>" for (t,w,s) in picks]) or "<li>لا توجد مؤشرات كافية.</li>"
-    cbt_badges = "".join([f"<span class='badge2'>🔧 {x}</span>" for x in go_cbt]) or "<span class='small'>—</span>"
-    add_badge  = "<span class='badge2'>🚭 برنامج الإدمان مُقترح</span>" if go_add else "<span class='small'>—</span>"
-
-    # نص المشاركة جاهز من الخادم (بدون سكربت)
-    share_text = "نتيجة دراسة الحالة — {brand}\n\n{items}".format(
-        brand=BRAND, items="\n".join(lines)
-    )
-    if notes.strip():
-        share_text += "\n\nملاحظات: " + notes.strip()
-    share_text += "\n" + base_url.rstrip("/") + "/case"
-
-    wa_share = WA_URL.split("?")[0] + "?text=" + urllib.parse.quote_plus(share_text)
-    tg_share = "https://t.me/share/url?url=" + urllib.parse.quote_plus(base_url.rstrip("/") + "/case") + "&text=" + urllib.parse.quote_plus(share_text)
+    cbt_badges = "".join([f"<span class='badge2'>🔧 {x}</span>" for x in go_cbt])
+    add_badge  = "<span class='badge2'>🚭 برنامج الإدمان مُقترح</span>" if go_add else ""
+    note_html = f"<div class='tile' style='margin-top:10px'><b>ملاحظاتك:</b><br/>{notes}</div>" if notes else ""
 
     header = f"""
     <div class='header-result'>
@@ -639,33 +672,70 @@ def render_results(picks, go_cbt, go_add, notes, base_url: str):
       <div><div style='font-weight:900;font-size:22px'>{BRAND}</div>
       <div class='small'>نتيجة دراسة الحالة — تلخيص أولي جاهز للطباعة والمشاركة</div></div>
     </div>"""
+
     summary = f"""
     <div class='summary-cards'>
       <div class='scard'><b>الترشيحات</b><br/><span class='small'>{len(picks)} نتيجة</span></div>
-      <div class='scard'><b>CBT المقترح</b><br/>{cbt_badges}</div>
-      <div class='scard'><b>الإدمان</b><br/>{add_badge}</div>
+      <div class='scard'><b>CBT المقترح</b><br/>{(cbt_badges or "<span class='small'>—</span>")}</div>
+      <div class='scard'><b>الإدمان</b><br/>{(add_badge or "<span class='small'>—</span>")}</div>
     </div>"""
-    note_html = f"<div class='tile' style='margin-top:10px'><b>ملاحظاتك:</b><br/>{notes}</div>" if notes.strip() else ""
-    actions = f"""
+
+    # قالب الأزرار + سكربت (placeholders)
+    actions_tpl = """
     <div class='row screen-only' style='margin-top:12px'>
       <button class='btn alt' onclick='window.print()'>🖨️ طباعة</button>
-      <a class='btn wa' href='{wa_share}' target='_blank' rel='noopener'>🟢 مشاركة واتساب</a>
-      <a class='btn tg' href='{tg_share}' target='_blank' rel='noopener'>✈️ مشاركة تيليجرام</a>
+      <button class='btn' onclick='saveJSON()'>💾 تنزيل JSON</button>
+      <a class='btn wa' id='share-wa' target='_blank' rel='noopener'>🟢 مشاركة واتساب</a>
+      <a class='btn tg' id='share-tg' target='_blank' rel='noopener'>✈️ مشاركة تيليجرام</a>
       <a class='btn gold' href='/book'>📅 حجز سريع</a>
       <a class='btn' href='/cbt'>🧠 فتح CBT</a>
     </div>
-    <div class='print-only small' style='margin-top:8px'>تم إنشاء هذا الملخّص بواسطة <b>{BRAND}</b> — {TG_URL}</div>"""
-    return f"""
+    <div class='print-only small' style='margin-top:8px'>تم إنشاء هذا الملخّص بواسطة <b>[[BRAND]]</b> — [[TG_URL]]</div>
+    <script>
+      function buildShareText(){
+        const items=[...document.querySelectorAll('#diag-items li')].map(li=>'- '+li.innerText).join('\\n');
+        const notes=[[NOTES_JSON]];
+        let msg='نتيجة دراسة الحالة — [[BRAND]]\\n\\n'+items;
+        if(notes) msg+='\\n\\nملاحظات: '+notes;
+        msg += '\\n' + location.origin + '/case';
+        return msg;
+      }
+      function saveJSON(){
+        const data={items:[...document.querySelectorAll('#diag-items li')].map(li=>li.innerText),
+                     cbt:[...document.querySelectorAll('.badge2')].map(b=>b.innerText),
+                     notes:[[NOTES_JSON]],
+                     created_at:new Date().toISOString(), build: window.__BUILD__};
+        const a=document.createElement('a');
+        a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+        a.download='case_result.json'; a.click(); URL.revokeObjectURL(a.href);
+      }
+      const text=encodeURIComponent(buildShareText());
+      document.getElementById('share-wa').href='[[WA_BASE]]'+'?text='+text;
+      document.getElementById('share-tg').href='https://t.me/share/url?url='+encodeURIComponent(location.origin+'/case')+'&text='+text;
+    </script>"""
+    actions = actions_tpl.replace('[[BRAND]]', BRAND)\
+                         .replace('[[TG_URL]]', TG_URL)\
+                         .replace('[[WA_BASE]]', WA_URL.split("?")[0])\
+                         .replace('[[NOTES_JSON]]', json.dumps(notes or "", ensure_ascii=False))
+
+    return """
     <div class='card'>
-      {header}{summary}
+      [[HEADER]][[SUMMARY]]
       <h2 style='margin-top:12px'>📌 الترشيحات</h2>
-      <ol id='diag-items' style='line-height:1.95; padding-inline-start: 20px'>{items_li}</ol>
+      <ol id='diag-items' style='line-height:1.95; padding-inline-start: 20px'>[[ITEMS]]</ol>
       <h3>🔧 أدوات CBT المقترحة</h3>
-      <div>{cbt_badges}</div>
+      <div>[[CBT]]</div>
       <h3 style='margin-top:10px'>🚭 الإدمان</h3>
-      <div>{add_badge}</div>
-      {note_html}{actions}
-    </div>"""
+      <div>[[ADD]]</div>
+      [[NOTE]][[ACTIONS]]
+    </div>
+    """.replace('[[HEADER]]', header)\
+       .replace('[[SUMMARY]]', summary)\
+       .replace('[[ITEMS]]', items_li)\
+       .replace('[[CBT]]', cbt_badges or "<span class='small'>لا توجد أدوات محددة</span>")\
+       .replace('[[ADD]]', add_badge or "<span class='small'>لا مؤشرات</span>")\
+       .replace('[[NOTE]]', note_html)\
+       .replace('[[ACTIONS]]', actions)
 
 @app.route("/case", methods=["GET","POST"])
 def case():
@@ -674,9 +744,7 @@ def case():
     data  = {k: v for k, v in request.form.items()}
     picks, go_cbt, go_add = build_recommendations(data)
     notes = (request.form.get("notes") or "").strip()
-    base_url = request.host_url
-    html = render_results(picks, go_cbt, go_add, notes, base_url)
-    return shell("نتيجة الترشيح", html, _load_count())
+    return shell("نتيجة الترشيح", render_results(picks, go_cbt, go_add, notes), _load_count())
 
 # ========= تواصل =========
 @app.get("/contact")
