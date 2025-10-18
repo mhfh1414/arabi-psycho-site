@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# app.py — Arabi Psycho (v2.6.2 One-File, Stable)
+# app.py — Arabi Psycho (v2.8 One-File Stable)
 
 import os, json, tempfile, urllib.parse
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Tuple, List
 from flask import Flask, request, redirect, jsonify
 
 app = Flask(__name__)
@@ -57,6 +57,7 @@ CACHE_BUST = os.environ.get("CACHE_BUST", datetime.utcnow().strftime("%Y%m%d%H%M
 
 def shell(title: str, content: str, visitors: Optional[int] = None) -> str:
     visitors_html = f"<div class='small' style='margin-top:12px'>👀 عدد الزوّار: <b>{visitors}</b></div>" if visitors is not None else ""
+    # لا نضع f-strings داخل سكربتات؛ كل السكربتات أدناه نص خام بلا أقواس Python.
     return f"""<!doctype html><html lang="ar" dir="rtl"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>{title}</title>
@@ -145,12 +146,11 @@ def home():
     <div class="grid">
       <div class="tile"><h3>📝 دراسة الحالة</h3><p class="small">قسّم الأعراض بدقة؛ ترتبط بالـ CBT وبرنامج الإدمان والحجز.</p><a class="btn gold" href="/case">ابدأ الآن</a></div>
       <div class="tile"><h3>📘 مرجع DSM</h3><p class="small">ملخّص منظّم للمحاور الكبرى.</p><a class="btn alt" href="/dsm">فتح DSM</a></div>
-      <div class="tile"><h3>🧠 CBT</h3><p class="small">15 خطة علمية + مولّد جدول 7/10/14 يوم (دمج خطتين) + حفظ تلقائي.</p><a class="btn" href="/cbt">افتح CBT</a></div>
+      <div class="tile"><h3>🧠 CBT</h3><p class="small">خطط جاهزة + مولّد جدول 7/10/14 يوم (دمج خطتين) + حفظ تلقائي.</p><a class="btn" href="/cbt">افتح CBT</a></div>
       <div class="tile"><h3>🚭 برنامج الإدمان</h3><p class="small">Detox → Rehab → Aftercare → منع الانتكاس.</p><a class="btn" href="/addiction">افتح الإدمان</a></div>
       <div class="tile"><h3>📅 احجز موعدًا</h3><p class="small">الأخصائي النفسي / الطبيب النفسي / الأخصائي الاجتماعي.</p><a class="btn gold" href="/book">نموذج الحجز</a></div>
       <div class="tile"><h3>تواصل سريع</h3><a class="btn tg" href="{TG_URL}" target="_blank" rel="noopener">تيليجرام</a> <a class="btn wa" href="{WA_URL}" target="_blank" rel="noopener">واتساب</a></div>
-    </div>
-    """
+    </div>"""
     return shell("الرئيسية — عربي سايكو", content, visitors)
 
 # ========= DSM =========
@@ -179,7 +179,7 @@ def dsm():
     return shell("DSM — مرجع", DSM_HTML, _load_count())
 
 # ========= CBT =========
-CBT_HTML = """
+CBT_HTML_RAW = r"""
 <div class="card">
   <h1>🧠 العلاج المعرفي السلوكي (CBT)</h1>
   <p class="small">اختر خطة/خطة+خطة ثم أنشئ جدول أيام 7/10/14 تلقائيًا مع مربعات إنجاز وتنزيل/طباعة/مشاركة. <b>الاختيارات تُحفظ تلقائيًا في جهازك</b>.</p>
@@ -189,63 +189,63 @@ CBT_HTML = """
 
     <div class="tile"><h3>BA — تنشيط سلوكي</h3><ol>
       <li>جدولة 3 نشاطات مُجزية/ممتعة يوميًا.</li><li>قياس مزاج قبل/بعد (0–10).</li><li>رفع الصعوبة تدريجيًا.</li></ol>
-      <div class="row"><button class="btn alt" type="button" onclick="pick('ba')">اختيار</button><button class="btn" type="button" onclick="dl('ba')">تنزيل JSON</button></div></div>
+      <div class="row"><button class="btn alt" onclick="pick('ba')">اختيار</button><button class="btn" onclick="dl('ba')">تنزيل JSON</button></div></div>
 
     <div class="tile"><h3>TR — سجل أفكار (إعادة هيكلة)</h3><ol>
       <li>موقف ← فكرة تلقائية.</li><li>دلائل مع/ضد.</li><li>بديل متوازن + تجربة سلوكية.</li></ol>
-      <div class="row"><button class="btn alt" type="button" onclick="pick('thought_record')">اختيار</button><button class="btn" type="button" onclick="dl('thought_record')">تنزيل JSON</button></div></div>
+      <div class="row"><button class="btn alt" onclick="pick('thought_record')">اختيار</button><button class="btn" onclick="dl('thought_record')">تنزيل JSON</button></div></div>
 
     <div class="tile"><h3>SH — نظافة النوم</h3><ol>
       <li>أوقات ثابتة للنوم/الاستيقاظ.</li><li>إيقاف الشاشات 60د قبل النوم.</li><li>كافيين قبل 6س = لا.</li></ol>
-      <div class="row"><button class="btn alt" type="button" onclick="pick('sleep_hygiene')">اختيار</button><button class="btn" type="button" onclick="dl('sleep_hygiene')">تنزيل JSON</button></div></div>
+      <div class="row"><button class="btn alt" onclick="pick('sleep_hygiene')">اختيار</button><button class="btn" onclick="dl('sleep_hygiene')">تنزيل JSON</button></div></div>
 
     <div class="tile"><h3>IE — تعرّض داخلي للهلع</h3><ol>
       <li>إحداث تسارع نبض/دوخة آمنة.</li><li>منع الطمأنة والسلوكيات الآمنة.</li><li>التكرار حتى انطفاء القلق.</li></ol>
-      <div class="row"><button class="btn alt" type="button" onclick="pick('interoceptive_exposure')">اختيار</button><button class="btn" type="button" onclick="dl('interoceptive_exposure')">تنزيل JSON</button></div></div>
+      <div class="row"><button class="btn alt" onclick="pick('interoceptive_exposure')">اختيار</button><button class="btn" onclick="dl('interoceptive_exposure')">تنزيل JSON</button></div></div>
 
     <div class="tile"><h3>GE — تعرّض تدرّجي (رُهاب/اجتماعي)</h3><ol>
       <li>سُلّم مواقف 0→100.</li><li>تعرّض من الأسهل للأصعب.</li><li>منع تجنّب/طمأنة.</li></ol>
-      <div class="row"><button class="btn alt" type="button" onclick="pick('graded_exposure')">اختيار</button><button class="btn" type="button" onclick="dl('graded_exposure')">تنزيل JSON</button></div></div>
+      <div class="row"><button class="btn alt" onclick="pick('graded_exposure')">اختيار</button><button class="btn" onclick="dl('graded_exposure')">تنزيل JSON</button></div></div>
 
     <div class="tile"><h3>ERP — وسواس قهري</h3><ol>
       <li>قائمة وساوس/طقوس.</li><li>تعرّض + منع الاستجابة (3× أسبوع).</li><li>قياس القلق قبل/بعد.</li></ol>
-      <div class="row"><button class="btn alt" type="button" onclick="pick('ocd_erp')">اختيار</button><button class="btn" type="button" onclick="dl('ocd_erp')">تنزيل JSON</button></div></div>
+      <div class="row"><button class="btn alt" onclick="pick('ocd_erp')">اختيار</button><button class="btn" onclick="dl('ocd_erp')">تنزيل JSON</button></div></div>
 
     <div class="tile"><h3>PTSD — تأريض وتنظيم</h3><ol>
       <li>5-4-3-2-1 يوميًا.</li><li>تنفّس هادئ ×10.</li><li>روتين أمان قبل النوم.</li></ol>
-      <div class="row"><button class="btn alt" type="button" onclick="pick('ptsd_grounding')">اختيار</button><button class="btn" type="button" onclick="dl('ptsd_grounding')">تنزيل JSON</button></div></div>
+      <div class="row"><button class="btn alt" onclick="pick('ptsd_grounding')">اختيار</button><button class="btn" onclick="dl('ptsd_grounding')">تنزيل JSON</button></div></div>
 
     <div class="tile"><h3>PS — حل المشكلات</h3><ol>
       <li>تعريف المشكلة بدقة.</li><li>عصف حلول وتقييم.</li><li>خطة تنفيذ + مراجعة.</li></ol>
-      <div class="row"><button class="btn alt" type="button" onclick="pick('problem_solving')">اختيار</button><button class="btn" type="button" onclick="dl('problem_solving')">تنزيل JSON</button></div></div>
+      <div class="row"><button class="btn alt" onclick="pick('problem_solving')">اختيار</button><button class="btn" onclick="dl('problem_solving')">تنزيل JSON</button></div></div>
 
     <div class="tile"><h3>WT — وقت القلق</h3><ol>
       <li>تأجيل القلق لوقت محدد.</li><li>تدوين وسياق.</li><li>عودة للنشاط.</li></ol>
-      <div class="row"><button class="btn alt" type="button" onclick="pick('worry_time')">اختيار</button><button class="btn" type="button" onclick="dl('worry_time')">تنزيل JSON</button></div></div>
+      <div class="row"><button class="btn alt" onclick="pick('worry_time')">اختيار</button><button class="btn" onclick="dl('worry_time')">تنزيل JSON</button></div></div>
 
     <div class="tile"><h3>MB — يقظة ذهنية</h3><ol>
       <li>تنفّس واعٍ 5 دقائق.</li><li>فحص جسدي مختصر.</li><li>وعي غير حاكم بالأفكار.</li></ol>
-      <div class="row"><button class="btn alt" type="button" onclick="pick('mindfulness')">اختيار</button><button class="btn" type="button" onclick="dl('mindfulness')">تنزيل JSON</button></div></div>
+      <div class="row"><button class="btn alt" onclick="pick('mindfulness')">اختيار</button><button class="btn" onclick="dl('mindfulness')">تنزيل JSON</button></div></div>
 
     <div class="tile"><h3>BE — تجارب سلوكية</h3><ol>
       <li>صياغة فرضية.</li><li>تجربة صغيرة.</li><li>مراجعة الدلائل.</li></ol>
-      <div class="row"><button class="btn alt" type="button" onclick="pick('behavioral_experiments')">اختيار</button><button class="btn" type="button" onclick="dl('behavioral_experiments')">تنزيل JSON</button></div></div>
+      <div class="row"><button class="btn alt" onclick="pick('behavioral_experiments')">اختيار</button><button class="btn" onclick="dl('behavioral_experiments')">تنزيل JSON</button></div></div>
 
     <div class="tile"><h3>SA — إيقاف سلوكيات آمنة</h3><ol>
       <li>حصر السلوكيات.</li><li>تقليل تدريجي.</li><li>بدائل تكيفية.</li></ol>
-      <div class="row"><button class="btn alt" type="button" onclick="pick('safety_behaviors')">اختيار</button><button class="btn" type="button" onclick="dl('safety_behaviors')">تنزيل JSON</button></div></div>
+      <div class="row"><button class="btn alt" onclick="pick('safety_behaviors')">اختيار</button><button class="btn" onclick="dl('safety_behaviors')">تنزيل JSON</button></div></div>
 
     <div class="tile"><h3>IPSRT — روتين ثنائي القطب</h3><ol>
       <li>ثبات نوم/طعام/نشاط.</li><li>مراقبة مزاج يومي 0–10.</li><li>إشارات إنذار مبكر.</li></ol>
-      <div class="row"><button class="btn alt" type="button" onclick="pick('bipolar_routine')">اختيار</button><button class="btn" type="button" onclick="dl('bipolar_routine')">تنزيل JSON</button></div></div>
+      <div class="row"><button class="btn alt" onclick="pick('bipolar_routine')">اختيار</button><button class="btn" onclick="dl('bipolar_routine')">تنزيل JSON</button></div></div>
 
     <div class="tile"><h3>RP — منع الانتكاس (إدمان)</h3><ol>
       <li>قائمة مثيرات شخصية.</li><li>خطة بدائل لحظية.</li><li>شبكة تواصل فوري.</li></ol>
-      <div class="row"><button class="btn alt" type="button" onclick="pick('relapse_prevention')">اختيار</button><button class="btn" type="button" onclick="dl('relapse_prevention')">تنزيل JSON</button></div></div>
+      <div class="row"><button class="btn alt" onclick="pick('relapse_prevention')">اختيار</button><button class="btn" onclick="dl('relapse_prevention')">تنزيل JSON</button></div></div>
 
     <div class="tile"><h3>SS — مهارات اجتماعية</h3><ol>
       <li>رسائل حازمة (أنا أشعر… لأن… أطلب…).</li><li>تواصل بصري/نبرة.</li><li>تعرّض اجتماعي قصير.</li></ol>
-      <div class="row"><button class="btn alt" type="button" onclick="pick('social_skills')">اختيار</button><button class="btn" type="button" onclick="dl('social_skills')">تنزيل JSON</button></div></div>
+      <div class="row"><button class="btn alt" onclick="pick('social_skills')">اختيار</button><button class="btn" onclick="dl('social_skills')">تنزيل JSON</button></div></div>
 
   </div>
 
@@ -265,9 +265,9 @@ CBT_HTML = """
           <option value="14">14 يوم</option>
         </select>
       </label>
-      <button class="btn gold" type="button" onclick="buildChecklist()">إنشاء الجدول</button>
-      <button class="btn alt" type="button" onclick="window.print()">طباعة</button>
-      <button class="btn" type="button" onclick="saveChecklist()">تنزيل JSON</button>
+      <button class="btn gold" onclick="buildChecklist()">إنشاء الجدول</button>
+      <button class="btn alt" onclick="window.print()">طباعة</button>
+      <button class="btn" onclick="saveChecklist()">تنزيل JSON</button>
       <a class="btn wa" id="share-wa" target="_blank" rel="noopener">واتساب</a>
       <a class="btn tg" id="share-tg" target="_blank" rel="noopener">تيليجرام</a>
     </div>
@@ -280,53 +280,53 @@ CBT_HTML = """
   </div>
 
   <script>
-    const PLANS = {
-      ba: {title:"BA — تنشيط سلوكي",steps:["3 نشاطات مجزية","قياس مزاج قبل/بعد","رفع الصعوبة تدريجيًا"]},
-      thought_record: {title:"TR — سجل أفكار",steps:["موقف→فكرة","دلائل مع/ضد","بديل متوازن/تجربة"]},
-      sleep_hygiene: {title:"SH — نظافة النوم",steps:["مواعيد ثابتة","قطع الشاشات 60د","لا كافيين 6س قبل"]},
-      interoceptive_exposure: {title:"IE — تعرّض داخلي",steps:["إحداث إحساس آمن","منع الطمأنة","تكرار حتى الانطفاء"]},
-      graded_exposure: {title:"GE — تعرّض تدرّجي",steps:["سُلّم 0→100","تعرّض تصاعدي","منع التجنّب/الطمأنة"]},
-      ocd_erp: {title:"ERP — وسواس قهري",steps:["قائمة وساوس/طقوس","ERP 3× أسبوع","قياس القلق قبل/بعد"]},
-      ptsd_grounding: {title:"PTSD — تأريض/تنظيم",steps:["5-4-3-2-1","تنفّس هادئ ×10","روتين أمان"]},
-      problem_solving: {title:"PS — حلّ المشكلات",steps:["تعريف دقيق","عصف وتقييم","خطة ومراجعة"]},
-      worry_time: {title:"WT — وقت القلق",steps:["تأجيل القلق","تدوين وسياق","عودة للنشاط"]},
-      mindfulness: {title:"MB — يقظة ذهنية",steps:["تنفّس 5د","فحص جسدي","وعي غير حاكم"]},
-      behavioral_experiments: {title:"BE — تجارب سلوكية",steps:["فرضية","تجربة صغيرة","مراجعة دلائل"]},
-      safety_behaviors: {title:"SA — إيقاف سلوكيات آمنة",steps:["حصر السلوكيات","تقليل تدريجي","بدائل تكيفية"]},
-      bipolar_routine: {title:"IPSRT — روتين ثنائي القطب",steps:["ثبات نوم/طعام/نشاط","مراقبة مزاج يومي","إشارات مبكرة"]},
-      relapse_prevention: {title:"RP — منع الانتكاس (إدمان)",steps:["مثيرات شخصية","بدائل فورية","شبكة تواصل"]},
-      social_skills: {title:"SS — مهارات اجتماعية",steps:["رسائل حازمة","تواصل بصري/نبرة","تعرّض اجتماعي"]},
-    };
+    const PLANS = {{
+      ba: {{title:"BA — تنشيط سلوكي",steps:["3 نشاطات مجزية","قياس مزاج قبل/بعد","رفع الصعوبة تدريجيًا"]}},
+      thought_record: {{title:"TR — سجل أفكار",steps:["موقف→فكرة","دلائل مع/ضد","بديل متوازن/تجربة"]}},
+      sleep_hygiene: {{title:"SH — نظافة النوم",steps:["مواعيد ثابتة","قطع الشاشات 60د","لا كافيين 6س قبل"]}},
+      interoceptive_exposure: {{title:"IE — تعرّض داخلي",steps:["إحداث إحساس آمن","منع الطمأنة","تكرار حتى الانطفاء"]}},
+      graded_exposure: {{title:"GE — تعرّض تدرّجي",steps:["سُلّم 0→100","تعرّض تصاعدي","منع التجنّب/الطمأنة"]}},
+      ocd_erp: {{title:"ERP — وسواس قهري",steps:["قائمة وساوس/طقوس","ERP 3× أسبوع","قياس القلق قبل/بعد"]}},
+      ptsd_grounding: {{title:"PTSD — تأريض/تنظيم",steps:["5-4-3-2-1","تنفّس هادئ ×10","روتين أمان"]}},
+      problem_solving: {{title:"PS — حلّ المشكلات",steps:["تعريف دقيق","عصف وتقييم","خطة ومراجعة"]}},
+      worry_time: {{title:"WT — وقت القلق",steps:["تأجيل القلق","تدوين وسياق","عودة للنشاط"]}},
+      mindfulness: {{title:"MB — يقظة ذهنية",steps:["تنفّس 5د","فحص جسدي","وعي غير حاكم"]}},
+      behavioral_experiments: {{title:"BE — تجارب سلوكية",steps:["فرضية","تجربة صغيرة","مراجعة دلائل"]}},
+      safety_behaviors: {{title:"SA — إيقاف سلوكيات آمنة",steps:["حصر السلوكيات","تقليل تدريجي","بدائل تكيفية"]}},
+      bipolar_routine: {{title:"IPSRT — روتين ثنائي القطب",steps:["ثبات نوم/طعام/نشاط","مراقبة مزاج يومي","إشارات مبكرة"]}},
+      relapse_prevention: {{title:"RP — منع الانتكاس (إدمان)",steps:["مثيرات شخصية","بدائل فورية","شبكة تواصل"]}},
+      social_skills: {{title:"SS — مهارات اجتماعية",steps:["رسائل حازمة","تواصل بصري/نبرة","تعرّض اجتماعي"]}},
+    }};
 
     const selectA=document.getElementById('planA');
     const selectB=document.getElementById('planB');
 
-    (function fill(){
-      for(const k in PLANS){
+    (function fill(){{
+      for(const k in PLANS){{
         const o=document.createElement('option'); o.value=k; o.textContent=PLANS[k].title; selectA.appendChild(o);
         const o2=document.createElement('option'); o2.value=k; o2.textContent=PLANS[k].title; selectB.appendChild(o2);
-      }
-      const saved=JSON.parse(localStorage.getItem('cbt_state')||'{}');
+      }}
+      const saved=JSON.parse(localStorage.getItem('cbt_state')||'{{}}');
       selectA.value=saved.planA||'ba';
       if(saved.planB) selectB.value=saved.planB;
       if(saved.days) document.getElementById('daysSelect').value=String(saved.days);
-    })();
+    }})();
 
-    function persist(){
-      const state={planA:selectA.value, planB:selectB.value||'', days:parseInt(document.getElementById('daysSelect').value,10)||7};
+    function persist(){{
+      const state={{planA:selectA.value, planB:selectB.value||'', days:parseInt(document.getElementById('daysSelect').value,10)||7}};
       localStorage.setItem('cbt_state', JSON.stringify(state));
-    }
+    }}
 
-    function pick(key){ selectA.value=key; persist(); window.scrollTo({top:document.getElementById('daysSelect').offsetTop-60,behavior:'smooth'}); }
+    function pick(key){{ selectA.value=key; persist(); window.scrollTo({{top:document.getElementById('daysSelect').offsetTop-60,behavior:'smooth'}}); }}
 
-    function dl(key){
-      const data=PLANS[key]||{};
+    function dl(key){{
+      const data=PLANS[key]||{{}};
       const a=document.createElement('a');
-      a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+      a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{{type:'application/json'}}));
       a.download= key + ".json"; a.click(); URL.revokeObjectURL(a.href);
-    }
+    }}
 
-    function buildChecklist(){
+    function buildChecklist(){{
       persist();
       const a = selectA.value; const b = selectB.value; const days = parseInt(document.getElementById('daysSelect').value,10);
       const A = PLANS[a]; const B = PLANS[b] || null;
@@ -337,17 +337,17 @@ CBT_HTML = """
       html += "<table class='table'><thead><tr><th>اليوم</th>";
       steps.forEach((s,i)=> html += "<th>"+(i+1)+". "+s+"</th>");
       html += "</tr></thead><tbody>";
-      for(let d=1; d<=days; d++) {
+      for(let d=1; d<=days; d++) {{
         html+="<tr><td><b>"+d+"</b></td>";
         for(let i=0;i<steps.length;i++) html+="<td><input type='checkbox' /></td>";
         html+="</tr>";
-      }
+      }}
       html+="</tbody></table>";
       document.getElementById('checklist').innerHTML=html;
       updateShareLinks(titles, days);
-    }
+    }}
 
-    function saveChecklist(){
+    function saveChecklist(){{
       const rows = document.querySelectorAll('#checklist tbody tr');
       if(!rows.length) return;
       const head = document.querySelector('#checklist h3')?.innerText || '';
@@ -355,32 +355,30 @@ CBT_HTML = """
       const days = parseInt((parts[1]||'7').split(' ')[0],10);
       const headerCells = [...document.querySelectorAll('#checklist thead th')].slice(1).map(th=>th.innerText);
       const progress = [];
-      rows.forEach((tr, idx)=>{
-        const day=idx+1;
+      rows.forEach((tr, idx)=>{{
         const done=[...tr.querySelectorAll('input[type=checkbox]')].map(ch=>ch.checked);
-        progress.push({day, done});
-      });
-      const data = { title:parts[0]||'', steps:headerCells, days, progress, created_at: new Date().toISOString(), build: window.__BUILD__ };
+        progress.push({{day:(idx+1), done}});
+      }});
+      const data = {{ title:parts[0]||'', steps:headerCells, days, progress, created_at: new Date().toISOString(), build: window.__BUILD__ }};
       const a=document.createElement('a');
-      a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+      a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{{type:'application/json'}}));
       a.download='cbt_checklist.json'; a.click(); URL.revokeObjectURL(a.href);
-    }
+    }}
 
-    function updateShareLinks(title, days){
+    function updateShareLinks(title, days){{
       const url = location.origin + '/cbt';
-      const msg = "خطة CBT: "+title+"\\nمدة: "+days+" يوم\\n— من """ + BRAND + """\\n"+url;
+      const msg = "خطة CBT: "+title+"\\nمدة: "+days+" يوم\\n— من [[BRAND]]\\n"+url;
       const text = encodeURIComponent(msg);
-      document.getElementById('share-wa').href='""" + WA_URL.split("?")[0] + """'+'?text='+text;
+      document.getElementById('share-wa').href='[[WA_BASE]]'+'?text='+text;
       document.getElementById('share-tg').href='https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+text;
-    }
+    }}
   </script>
 </div>
 """
 
 @app.get("/cbt")
 def cbt():
-    # حقن اسم البراند والواتساب داخل السكربت بدون f-string في الكتلة
-    html = CBT_HTML.replace('""" + BRAND + """', BRAND).replace('""" + WA_URL.split("?")[0] + """', WA_URL.split("?")[0])
+    html = CBT_HTML_RAW.replace('[[BRAND]]', BRAND).replace('[[WA_BASE]]', WA_URL.split("?")[0])
     return shell("CBT — خطط وتمارين", html, _load_count())
 
 # ========= برنامج الإدمان =========
@@ -467,10 +465,11 @@ def book():
     return redirect(wa_link, code=302)
 
 # ========= دراسة الحالة =========
-def c(data,*keys):
+def c(data,*keys):  # count helper
     return sum(1 for k in keys if data.get(k) is not None)
 
-FORM_HTML = """
+# نموذج موسّع للأعراض
+FORM_HTML = r"""
 <div class="card">
   <h1>📝 دراسة الحالة</h1>
   <div class="small">قسّم الأعراض بدقة؛ ستظهر ترشيحات أولية وروابط لأدوات CBT وبرنامج الإدمان والحجز. <b>اختياراتك تُحفظ تلقائيًا</b>.</div>
@@ -483,6 +482,7 @@ FORM_HTML = """
         <label class="chk"><input type="checkbox" name="fatigue"> إرهاق/انخفاض طاقة</label>
         <label class="chk"><input type="checkbox" name="sleep_issue"> نوم مضطرب</label>
         <label class="chk"><input type="checkbox" name="appetite_change"> تغيّر الشهية/الوزن</label>
+        <label class="chk"><input type="checkbox" name="pain_chronic"> ألم مزمن/توتر جسدي عام</label>
       </div>
 
       <div class="tile"><h3>اكتئاب — أعراض إضافية</h3>
@@ -497,8 +497,10 @@ FORM_HTML = """
       <div class="tile"><h3>قلق/هلع/اجتماعي</h3>
         <label class="chk"><input type="checkbox" name="worry"> قلق مفرط</label>
         <label class="chk"><input type="checkbox" name="tension"> توتر جسدي</label>
+        <label class="chk"><input type="checkbox" name="restlessness"> عصبية/أرق</label>
         <label class="chk"><input type="checkbox" name="panic_attacks"> نوبات هلع</label>
         <label class="chk"><input type="checkbox" name="social_fear"> خوف من تقييم اجتماعي</label>
+        <label class="chk"><input type="checkbox" name="phobia_specific"> رُهاب محدد</label>
       </div>
 
       <div class="tile"><h3>وسواس وصدمات</h3>
@@ -506,6 +508,7 @@ FORM_HTML = """
         <label class="chk"><input type="checkbox" name="compulsions"> أفعال قهرية</label>
         <label class="chk"><input type="checkbox" name="flashbacks"> استرجاعات/كوابيس</label>
         <label class="chk"><input type="checkbox" name="hypervigilance"> يقظة مفرطة</label>
+        <label class="chk"><input type="checkbox" name="avoidance"> تجنّب ملحوظ</label>
       </div>
 
       <div class="tile"><h3>ذهانية / طيف الفصام</h3>
@@ -529,6 +532,16 @@ FORM_HTML = """
         <label class="chk"><input type="checkbox" name="risky_behavior"> سلوك محفوف بالمخاطر/صرف زائد</label>
         <label class="chk"><input type="checkbox" name="mania_ge_7d"> استمرار الأعراض ≥ 7 أيام</label>
         <label class="chk"><input type="checkbox" name="mania_hospital"> احتاج دخول/تدخل طبي</label>
+      </div>
+
+      <div class="tile"><h3>اضطرابات النوم/الأكل/الانتباه</h3>
+        <label class="chk"><input type="checkbox" name="insomnia"> أرق مستمر</label>
+        <label class="chk"><input type="checkbox" name="hypersomnia"> نوم زائد</label>
+        <label class="chk"><input type="checkbox" name="binge_eating"> نوبات أكل شره</label>
+        <label class="chk"><input type="checkbox" name="restrict_eating"> تقييد في الأكل</label>
+        <label class="chk"><input type="checkbox" name="adhd_inattention"> تشتت/نسيان واضح</label>
+        <label class="chk"><input type="checkbox" name="adhd_hyper"> فرط حركة/اندفاعية</label>
+        <label class="chk"><input type="checkbox" name="asd_social"> صعوبات تواصل/حساسية حسّية (ASD)</label>
       </div>
 
       <div class="tile"><h3>مواد</h3>
@@ -565,15 +578,13 @@ FORM_HTML = """
 </div>
 """
 
-def build_recommendations(data):
+def build_recommendations(data: dict) -> Tuple[List[Tuple[str,str,int]], List[str], List[str]]:
     picks, go_cbt, go_add = [], [], []
 
-    # اكتئاب
     dep_core = c(data,"low_mood","anhedonia")
-    dep_more = c(data,"fatigue","sleep_issue","appetite_change","psychomotor","worthlessness","poor_concentration","suicidal")
+    dep_more = c(data,"fatigue","sleep_issue","appetite_change","psychomotor","worthlessness","poor_concentration","suicidal","pain_chronic")
     dep_total = dep_core + dep_more
-    dep_2w = bool(data.get("dep_2w"))
-    dep_fx = bool(data.get("dep_function"))
+    dep_2w = bool(data.get("dep_2w")); dep_fx = bool(data.get("dep_function"))
     if dep_total >= 5 and dep_2w and dep_core >= 1:
         picks.append(("نوبة اكتئابية جسيمة (MDD)", "≥5 أعراض لمدة ≥ أسبوعين مع تأثير وظيفي", 90 if dep_fx else 80))
         go_cbt += ["BA — تنشيط سلوكي","TR — سجل أفكار","SH — نظافة النوم","PS — حل المشكلات"]
@@ -587,26 +598,30 @@ def build_recommendations(data):
     if data.get("suicidal"):
         picks.append(("تنبيه أمان", "وجود أفكار إيذاء/انتحار — فضّل تواصلًا فوريًا مع مختص", 99))
 
-    # قلق/هلع/اجتماعي
-    if c(data,"worry","tension") >= 2:
-        picks.append(("قلق معمّم", "قلق مفرط مع توتر جسدي", 75)); go_cbt += ["WT — وقت القلق","MB — يقظة","PS — حل المشكلات"]
+    if c(data,"worry","tension","restlessness") >= 2:
+        picks.append(("قلق معمّم", "قلق مفرط مع توتر/أرق", 75)); go_cbt += ["WT — وقت القلق","MB — يقظة","PS — حل المشكلات"]
     if data.get("panic_attacks"):
         picks.append(("نوبات هلع", "نوبات مفاجئة مع خوف من التكرار", 70)); go_cbt += ["IE — تعرّض داخلي","SA — إيقاف سلوكيات آمنة"]
-    if data.get("social_fear"):
-        picks.append(("قلق اجتماعي", "خشية تقييم الآخرين وتجنّب", 70)); go_cbt += ["GE — تعرّض اجتماعي","SS — مهارات اجتماعية","TR — سجل أفكار"]
+    if data.get("social_fear") or data.get("phobia_specific"):
+        picks.append(("قلق اجتماعي/رُهاب", "خشية تقييم أو موقف محدد مع تجنّب", 70)); go_cbt += ["GE — تعرّض اجتماعي","SS — مهارات اجتماعية","TR — سجل أفكار"]
 
-    # وسواس/صدمات
     if data.get("obsessions") and data.get("compulsions"):
         picks.append(("وسواس قهري (OCD)", "وساوس + أفعال قهرية", 80)); go_cbt += ["ERP — وسواس","SA — إيقاف سلوكيات آمنة"]
-    if c(data,"flashbacks","hypervigilance") >= 2:
-        picks.append(("آثار صدمة (PTSD/ASD)", "استرجاعات ويقظة مفرطة", 70)); go_cbt += ["PTSD — تأريض/تنظيم","MB — يقظة"]
+    if c(data,"flashbacks","hypervigilance","avoidance") >= 2:
+        picks.append(("آثار صدمة (PTSD/ASD)", "استرجاعات/يقظة/تجنّب", 70)); go_cbt += ["PTSD — تأريض/تنظيم","MB — يقظة"]
 
-    # مواد
+    if c(data,"insomnia","hypersomnia") >= 1:
+        go_cbt += ["SH — نظافة النوم"]
+    if c(data,"binge_eating","restrict_eating") >= 1:
+        picks.append(("مخاوف الأكل", "نمط شره/تقييد"، 55))
+        go_cbt += ["PS — حل المشكلات","MB — يقظة"]
+    if c(data,"adhd_inattention","adhd_hyper") >= 2:
+        picks.append(("سمات ADHD", "تشتّت واندفاعية مؤثرة", 60)); go_cbt += ["PS — حل المشكلات","روتين يومي"]
+
     if c(data,"craving","withdrawal","use_harm") >= 2:
         picks.append(("تعاطي مواد", "اشتهاء/انسحاب/استمرار رغم الضرر", 80)); go_cbt += ["RP — منع الانتكاس","PS — حل المشكلات"]
         go_add.append("برنامج الإدمان")
 
-    # ذهانية/طيف الفصام
     pc = c(data,"hallucinations","delusions","disorganized_speech","negative_symptoms","catatonia")
     dur_lt_1m  = bool(data.get("duration_lt_1m"))
     dur_ge_1m  = bool(data.get("duration_ge_1m"))
@@ -623,6 +638,31 @@ def build_recommendations(data):
 
     go_cbt = sorted(set(go_cbt))
     return picks, go_cbt, go_add
+
+RESULT_JS_RAW = r"""
+<script>
+  function buildShareText(){
+    const items=[...document.querySelectorAll('#diag-items li')].map(li=>'- '+li.innerText).join('\n');
+    const notes=[[NOTES_JSON]];
+    let msg='نتيجة دراسة الحالة — [[BRAND]]\n\n'+items;
+    if(notes) msg+='\n\nملاحظات: '+notes;
+    msg += '\n' + location.origin + '/case';
+    return msg;
+  }
+  function saveJSON(){
+    const data={items:[...document.querySelectorAll('#diag-items li')].map(li=>li.innerText),
+                cbt:[...document.querySelectorAll('.badge2')].map(b=>b.innerText),
+                notes:[[NOTES_JSON]],
+                created_at:new Date().toISOString(), build: window.__BUILD__};
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+    a.download='case_result.json'; a.click(); URL.revokeObjectURL(a.href);
+  }
+  const text=encodeURIComponent(buildShareText());
+  document.getElementById('share-wa').href='[[WA_BASE]]'+'?text='+text;
+  document.getElementById('share-tg').href='https://t.me/share/url?url='+encodeURIComponent(location.origin+'/case')+'&text='+text;
+</script>
+"""
 
 def render_results(picks, go_cbt, go_add, notes):
     items_li = "".join([f"<li><b>{t}</b> — {w} <span class='small'>(درجة: {s:.0f})</span></li>" for (t,w,s) in picks]) or "<li>لا توجد مؤشرات كافية.</li>"
@@ -641,7 +681,7 @@ def render_results(picks, go_cbt, go_add, notes):
       <div class='scard'><b>الإدمان</b><br/>{(add_badge or "<span class='small'>—</span>")}</div>
     </div>"""
     note_html = f"<div class='tile' style='margin-top:10px'><b>ملاحظاتك:</b><br/>{notes}</div>" if notes else ""
-    actions = f"""
+    actions = """
     <div class='row screen-only' style='margin-top:12px'>
       <button class='btn alt' onclick='window.print()'>🖨️ طباعة</button>
       <button class='btn' onclick='saveJSON()'>💾 تنزيل JSON</button>
@@ -650,30 +690,10 @@ def render_results(picks, go_cbt, go_add, notes):
       <a class='btn gold' href='/book'>📅 حجز سريع</a>
       <a class='btn' href='/cbt'>🧠 فتح CBT</a>
     </div>
-    <div class='print-only small' style='margin-top:8px'>تم إنشاء هذا الملخّص بواسطة <b>{BRAND}</b> — {TG_URL}</div>
-    <script>
-      function buildShareText(){
-        const items=[...document.querySelectorAll('#diag-items li')].map(li=>'- '+li.innerText).join('\\n');
-        const notes={json.dumps(notes or "")!r};
-        let msg='نتيجة دراسة الحالة — {BRAND}\\n\\n'+items;
-        if(notes) msg+='\\n\\nملاحظات: '+notes;
-        msg += '\\n' + location.origin + '/case';
-        return msg;
-      }
-      function saveJSON(){
-        const data={{items:[...document.querySelectorAll('#diag-items li')].map(li=>li.innerText),
-                     cbt:[...document.querySelectorAll('.badge2')].map(b=>b.innerText),
-                     notes:{json.dumps(notes or "")!r},
-                     created_at:new Date().toISOString(), build: window.__BUILD__}};
-        const a=document.createElement('a');
-        a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{{type:'application/json'}}));
-        a.download='case_result.json'; a.click(); URL.revokeObjectURL(a.href);
-      }
-      const text=encodeURIComponent(buildShareText());
-      document.getElementById('share-wa').href='{WA_URL.split("?")[0]}'+'?text='+text;
-      document.getElementById('share-tg').href='https://t.me/share/url?url='+encodeURIComponent(location.origin+'/case')+'&text='+text;
-    </script>"""
-    return f"""
+    <div class='print-only small' style='margin-top:8px'>تم إنشاء هذا الملخّص بواسطة <b>[[BRAND]]</b> — [[TG]]</div>
+    """
+    js = RESULT_JS_RAW.replace('[[NOTES_JSON]]', json.dumps(notes or "")).replace('[[BRAND]]', BRAND).replace('[[WA_BASE]]', WA_URL.split("?")[0])
+    html = f"""
     <div class='card'>
       {header}{summary}
       <h2 style='margin-top:12px'>📌 الترشيحات</h2>
@@ -683,7 +703,9 @@ def render_results(picks, go_cbt, go_add, notes):
       <h3 style='margin-top:10px'>🚭 الإدمان</h3>
       <div>{add_badge or "<span class='small'>لا مؤشرات</span>"}</div>
       {note_html}{actions}
+      {js}
     </div>"""
+    return html.replace('[[BRAND]]', BRAND).replace('[[TG]]', TG_URL)
 
 @app.route("/case", methods=["GET","POST"])
 def case():
@@ -743,14 +765,13 @@ def health():
 # ========= رؤوس أمان =========
 @app.after_request
 def add_headers(resp):
-    # السماح بالـ inline JS حتى يعمل مولّد الجداول
+    # السماح بالـ inline scripts اللازمة للصفحات مع تقييد بقية المصادر
     csp = (
         "default-src 'self' data: blob: https://t.me https://wa.me https://api.whatsapp.com; "
         "script-src 'self' 'unsafe-inline' data: blob: https://t.me https://wa.me https://api.whatsapp.com; "
         "style-src 'self' 'unsafe-inline'; "
         "img-src 'self' data: blob: *; "
-        "connect-src 'self'; "
-        "object-src 'none'; base-uri 'self'; frame-ancestors *"
+        "connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors *"
     )
     resp.headers['Content-Security-Policy'] = csp
     resp.headers['X-Content-Type-Options'] = 'nosniff'
@@ -760,5 +781,4 @@ def add_headers(resp):
 
 # ========= تشغيل =========
 if __name__ == "__main__":
-    # للتشغيل المحلي:  python app.py
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT","10000")))
