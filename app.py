@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
-# app.py — Arabi Psycho (Main App, + Case/DSM/Booking/Addiction/Contact)
-# يعمل مع cbt.py (ستجده بالأسفل). شغّل:  python app.py
+# app.py — Arabi Psycho (Main App)
 
 import os, json, tempfile, urllib.parse
 from datetime import datetime
 from typing import Optional, Tuple, List
 from flask import Flask, request, redirect, jsonify
 
-# ========== إعداد التطبيق ==========
 app = Flask(__name__)
 
-# إعدادات عامة (يمكنك تغييرها بمتغيّرات البيئة)
+# ========= إعدادات عامة =========
 BRAND = os.environ.get("BRAND_NAME", "عربي سايكو")
 LOGO  = os.environ.get("LOGO_URL", "https://upload.wikimedia.org/wikipedia/commons/3/36/Emoji_u1f985.svg")
 TG_URL = os.environ.get("TELEGRAM_URL", "https://t.me/arabipsycho")
@@ -20,9 +18,8 @@ PSYCHO_WA = os.environ.get("PSYCHOLOGIST_WA", "https://wa.me/966530565696")
 PSYCH_WA  = os.environ.get("PSYCHIATRIST_WA", "https://wa.me/966530565696")
 SOCIAL_WA = os.environ.get("SOCIAL_WORKER_WA", "https://wa.me/966530565696")
 
-# ========= عدّاد الزوار (آمن) =========
+# ========= عداد الزوّار =========
 COUNTER_FILE = "visitors.json"
-
 def _atomic_write(path: str, data: dict):
     fd, tmp = tempfile.mkstemp(prefix="vis_", suffix=".json")
     try:
@@ -54,7 +51,7 @@ def bump_visitors() -> int:
     _save_count(n)
     return n
 
-# ========= إطار الصفحات (Shell) =========
+# ========= إطار الصفحات =========
 CACHE_BUST = os.environ.get("CACHE_BUST", datetime.utcnow().strftime("%Y%m%d%H%M%S"))
 
 def shell(title: str, content: str, visitors: Optional[int] = None) -> str:
@@ -103,7 +100,7 @@ hr.sep{{border:none;height:1px;background:#eee;margin:14px 0}}
 @media print {{
   @page {{ size: A4; margin: 16mm 14mm; }}
   .side, .footer, .screen-only {{ display:none !important; }}
-  .print-only {{ display:initial !重要; }}
+  .print-only {{ display:initial !important; }}
   body {{ background:#fff; font-size:18px; line-height:1.8; }}
   .content {{ padding:0 !important; }}
   .card {{ box-shadow:none; border:none; padding:0; }}
@@ -138,7 +135,7 @@ hr.sep{{border:none;height:1px;background:#eee;margin:14px 0}}
 # ========= الرئيسية =========
 @app.get("/")
 def home():
-    v = bump_visitors()
+    visitors = bump_visitors()
     content = f"""
     <div class="card" style="margin-bottom:14px">
       <h1>مرحبًا بك في {BRAND}</h1>
@@ -147,12 +144,12 @@ def home():
     <div class="grid">
       <div class="tile"><h3>📝 دراسة الحالة</h3><p class="small">قسّم الأعراض بدقة؛ ترتبط بالـ CBT وبرنامج الإدمان والحجز.</p><a class="btn gold" href="/case">ابدأ الآن</a></div>
       <div class="tile"><h3>📘 مرجع DSM</h3><p class="small">ملخّص منظّم للمحاور الكبرى.</p><a class="btn alt" href="/dsm">فتح DSM</a></div>
-      <div class="tile"><h3>🧠 CBT</h3><p class="small">خطط جاهزة + مولّد جدول 7/10/14 يوم.</p><a class="btn" href="/cbt">افتح CBT</a></div>
+      <div class="tile"><h3>🧠 CBT</h3><p class="small">خطط جاهزة + مولّد جدول 7/10/14.</p><a class="btn" href="/cbt">افتح CBT</a></div>
       <div class="tile"><h3>🚭 برنامج الإدمان</h3><p class="small">Detox → Rehab → Aftercare → منع الانتكاس.</p><a class="btn" href="/addiction">افتح الإدمان</a></div>
       <div class="tile"><h3>📅 احجز موعدًا</h3><p class="small">الأخصائي النفسي / الطبيب النفسي / الأخصائي الاجتماعي.</p><a class="btn gold" href="/book">نموذج الحجز</a></div>
       <div class="tile"><h3>تواصل سريع</h3><a class="btn tg" href="{TG_URL}" target="_blank" rel="noopener">تيليجرام</a> <a class="btn wa" href="{WA_URL}" target="_blank" rel="noopener">واتساب</a></div>
     </div>"""
-    return shell("الرئيسية — عربي سايكو", content, v)
+    return shell("الرئيسية — عربي سايكو", content, visitors)
 
 # ========= DSM =========
 DSM_HTML = """
@@ -216,7 +213,7 @@ BOOK_FORM = """
   <script>
     function validateBook(){
       const phone=document.querySelector('[name="phone"]');
-      if(!/^\\d{{9,15}}$/.test(phone.value||'')){ alert('الرجاء إدخال رقم صحيح (9–15 رقم).'); return false; }
+      if(!/^\\d{9,15}$/.test(phone.value||'')){ alert('الرجاء إدخال رقم صحيح (9–15 رقم).'); return false; }
       return true;
     }
   </script>
@@ -241,7 +238,7 @@ def book():
     return redirect(wa_link, code=302)
 
 # ========= دراسة الحالة =========
-def c(data,*keys):  # مساعد العدّ
+def c(data,*keys):  # count helper
     return sum(1 for k in keys if data.get(k) is not None)
 
 FORM_HTML = r"""
@@ -393,7 +390,9 @@ def build_recommendations(data: dict) -> Tuple[List[Tuple[str,str,int]], List[st
 
     if c(data,"craving","withdrawal","use_harm") >= 2:
         picks.append(("تعاطي مواد", "اشتهاء/انسحاب/استمرار رغم الضرر", 80)); go_cbt += ["RP — منع الانتكاس","PS — حل المشكلات"]
-        go_add.append("برنامج الإدمان")
+        go_add = ["برنامج الإدمان"]
+    else:
+        go_add = []
 
     pc = c(data,"hallucinations","delusions","disorganized_speech","negative_symptoms","catatonia")
     dur_lt_1m  = bool(data.get("duration_lt_1m"))
@@ -498,7 +497,7 @@ def contact():
     </div>"""
     return shell("التواصل", html, _load_count())
 
-# ========= API/Health/404 =========
+# ========= API/Health =========
 @app.get("/api/health")
 def api_health():
     return jsonify({"ok": True, "brand": BRAND, "build": CACHE_BUST}), 200
@@ -510,7 +509,6 @@ def health():
 # ========= رؤوس أمان =========
 @app.after_request
 def add_headers(resp):
-    # السماح بالـ inline scripts (لجداول CBT ونتائج دراسة الحالة)
     csp = (
         "default-src 'self' data: blob: https://t.me https://wa.me https://api.whatsapp.com; "
         "script-src 'self' 'unsafe-inline' data: blob: https://t.me https://wa.me https://api.whatsapp.com; "
@@ -524,11 +522,10 @@ def add_headers(resp):
     resp.headers['Permissions-Policy'] = 'geolocation=()'
     return resp
 
-# ========= ربط صفحة CBT من الملف المنفصل =========
-from cbt import register_cbt   # <-- يتطلب وجود cbt.py بجانب هذا الملف
+# ========= ربط صفحة CBT =========
+from cbt import register_cbt
 register_cbt(app, shell, BRAND, LOGO, TG_URL, WA_URL)
 
 # ========= تشغيل =========
 if __name__ == "__main__":
-    # للتشغيل: python app.py
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT","10000")))
