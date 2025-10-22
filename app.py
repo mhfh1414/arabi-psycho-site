@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# app.py — Arabi Psycho (One-File Stable)
+# app.py — Arabi Psycho (One-File, Stable v3.1)
 
 import os, json, tempfile, urllib.parse
 from datetime import datetime
@@ -8,17 +8,24 @@ from flask import Flask, request, redirect, jsonify
 
 app = Flask(__name__)
 
-# ========= إعدادات عامة =========
-BRAND = os.environ.get("BRAND_NAME", "عربي سايكو")
-LOGO  = os.environ.get("LOGO_URL", "https://upload.wikimedia.org/wikipedia/commons/3/36/Emoji_u1f985.svg")
-TG_URL = os.environ.get("TELEGRAM_URL", "https://t.me/arabipsycho")
-WA_URL = os.environ.get("WHATSAPP_URL", "https://wa.me/966530565696?text=%D8%B9%D8%B1%D8%A8%D9%8A%20%D8%B3%D8%A7%D9%8A%D9%83%D9%88")
+# ========= إعدادات عامة / سِمات =========
+BRAND   = os.environ.get("BRAND_NAME", "عربي سايكو")
+LOGO    = os.environ.get("LOGO_URL", "https://upload.wikimedia.org/wikipedia/commons/3/36/Emoji_u1f985.svg")
+TG_URL  = os.environ.get("TELEGRAM_URL", "https://t.me/arabipsycho")
+WA_URL  = os.environ.get("WHATSAPP_URL", "https://wa.me/966530565696?text=%D8%B9%D8%B1%D8%A8%D9%8A%20%D8%B3%D8%A7%D9%8A%D9%83%D9%88")
 
+# مسارات واتساب للمتخصصين
 PSYCHO_WA = os.environ.get("PSYCHOLOGIST_WA", "https://wa.me/966530565696")
 PSYCH_WA  = os.environ.get("PSYCHIATRIST_WA", "https://wa.me/966530565696")
 SOCIAL_WA = os.environ.get("SOCIAL_WORKER_WA", "https://wa.me/966530565696")
 
-# ========= عداد الزوّار =========
+# ثيم (قابل للتبديل من المتغيرات البيئية)
+THEME_P  = os.environ.get("THEME_PRIMARY",   "#5A189A")  # بنفسجي أغمق
+THEME_G  = os.environ.get("THEME_ACCENT",    "#F9C80E")  # ذهبي دافئ
+THEME_BG = os.environ.get("THEME_BG",        "#F7F5FF")  # خلفية فاتحة
+THEME_TX = os.environ.get("THEME_TEXT",      "#241B47")  # حبر
+
+# ========= عداد الزوّار (آمن) =========
 COUNTER_FILE = "visitors.json"
 
 def _atomic_write(path: str, data: dict):
@@ -57,6 +64,7 @@ CACHE_BUST = os.environ.get("CACHE_BUST", datetime.utcnow().strftime("%Y%m%d%H%M
 
 def shell(title: str, content: str, visitors: Optional[int] = None) -> str:
     visitors_html = f"<div class='small' style='margin-top:12px'>👀 عدد الزوّار: <b>{visitors}</b></div>" if visitors is not None else ""
+    # ملاحظة مهمة: لا نستخدم f-strings داخل السكربتات الكبيرة؛ فقط هنا في القالب العام.
     return f"""<!doctype html><html lang="ar" dir="rtl"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>{title}</title>
@@ -64,11 +72,11 @@ def shell(title: str, content: str, visitors: Optional[int] = None) -> str:
 <meta http-equiv="Pragma" content="no-cache"/><meta http-equiv="Expires" content="0"/>
 <link rel="icon" href="{LOGO}"/>
 <style>
-:root{{--p:#4B0082;--g:#FFD700;--bg:#f8f6ff;--ink:#2b1a4c}}
+:root{{--p:{THEME_P};--g:{THEME_G};--bg:{THEME_BG};--ink:{THEME_TX}}}
 *{{box-sizing:border-box}} html,body{{height:100%}}
-body{{margin:0;background:var(--bg);font-family:"Tajawal","Segoe UI",system-ui,sans-serif;color:var(--ink);font-size:16.5px;line-height:1.6}}
+body{{margin:0;background:var(--bg);font-family:"Tajawal","Segoe UI",system-ui,sans-serif;color:var(--ink);font-size:16.5px;line-height:1.65}}
 .layout{{display:grid;grid-template-columns:280px 1fr;min-height:100vh}}
-.side{{background:linear-gradient(180deg,#4b0082,#3a0d72);color:#fff;padding:18px;position:sticky;top:0;height:100vh}}
+.side{{background:linear-gradient(180deg, #4b0082, #2d0d50);color:#fff;padding:18px;position:sticky;top:0;height:100vh}}
 .logo{{display:flex;align-items:center;gap:10px;margin-bottom:18px}}
 .logo img{{width:48px;height:48px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.25)}}
 .brand{{font-weight:900;letter-spacing:.3px;font-size:20px}}
@@ -87,7 +95,7 @@ h1{{font-weight:900;font-size:28px}} h2{{font-weight:800;margin:.2rem 0 .6rem}} 
 label.chk{{display:block;background:#fafafa;border:1px solid #eee;border-radius:10px;padding:8px}}
 input,select,textarea{{width:100%;border:1px solid #ddd;border-radius:10px;padding:10px}}
 .small{{font-size:.95rem;opacity:.85}}
-.footer{{text-align:center;color:#fff;margin-top:24px;padding:14px;background:#3a0d72}}
+.footer{{text-align:center;color:#fff;margin-top:24px;padding:14px;background:#2d0d50}}
 hr.sep{{border:none;height:1px;background:#eee;margin:14px 0}}
 .row{{display:flex;gap:10px;flex-wrap:wrap}}
 .badge2{{display:inline-block;border:1px solid #eee;background:#fafafa;padding:6px 10px;border-radius:999px;margin:4px 4px 0 0;font-weight:700}}
@@ -114,7 +122,7 @@ hr.sep{{border:none;height:1px;background:#eee;margin:14px 0}}
   <aside class="side">
     <div class="logo"><img src="{LOGO}" alt="شعار"/><div>
       <div class="brand">{BRAND}</div>
-      <div class="small">علاج نفسي افتراضي <span class="badge">بنفسجي × ذهبي</span></div>
+      <div class="small">«نراك بعيون الاحترام ونمشي معك بخطوات عملية.» <span class="badge">بنفسجي × ذهبي</span></div>
     </div></div>
     <nav class="nav">
       <a href="/">الرئيسية</a>
@@ -125,12 +133,11 @@ hr.sep{{border:none;height:1px;background:#eee;margin:14px 0}}
       <a href="/book">📅 احجز موعد</a>
       <a href="/contact">📞 تواصل</a>
     </nav>
-    <div class="small" style="margin-top:18px;opacity:.9">«نراك بعيون الاحترام، ونساندك بخطوات عملية.»</div>
     {visitors_html}
   </aside>
   <main class="content">{content}</main>
 </div>
-<div class="footer"><small>© جميع الحقوق محفوظة لـ {BRAND}</small></div>
+<div class="footer"><small>© {datetime.utcnow().year} جميع الحقوق محفوظة — {BRAND}</small></div>
 </body></html>"""
 
 # ========= الرئيسية =========
@@ -140,12 +147,12 @@ def home():
     content = f"""
     <div class="card" style="margin-bottom:14px">
       <h1>مرحبًا بك في {BRAND}</h1>
-      <div class="small">مساحتك الهادئة لفهم الأعراض وبناء خطة عملية محترمة لخصوصيتك.</div>
+      <div class="small">مساحتك الهادئة لفهم الأعراض وبناء خطة عملية مع احترام كامل لخصوصيتك.</div>
     </div>
     <div class="grid">
       <div class="tile"><h3>📝 دراسة الحالة</h3><p class="small">قسّم الأعراض بدقة؛ ترتبط بالـ CBT وبرنامج الإدمان والحجز.</p><a class="btn gold" href="/case">ابدأ الآن</a></div>
       <div class="tile"><h3>📘 مرجع DSM</h3><p class="small">ملخّص منظّم للمحاور الكبرى.</p><a class="btn alt" href="/dsm">فتح DSM</a></div>
-      <div class="tile"><h3>🧠 CBT</h3><p class="small">خطط جاهزة + مولّد جدول 7/10/14 يوم (دمج خطتين) + حفظ تلقائي.</p><a class="btn" href="/cbt">افتح CBT</a></div>
+      <div class="tile"><h3>🧠 CBT</h3><p class="small">خطط جاهزة + مولّد جدول 7/10/14 يوم (يدمج خطتين) + مشاركة وتنزيل.</p><a class="btn" href="/cbt">افتح CBT</a></div>
       <div class="tile"><h3>🚭 برنامج الإدمان</h3><p class="small">Detox → Rehab → Aftercare → منع الانتكاس.</p><a class="btn" href="/addiction">افتح الإدمان</a></div>
       <div class="tile"><h3>📅 احجز موعدًا</h3><p class="small">الأخصائي النفسي / الطبيب النفسي / الأخصائي الاجتماعي.</p><a class="btn gold" href="/book">نموذج الحجز</a></div>
       <div class="tile"><h3>تواصل سريع</h3><a class="btn tg" href="{TG_URL}" target="_blank" rel="noopener">تيليجرام</a> <a class="btn wa" href="{WA_URL}" target="_blank" rel="noopener">واتساب</a></div>
@@ -177,11 +184,12 @@ DSM_HTML = """
 def dsm():
     return shell("DSM — مرجع", DSM_HTML, _load_count())
 
-# ========= CBT =========
+# ========= CBT (JS داخل قالب خام بدون f-strings) =========
 CBT_HTML_RAW = r"""
 <div class="card">
   <h1>🧠 العلاج المعرفي السلوكي (CBT)</h1>
-  <p class="small">اختر خطة/خطة+خطة ثم أنشئ جدول أيام 7/10/14 تلقائيًا مع مربعات إنجاز وتنزيل/طباعة/مشاركة. <b>الاختيارات تُحفظ تلقائيًا في جهازك</b>.</p>
+  <p class="small">اختر خطة/خطة+خطة ثم أنشئ جدول 7/10/14 يوم تلقائيًا مع مربعات إنجاز ومشاركة وتنزيل/طباعة.
+  <b>الاختيارات تُحفظ تلقائيًا على جهازك.</b></p>
 
   <h2>خطط جاهزة (15 خطة)</h2>
   <div class="grid">
@@ -257,7 +265,7 @@ CBT_HTML_RAW = r"""
       <label>الخطة B (اختياري):
         <select id="planB"><option value="">— بدون —</option></select>
       </label>
-      <label>مدة الجدول:
+      <label>المدة:
         <select id="daysSelect">
           <option value="7">7 أيام</option>
           <option value="10">10 أيام</option>
@@ -384,13 +392,13 @@ def cbt():
 ADDICTION_HTML = """
 <div class="card">
   <h1>🚭 برنامج الإدمان — مسار واضح</h1>
-  <p class="small">تقييم → سحب آمن → تأهيل → رعاية لاحقة → خطة منع الانتكاس.</p>
+  <p class="small">تقييم شامل → سحب آمن (Detox) → تأهيل (Rehab) → رعاية لاحقة (Aftercare) → خطة منع الانتكاس.</p>
   <div class="grid">
     <div class="tile"><h3>التقييم الأولي</h3><ul><li>تاريخ التعاطي والمواد والشدة.</li><li>فحوصات السلامة والمخاطر.</li></ul></div>
     <div class="tile"><h3>Detox</h3><ul><li>سحب آمن بإشراف طبي.</li><li>ترطيب ونوم ودعم غذائي.</li></ul></div>
     <div class="tile"><h3>Rehab</h3><ul><li>CBT للإدمان، مهارات رفض، إدارة مثيرات.</li><li>مجموعات دعم/أسرة.</li></ul></div>
     <div class="tile"><h3>Aftercare</h3><ul><li>متابعة أسبوعية أول 3 أشهر.</li><li>نشاطات بديلة صحية.</li></ul></div>
-    <div class="tile"><h3>منع الانتكاس</h3><ul><li>قائمة مثيرات شخصية + بدائل.</li><li>شبكة تواصل فوري.</li></ul></div>
+    <div class="tile"><h3>منع الانتكاس</h3><ul><li>قائمة مثيرات شخصية + بدائل فورية.</li><li>شبكة تواصل سريع.</li></ul></div>
   </div>
   <div class="row" style="margin-top:12px">
     <a class="btn gold" href="/case">اربط مع دراسة الحالة</a>
@@ -467,10 +475,11 @@ def book():
 def c(data,*keys):
     return sum(1 for k in keys if data.get(k) is not None)
 
+# نموذج موسّع
 FORM_HTML = r"""
 <div class="card">
   <h1>📝 دراسة الحالة</h1>
-  <div class="small">قسّم الأعراض بدقة؛ ستظهر ترشيحات أولية وروابط لأدوات CBT وبرنامج الإدمان والحجز. <b>اختياراتك تُحفظ تلقائيًا</b>.</div>
+  <p class="small">قسّم الأعراض بدقة؛ ستظهر ترشيحات أولية وروابط لـ CBT وبرنامج الإدمان والحجز. <b>اختياراتك تُحفظ تلقائيًا</b>.</p>
 
   <form method="post" action="/case" oninput="persistCase()">
     <div class="grid">
@@ -480,6 +489,7 @@ FORM_HTML = r"""
         <label class="chk"><input type="checkbox" name="fatigue"> إرهاق/انخفاض طاقة</label>
         <label class="chk"><input type="checkbox" name="sleep_issue"> نوم مضطرب</label>
         <label class="chk"><input type="checkbox" name="appetite_change"> تغيّر الشهية/الوزن</label>
+        <label class="chk"><input type="checkbox" name="pain_chronic"> ألم مزمن/توتر جسدي عام</label>
       </div>
 
       <div class="tile"><h3>اكتئاب — أعراض إضافية</h3>
@@ -494,8 +504,10 @@ FORM_HTML = r"""
       <div class="tile"><h3>قلق/هلع/اجتماعي</h3>
         <label class="chk"><input type="checkbox" name="worry"> قلق مفرط</label>
         <label class="chk"><input type="checkbox" name="tension"> توتر جسدي</label>
+        <label class="chk"><input type="checkbox" name="restlessness"> عصبية/أرق</label>
         <label class="chk"><input type="checkbox" name="panic_attacks"> نوبات هلع</label>
         <label class="chk"><input type="checkbox" name="social_fear"> خوف من تقييم اجتماعي</label>
+        <label class="chk"><input type="checkbox" name="phobia_specific"> رُهاب محدد</label>
       </div>
 
       <div class="tile"><h3>وسواس وصدمات</h3>
@@ -503,6 +515,7 @@ FORM_HTML = r"""
         <label class="chk"><input type="checkbox" name="compulsions"> أفعال قهرية</label>
         <label class="chk"><input type="checkbox" name="flashbacks"> استرجاعات/كوابيس</label>
         <label class="chk"><input type="checkbox" name="hypervigilance"> يقظة مفرطة</label>
+        <label class="chk"><input type="checkbox" name="avoidance"> تجنّب ملحوظ</label>
       </div>
 
       <div class="tile"><h3>ذهانية / طيف الفصام</h3>
@@ -518,14 +531,14 @@ FORM_HTML = r"""
       </div>
 
       <div class="tile"><h3>ثنائي القطب / أعراض الهوس</h3>
-        <label class="chk"><input type="checkbox" name="elevated_mood"> مزاج مرتفع/متهوّر</label>
+        <label class="chk"><input type="checkbox" name="elevated_mood"> مزاج مرتفع/اندفاع</label>
         <label class="chk"><input type="checkbox" name="decreased_sleep_need"> قلة الحاجة للنوم</label>
         <label class="chk"><input type="checkbox" name="grandiosity"> شعور بالعظمة</label>
         <label class="chk"><input type="checkbox" name="racing_thoughts"> أفكار متسارعة</label>
         <label class="chk"><input type="checkbox" name="pressured_speech"> كلام ضاغط</label>
         <label class="chk"><input type="checkbox" name="risky_behavior"> سلوك محفوف بالمخاطر/صرف زائد</label>
-        <label class="chk"><input type="checkbox" name="mania_ge_7d"> استمرار الأعراض ≥ 7 أيام</label>
-        <label class="chk"><input type="checkbox" name="mania_hospital"> احتاج دخول/تدخل طبي</label>
+        <label class="chk"><input type="checkbox" name="mania_ge_7d"> استمرار ≥ 7 أيام</label>
+        <label class="chk"><input type="checkbox" name="mania_hospital"> احتاج دخول/تدخل</label>
       </div>
 
       <div class="tile"><h3>مواد</h3>
@@ -544,7 +557,7 @@ FORM_HTML = r"""
     function persistCase(){
       const form=document.querySelector('form[action="/case"]');
       const data={};
-      form.querySelectorAll('input[type=checkbox]').forEach(ch=>{{ if(ch.checked) data[ch.name]=true; }});
+      form.querySelectorAll('input[type=checkbox]').forEach(ch=>{ if(ch.checked) data[ch.name]=true; });
       data.notes=form.querySelector('[name=notes]')?.value||'';
       localStorage.setItem(KEY, JSON.stringify(data));
     }
@@ -566,7 +579,7 @@ def build_recommendations(data: dict) -> Tuple[List[Tuple[str,str,int]], List[st
     picks, go_cbt, go_add = [], [], []
 
     dep_core = c(data,"low_mood","anhedonia")
-    dep_more = c(data,"fatigue","sleep_issue","appetite_change","psychomotor","worthlessness","poor_concentration","suicidal")
+    dep_more = c(data,"fatigue","sleep_issue","appetite_change","psychomotor","worthlessness","poor_concentration","suicidal","pain_chronic")
     dep_total = dep_core + dep_more
     dep_2w = bool(data.get("dep_2w")); dep_fx = bool(data.get("dep_function"))
     if dep_total >= 5 and dep_2w and dep_core >= 1:
@@ -582,17 +595,17 @@ def build_recommendations(data: dict) -> Tuple[List[Tuple[str,str,int]], List[st
     if data.get("suicidal"):
         picks.append(("تنبيه أمان", "وجود أفكار إيذاء/انتحار — فضّل تواصلًا فوريًا مع مختص", 99))
 
-    if c(data,"worry","tension") >= 2:
-        picks.append(("قلق معمّم", "قلق مفرط مع توتر جسدي", 75)); go_cbt += ["WT — وقت القلق","MB — يقظة","PS — حل المشكلات"]
+    if c(data,"worry","tension","restlessness") >= 2:
+        picks.append(("قلق معمّم", "قلق مفرط مع توتر/أرق", 75)); go_cbt += ["WT — وقت القلق","MB — يقظة","PS — حل المشكلات"]
     if data.get("panic_attacks"):
         picks.append(("نوبات هلع", "نوبات مفاجئة مع خوف من التكرار", 70)); go_cbt += ["IE — تعرّض داخلي","SA — إيقاف سلوكيات آمنة"]
-    if data.get("social_fear"):
-        picks.append(("قلق اجتماعي", "خشية تقييم الآخرين وتجنّب", 70)); go_cbt += ["GE — تعرّض اجتماعي","SS — مهارات اجتماعية","TR — سجل أفكار"]
+    if data.get("social_fear") or data.get("phobia_specific"):
+        picks.append(("قلق اجتماعي/رُهاب", "خشية تقييم أو موقف محدد مع تجنّب", 70)); go_cbt += ["GE — تعرّض اجتماعي","SS — مهارات اجتماعية","TR — سجل أفكار"]
 
     if data.get("obsessions") and data.get("compulsions"):
         picks.append(("وسواس قهري (OCD)", "وساوس + أفعال قهرية", 80)); go_cbt += ["ERP — وسواس","SA — إيقاف سلوكيات آمنة"]
-    if c(data,"flashbacks","hypervigilance") >= 2:
-        picks.append(("آثار صدمة (PTSD/ASD)", "استرجاعات ويقظة مفرطة", 70)); go_cbt += ["PTSD — تأريض/تنظيم","MB — يقظة"]
+    if c(data,"flashbacks","hypervigilance","avoidance") >= 2:
+        picks.append(("آثار صدمة (PTSD/ASD)", "استرجاعات/يقظة/تجنّب", 70)); go_cbt += ["PTSD — تأريض/تنظيم","MB — يقظة"]
 
     if c(data,"craving","withdrawal","use_harm") >= 2:
         picks.append(("تعاطي مواد", "اشتهاء/انسحاب/استمرار رغم الضرر", 80)); go_cbt += ["RP — منع الانتكاس","PS — حل المشكلات"]
@@ -745,9 +758,8 @@ def add_headers(resp):
         "default-src 'self' data: blob: https://t.me https://wa.me https://api.whatsapp.com; "
         "script-src 'self' 'unsafe-inline' data: blob: https://t.me https://wa.me https://api.whatsapp.com; "
         "style-src 'self' 'unsafe-inline'; "
-        ""img-src 'self' data: blob: *; "
-        "connect-src 'self'; "
-        "object-src 'none'; base-uri 'self'; frame-ancestors *"
+        "img-src 'self' data: blob: *; "
+        "connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors *"
     )
     resp.headers['Content-Security-Policy'] = csp
     resp.headers['X-Content-Type-Options'] = 'nosniff'
@@ -755,7 +767,6 @@ def add_headers(resp):
     resp.headers['Permissions-Policy'] = 'geolocation=()'
     return resp
 
-# ========= تشغيل محلي/على Render =========
+# ========= تشغيل =========
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "10000")))-src 'self' data
-        
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT","10000")))
