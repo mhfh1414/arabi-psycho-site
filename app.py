@@ -387,7 +387,103 @@ CBT_HTML_RAW = r"""
 def cbt():
     html = CBT_HTML_RAW.replace('[[BRAND]]', BRAND).replace('[[WA_BASE]]', WA_URL.split("?")[0])
     return shell("CBT — خطط وتمارين", html, _load_count())
+<script>
+  const PLANS = {
+    ba: {title:"BA — تنشيط سلوكي",steps:["3 نشاطات مجزية","قياس مزاج قبل/بعد","رفع الصعوبة تدريجيًا"]},
+    thought_record: {title:"TR — سجل أفكار",steps:["موقف→فكرة","دلائل مع/ضد","بديل متوازن/تجربة"]},
+    sleep_hygiene: {title:"SH — نظافة النوم",steps:["مواعيد ثابتة","قطع الشاشات 60د","لا كافيين 6س قبل"]},
+    interoceptive_exposure: {title:"IE — تعرّض داخلي",steps:["إحداث إحساس آمن","منع الطمأنة","تكرار حتى الانطفاء"]},
+    graded_exposure: {title:"GE — تعرّض تدرّجي",steps:["سُلّم 0→100","تعرّض تصاعدي","منع التجنّب/الطمأنة"]},
+    ocd_erp: {title:"ERP — وسواس قهري",steps:["قائمة وساوس/طقوس","ERP 3× أسبوع","قياس القلق قبل/بعد"]},
+    ptsd_grounding: {title:"PTSD — تأريض/تنظيم",steps:["5-4-3-2-1","تنفّس هادئ ×10","روتين أمان"]},
+    problem_solving: {title:"PS — حلّ المشكلات",steps:["تعريف دقيق","عصف وتقييم","خطة ومراجعة"]},
+    worry_time: {title:"WT — وقت القلق",steps:["تأجيل القلق","تدوين وسياق","عودة للنشاط"]},
+    mindfulness: {title:"MB — يقظة ذهنية",steps:["تنفّس 5د","فحص جسدي","وعي غير حاكم"]},
+    behavioral_experiments: {title:"BE — تجارب سلوكية",steps:["فرضية","تجربة صغيرة","مراجعة دلائل"]},
+    safety_behaviors: {title:"SA — إيقاف سلوكيات آمنة",steps:["حصر السلوكيات","تقليل تدريجي","بدائل تكيفية"]},
+    bipolar_routine: {title:"IPSRT — روتين ثنائي القطب",steps:["ثبات نوم/طعام/نشاط","مراقبة مزاج يومي","إشارات مبكرة"]},
+    relapse_prevention: {title:"RP — منع الانتكاس (إدمان)",steps:["مثيرات شخصية","بدائل فورية","شبكة تواصل"]},
+    social_skills: {title:"SS — مهارات اجتماعية",steps:["رسائل حازمة","تواصل بصري/نبرة","تعرّض اجتماعي"]},
+  };
 
+  const selectA=document.getElementById('planA');
+  const selectB=document.getElementById('planB');
+
+  (function fill(){
+    for(const k in PLANS){
+      const o=document.createElement('option'); o.value=k; o.textContent=PLANS[k].title; selectA.appendChild(o);
+      const o2=document.createElement('option'); o2.value=k; o2.textContent=PLANS[k].title; selectB.appendChild(o2);
+    }
+    const saved=JSON.parse(localStorage.getItem('cbt_state')||'{}');
+    selectA.value=saved.planA||'ba';
+    if(saved.planB) selectB.value=saved.planB;
+    if(saved.days) document.getElementById('daysSelect').value=String(saved.days);
+  })();
+
+  function persist(){
+    const state={planA:selectA.value, planB:selectB.value||'', days:parseInt(document.getElementById('daysSelect').value,10)||7};
+    localStorage.setItem('cbt_state', JSON.stringify(state));
+  }
+
+  function pick(key){
+    selectA.value=key; persist();
+    window.scrollTo({ top:document.getElementById('daysSelect').offsetTop-60, behavior:'smooth' });
+  }
+
+  function dl(key){
+    const data=PLANS[key]||{};
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+    a.download= key + ".json"; a.click(); URL.revokeObjectURL(a.href);
+  }
+
+  function buildChecklist(){
+    persist();
+    const a = selectA.value; const b = selectB.value; const days = parseInt(document.getElementById('daysSelect').value,10);
+    const A = PLANS[a]; const B = PLANS[b] || null;
+    const steps = [...A.steps, ...(B?B.steps:[])];
+    const titles = [A.title].concat(B?[B.title]:[]).join(" + ");
+
+    let html="<h3 style='margin:6px 0'>"+titles+" — جدول "+days+" يوم</h3>";
+    html += "<table class='table'><thead><tr><th>اليوم</th>";
+    steps.forEach((s,i)=> html += "<th>"+(i+1)+". "+s+"</th>");
+    html += "</tr></thead><tbody>";
+    for(let d=1; d<=days; d++) {
+      html+="<tr><td><b>"+d+"</b></td>";
+      for(let i=0;i<steps.length;i++) html+="<td><input type='checkbox' /></td>";
+      html+="</tr>";
+    }
+    html+="</tbody></table>";
+    document.getElementById('checklist').innerHTML=html;
+    updateShareLinks(titles, days);
+  }
+
+  function saveChecklist(){
+    const rows = document.querySelectorAll('#checklist tbody tr');
+    if(!rows.length) return;
+    const head = document.querySelector('#checklist h3')?.innerText || '';
+    const parts = head.split(' — جدول ');
+    const days = parseInt((parts[1]||'7').split(' ')[0],10);
+    const headerCells = [...document.querySelectorAll('#checklist thead th')].slice(1).map(th=>th.innerText);
+    const progress = [];
+    rows.forEach((tr, idx)=>{
+      const done=[...tr.querySelectorAll('input[type=checkbox]')].map(ch=>ch.checked);
+      progress.push({day:(idx+1), done});
+    });
+    const data = { title:parts[0]||'', steps:headerCells, days, progress, created_at: new Date().toISOString(), build: window.__BUILD__ };
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+    a.download='cbt_checklist.json'; a.click(); URL.revokeObjectURL(a.href);
+  }
+
+  function updateShareLinks(title, days){
+    const url = location.origin + '/cbt';
+    const msg = "خطة CBT: "+title+"\\nمدة: "+days+" يوم\\n— من [[BRAND]]\\n"+url;
+    const text = encodeURIComponent(msg);
+    document.getElementById('share-wa').href='[[WA_BASE]]'+'?text='+text;
+    document.getElementById('share-tg').href='https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+text;
+  }
+</script>
 # ========= برنامج الإدمان =========
 ADDICTION_HTML = """
 <div class="card">
@@ -444,6 +540,26 @@ BOOK_FORM = """
     <div class="tile" style="margin-top:10px"><label>نبذة موجزة<textarea name="summary" rows="5" placeholder="اكتب بإيجاز ما يهمك متابعته في الجلسة"></textarea></label></div>
     <div class="row"><button class="btn gold" type="submit">إرسال عبر واتساب</button><a class="btn alt" href="/">رجوع</a></div>
   </form>
+  <script>
+  const KEY='case_state';
+  function persistCase(){
+    const form=document.querySelector('form[action="/case"]');
+    const data={};
+    form.querySelectorAll('input[type=checkbox]').forEach(ch=>{ if(ch.checked) data[ch.name]=true; });
+    data.notes=form.querySelector('[name=notes]')?.value||'';
+    localStorage.setItem(KEY, JSON.stringify(data));
+  }
+  (function restore(){
+    try{
+      const data=JSON.parse(localStorage.getItem(KEY)||'{}');
+      Object.keys(data).forEach(k=>{
+        const el=document.querySelector('[name="'+k+'"]');
+        if(el && el.type==='checkbox') el.checked=true;
+      });
+      if(data.notes){ const n=document.querySelector('[name=notes]'); if(n) n.value=data.notes; }
+    }catch(e){}
+  })();
+</script>
   <script>
     function validateBook(){
       const phone=document.querySelector('[name="phone"]');
