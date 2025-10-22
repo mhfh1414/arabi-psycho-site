@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# app.py — Arabi Psycho (One-File, Stable v3.1)
+# Arabi Psycho — One-File (Purple × Gold) v3.4 Stable
 
 import os, json, tempfile, urllib.parse
 from datetime import datetime
@@ -8,24 +8,17 @@ from flask import Flask, request, redirect, jsonify
 
 app = Flask(__name__)
 
-# ========= إعدادات عامة / سِمات =========
-BRAND   = os.environ.get("BRAND_NAME", "عربي سايكو")
-LOGO    = os.environ.get("LOGO_URL", "https://upload.wikimedia.org/wikipedia/commons/3/36/Emoji_u1f985.svg")
-TG_URL  = os.environ.get("TELEGRAM_URL", "https://t.me/arabipsycho")
-WA_URL  = os.environ.get("WHATSAPP_URL", "https://wa.me/966530565696?text=%D8%B9%D8%B1%D8%A8%D9%8A%20%D8%B3%D8%A7%D9%8A%D9%83%D9%88")
+# ========= إعدادات عامة =========
+BRAND = os.environ.get("BRAND_NAME", "عربي سايكو")
+LOGO  = os.environ.get("LOGO_URL", "https://upload.wikimedia.org/wikipedia/commons/3/36/Emoji_u1f985.svg")
+TG_URL = os.environ.get("TELEGRAM_URL", "https://t.me/arabipsycho")
+WA_URL = os.environ.get("WHATSAPP_URL", "https://wa.me/966530565696?text=%D8%B9%D8%B1%D8%A8%D9%8A%20%D8%B3%D8%A7%D9%8A%D9%83%D9%88")
 
-# مسارات واتساب للمتخصصين
 PSYCHO_WA = os.environ.get("PSYCHOLOGIST_WA", "https://wa.me/966530565696")
 PSYCH_WA  = os.environ.get("PSYCHIATRIST_WA", "https://wa.me/966530565696")
 SOCIAL_WA = os.environ.get("SOCIAL_WORKER_WA", "https://wa.me/966530565696")
 
-# ثيم (قابل للتبديل من المتغيرات البيئية)
-THEME_P  = os.environ.get("THEME_PRIMARY",   "#5A189A")  # بنفسجي أغمق
-THEME_G  = os.environ.get("THEME_ACCENT",    "#F9C80E")  # ذهبي دافئ
-THEME_BG = os.environ.get("THEME_BG",        "#F7F5FF")  # خلفية فاتحة
-THEME_TX = os.environ.get("THEME_TEXT",      "#241B47")  # حبر
-
-# ========= عداد الزوّار (آمن) =========
+# ========= عدّاد الزوّار (محلي بسيط) =========
 COUNTER_FILE = "visitors.json"
 
 def _atomic_write(path: str, data: dict):
@@ -59,12 +52,11 @@ def bump_visitors() -> int:
     _save_count(n)
     return n
 
-# ========= إطار الصفحات =========
+# ========= إطار الصفحات / الثيم =========
 CACHE_BUST = os.environ.get("CACHE_BUST", datetime.utcnow().strftime("%Y%m%d%H%M%S"))
 
 def shell(title: str, content: str, visitors: Optional[int] = None) -> str:
     visitors_html = f"<div class='small' style='margin-top:12px'>👀 عدد الزوّار: <b>{visitors}</b></div>" if visitors is not None else ""
-    # ملاحظة مهمة: لا نستخدم f-strings داخل السكربتات الكبيرة؛ فقط هنا في القالب العام.
     return f"""<!doctype html><html lang="ar" dir="rtl"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>{title}</title>
@@ -72,11 +64,11 @@ def shell(title: str, content: str, visitors: Optional[int] = None) -> str:
 <meta http-equiv="Pragma" content="no-cache"/><meta http-equiv="Expires" content="0"/>
 <link rel="icon" href="{LOGO}"/>
 <style>
-:root{{--p:{THEME_P};--g:{THEME_G};--bg:{THEME_BG};--ink:{THEME_TX}}}
+:root{{--p:#4B0082;--g:#FFD700;--bg:#f8f6ff;--ink:#2b1a4c}}
 *{{box-sizing:border-box}} html,body{{height:100%}}
-body{{margin:0;background:var(--bg);font-family:"Tajawal","Segoe UI",system-ui,sans-serif;color:var(--ink);font-size:16.5px;line-height:1.65}}
+body{{margin:0;background:var(--bg);font-family:"Tajawal","Segoe UI",system-ui,sans-serif;color:var(--ink);font-size:16.5px;line-height:1.7}}
 .layout{{display:grid;grid-template-columns:280px 1fr;min-height:100vh}}
-.side{{background:linear-gradient(180deg, #4b0082, #2d0d50);color:#fff;padding:18px;position:sticky;top:0;height:100vh}}
+.side{{background:linear-gradient(180deg,#4b0082,#3a0d72);color:#fff;padding:18px;position:sticky;top:0;height:100vh}}
 .logo{{display:flex;align-items:center;gap:10px;margin-bottom:18px}}
 .logo img{{width:48px;height:48px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.25)}}
 .brand{{font-weight:900;letter-spacing:.3px;font-size:20px}}
@@ -95,7 +87,7 @@ h1{{font-weight:900;font-size:28px}} h2{{font-weight:800;margin:.2rem 0 .6rem}} 
 label.chk{{display:block;background:#fafafa;border:1px solid #eee;border-radius:10px;padding:8px}}
 input,select,textarea{{width:100%;border:1px solid #ddd;border-radius:10px;padding:10px}}
 .small{{font-size:.95rem;opacity:.85}}
-.footer{{text-align:center;color:#fff;margin-top:24px;padding:14px;background:#2d0d50}}
+.footer{{text-align:center;color:#fff;margin-top:24px;padding:14px;background:#3a0d72}}
 hr.sep{{border:none;height:1px;background:#eee;margin:14px 0}}
 .row{{display:flex;gap:10px;flex-wrap:wrap}}
 .badge2{{display:inline-block;border:1px solid #eee;background:#fafafa;padding:6px 10px;border-radius:999px;margin:4px 4px 0 0;font-weight:700}}
@@ -122,7 +114,7 @@ hr.sep{{border:none;height:1px;background:#eee;margin:14px 0}}
   <aside class="side">
     <div class="logo"><img src="{LOGO}" alt="شعار"/><div>
       <div class="brand">{BRAND}</div>
-      <div class="small">«نراك بعيون الاحترام ونمشي معك بخطوات عملية.» <span class="badge">بنفسجي × ذهبي</span></div>
+      <div class="small">علاج نفسي افتراضي <span class="badge">بنفسجي × ذهبي</span></div>
     </div></div>
     <nav class="nav">
       <a href="/">الرئيسية</a>
@@ -133,11 +125,12 @@ hr.sep{{border:none;height:1px;background:#eee;margin:14px 0}}
       <a href="/book">📅 احجز موعد</a>
       <a href="/contact">📞 تواصل</a>
     </nav>
+    <div class="small" style="margin-top:18px;opacity:.9">«نراك بعيون الاحترام، ونساندك بخطوات عملية.»</div>
     {visitors_html}
   </aside>
   <main class="content">{content}</main>
 </div>
-<div class="footer"><small>© {datetime.utcnow().year} جميع الحقوق محفوظة — {BRAND}</small></div>
+<div class="footer"><small>© جميع الحقوق محفوظة لـ {BRAND}</small></div>
 </body></html>"""
 
 # ========= الرئيسية =========
@@ -147,16 +140,17 @@ def home():
     content = f"""
     <div class="card" style="margin-bottom:14px">
       <h1>مرحبًا بك في {BRAND}</h1>
-      <div class="small">مساحتك الهادئة لفهم الأعراض وبناء خطة عملية مع احترام كامل لخصوصيتك.</div>
+      <div class="small">مساحتك الهادئة لفهم الأعراض وبناء خطة عملية محترمة لخصوصيتك.</div>
     </div>
     <div class="grid">
       <div class="tile"><h3>📝 دراسة الحالة</h3><p class="small">قسّم الأعراض بدقة؛ ترتبط بالـ CBT وبرنامج الإدمان والحجز.</p><a class="btn gold" href="/case">ابدأ الآن</a></div>
       <div class="tile"><h3>📘 مرجع DSM</h3><p class="small">ملخّص منظّم للمحاور الكبرى.</p><a class="btn alt" href="/dsm">فتح DSM</a></div>
-      <div class="tile"><h3>🧠 CBT</h3><p class="small">خطط جاهزة + مولّد جدول 7/10/14 يوم (يدمج خطتين) + مشاركة وتنزيل.</p><a class="btn" href="/cbt">افتح CBT</a></div>
+      <div class="tile"><h3>🧠 CBT</h3><p class="small">15 خطة + مولّد جدول 7/10/14 يوم (يدعم دمج خطتين) + حفظ تلقائي.</p><a class="btn" href="/cbt">افتح CBT</a></div>
       <div class="tile"><h3>🚭 برنامج الإدمان</h3><p class="small">Detox → Rehab → Aftercare → منع الانتكاس.</p><a class="btn" href="/addiction">افتح الإدمان</a></div>
       <div class="tile"><h3>📅 احجز موعدًا</h3><p class="small">الأخصائي النفسي / الطبيب النفسي / الأخصائي الاجتماعي.</p><a class="btn gold" href="/book">نموذج الحجز</a></div>
       <div class="tile"><h3>تواصل سريع</h3><a class="btn tg" href="{TG_URL}" target="_blank" rel="noopener">تيليجرام</a> <a class="btn wa" href="{WA_URL}" target="_blank" rel="noopener">واتساب</a></div>
-    </div>"""
+    </div>
+    """
     return shell("الرئيسية — عربي سايكو", content, visitors)
 
 # ========= DSM =========
@@ -184,12 +178,11 @@ DSM_HTML = """
 def dsm():
     return shell("DSM — مرجع", DSM_HTML, _load_count())
 
-# ========= CBT (JS داخل قالب خام بدون f-strings) =========
+# ========= CBT =========
 CBT_HTML_RAW = r"""
 <div class="card">
   <h1>🧠 العلاج المعرفي السلوكي (CBT)</h1>
-  <p class="small">اختر خطة/خطة+خطة ثم أنشئ جدول 7/10/14 يوم تلقائيًا مع مربعات إنجاز ومشاركة وتنزيل/طباعة.
-  <b>الاختيارات تُحفظ تلقائيًا على جهازك.</b></p>
+  <p class="small">اختر خطة/خطة+خطة ثم أنشئ جدول أيام 7/10/14 تلقائيًا مع مربعات إنجاز وتنزيل/طباعة/مشاركة. <b>الاختيارات تُحفظ تلقائيًا في جهازك</b>.</p>
 
   <h2>خطط جاهزة (15 خطة)</h2>
   <div class="grid">
@@ -265,7 +258,7 @@ CBT_HTML_RAW = r"""
       <label>الخطة B (اختياري):
         <select id="planB"><option value="">— بدون —</option></select>
       </label>
-      <label>المدة:
+      <label>مدة الجدول:
         <select id="daysSelect">
           <option value="7">7 أيام</option>
           <option value="10">10 أيام</option>
@@ -287,6 +280,7 @@ CBT_HTML_RAW = r"""
   </div>
 
   <script>
+    // تعريف الخطط
     const PLANS = {{
       ba: {{title:"BA — تنشيط سلوكي",steps:["3 نشاطات مجزية","قياس مزاج قبل/بعد","رفع الصعوبة تدريجيًا"]}},
       thought_record: {{title:"TR — سجل أفكار",steps:["موقف→فكرة","دلائل مع/ضد","بديل متوازن/تجربة"]}},
@@ -374,9 +368,9 @@ CBT_HTML_RAW = r"""
 
     function updateShareLinks(title, days){{
       const url = location.origin + '/cbt';
-      const msg = "خطة CBT: "+title+"\\nمدة: "+days+" يوم\\n— من [[BRAND]]\\n"+url;
+      const msg = "خطة CBT: "+title+"\\nمدة: "+days+" يوم\\n— من {BRAND}\\n"+url;
       const text = encodeURIComponent(msg);
-      document.getElementById('share-wa').href='[[WA_BASE]]'+'?text='+text;
+      document.getElementById('share-wa').href='{WA_URL.split("?")[0]}'+'?text='+text;
       document.getElementById('share-tg').href='https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+text;
     }}
   </script>
@@ -385,116 +379,20 @@ CBT_HTML_RAW = r"""
 
 @app.get("/cbt")
 def cbt():
-    html = CBT_HTML_RAW.replace('[[BRAND]]', BRAND).replace('[[WA_BASE]]', WA_URL.split("?")[0])
-    return shell("CBT — خطط وتمارين", html, _load_count())
-<script>
-  const PLANS = {
-    ba: {title:"BA — تنشيط سلوكي",steps:["3 نشاطات مجزية","قياس مزاج قبل/بعد","رفع الصعوبة تدريجيًا"]},
-    thought_record: {title:"TR — سجل أفكار",steps:["موقف→فكرة","دلائل مع/ضد","بديل متوازن/تجربة"]},
-    sleep_hygiene: {title:"SH — نظافة النوم",steps:["مواعيد ثابتة","قطع الشاشات 60د","لا كافيين 6س قبل"]},
-    interoceptive_exposure: {title:"IE — تعرّض داخلي",steps:["إحداث إحساس آمن","منع الطمأنة","تكرار حتى الانطفاء"]},
-    graded_exposure: {title:"GE — تعرّض تدرّجي",steps:["سُلّم 0→100","تعرّض تصاعدي","منع التجنّب/الطمأنة"]},
-    ocd_erp: {title:"ERP — وسواس قهري",steps:["قائمة وساوس/طقوس","ERP 3× أسبوع","قياس القلق قبل/بعد"]},
-    ptsd_grounding: {title:"PTSD — تأريض/تنظيم",steps:["5-4-3-2-1","تنفّس هادئ ×10","روتين أمان"]},
-    problem_solving: {title:"PS — حلّ المشكلات",steps:["تعريف دقيق","عصف وتقييم","خطة ومراجعة"]},
-    worry_time: {title:"WT — وقت القلق",steps:["تأجيل القلق","تدوين وسياق","عودة للنشاط"]},
-    mindfulness: {title:"MB — يقظة ذهنية",steps:["تنفّس 5د","فحص جسدي","وعي غير حاكم"]},
-    behavioral_experiments: {title:"BE — تجارب سلوكية",steps:["فرضية","تجربة صغيرة","مراجعة دلائل"]},
-    safety_behaviors: {title:"SA — إيقاف سلوكيات آمنة",steps:["حصر السلوكيات","تقليل تدريجي","بدائل تكيفية"]},
-    bipolar_routine: {title:"IPSRT — روتين ثنائي القطب",steps:["ثبات نوم/طعام/نشاط","مراقبة مزاج يومي","إشارات مبكرة"]},
-    relapse_prevention: {title:"RP — منع الانتكاس (إدمان)",steps:["مثيرات شخصية","بدائل فورية","شبكة تواصل"]},
-    social_skills: {title:"SS — مهارات اجتماعية",steps:["رسائل حازمة","تواصل بصري/نبرة","تعرّض اجتماعي"]},
-  };
+    # نعرض النص الخام كما هو (بدون أقواس بايثون داخل السكربت) — كل القيم مضمنة أعلاه بأمان.
+    return shell("CBT — خطط وتمارين", CBT_HTML_RAW, _load_count())
 
-  const selectA=document.getElementById('planA');
-  const selectB=document.getElementById('planB');
-
-  (function fill(){
-    for(const k in PLANS){
-      const o=document.createElement('option'); o.value=k; o.textContent=PLANS[k].title; selectA.appendChild(o);
-      const o2=document.createElement('option'); o2.value=k; o2.textContent=PLANS[k].title; selectB.appendChild(o2);
-    }
-    const saved=JSON.parse(localStorage.getItem('cbt_state')||'{}');
-    selectA.value=saved.planA||'ba';
-    if(saved.planB) selectB.value=saved.planB;
-    if(saved.days) document.getElementById('daysSelect').value=String(saved.days);
-  })();
-
-  function persist(){
-    const state={planA:selectA.value, planB:selectB.value||'', days:parseInt(document.getElementById('daysSelect').value,10)||7};
-    localStorage.setItem('cbt_state', JSON.stringify(state));
-  }
-
-  function pick(key){
-    selectA.value=key; persist();
-    window.scrollTo({ top:document.getElementById('daysSelect').offsetTop-60, behavior:'smooth' });
-  }
-
-  function dl(key){
-    const data=PLANS[key]||{};
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
-    a.download= key + ".json"; a.click(); URL.revokeObjectURL(a.href);
-  }
-
-  function buildChecklist(){
-    persist();
-    const a = selectA.value; const b = selectB.value; const days = parseInt(document.getElementById('daysSelect').value,10);
-    const A = PLANS[a]; const B = PLANS[b] || null;
-    const steps = [...A.steps, ...(B?B.steps:[])];
-    const titles = [A.title].concat(B?[B.title]:[]).join(" + ");
-
-    let html="<h3 style='margin:6px 0'>"+titles+" — جدول "+days+" يوم</h3>";
-    html += "<table class='table'><thead><tr><th>اليوم</th>";
-    steps.forEach((s,i)=> html += "<th>"+(i+1)+". "+s+"</th>");
-    html += "</tr></thead><tbody>";
-    for(let d=1; d<=days; d++) {
-      html+="<tr><td><b>"+d+"</b></td>";
-      for(let i=0;i<steps.length;i++) html+="<td><input type='checkbox' /></td>";
-      html+="</tr>";
-    }
-    html+="</tbody></table>";
-    document.getElementById('checklist').innerHTML=html;
-    updateShareLinks(titles, days);
-  }
-
-  function saveChecklist(){
-    const rows = document.querySelectorAll('#checklist tbody tr');
-    if(!rows.length) return;
-    const head = document.querySelector('#checklist h3')?.innerText || '';
-    const parts = head.split(' — جدول ');
-    const days = parseInt((parts[1]||'7').split(' ')[0],10);
-    const headerCells = [...document.querySelectorAll('#checklist thead th')].slice(1).map(th=>th.innerText);
-    const progress = [];
-    rows.forEach((tr, idx)=>{
-      const done=[...tr.querySelectorAll('input[type=checkbox]')].map(ch=>ch.checked);
-      progress.push({day:(idx+1), done});
-    });
-    const data = { title:parts[0]||'', steps:headerCells, days, progress, created_at: new Date().toISOString(), build: window.__BUILD__ };
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
-    a.download='cbt_checklist.json'; a.click(); URL.revokeObjectURL(a.href);
-  }
-
-  function updateShareLinks(title, days){
-    const url = location.origin + '/cbt';
-    const msg = "خطة CBT: "+title+"\\nمدة: "+days+" يوم\\n— من [[BRAND]]\\n"+url;
-    const text = encodeURIComponent(msg);
-    document.getElementById('share-wa').href='[[WA_BASE]]'+'?text='+text;
-    document.getElementById('share-tg').href='https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+text;
-  }
-</script>
 # ========= برنامج الإدمان =========
 ADDICTION_HTML = """
 <div class="card">
   <h1>🚭 برنامج الإدمان — مسار واضح</h1>
-  <p class="small">تقييم شامل → سحب آمن (Detox) → تأهيل (Rehab) → رعاية لاحقة (Aftercare) → خطة منع الانتكاس.</p>
+  <p class="small">تقييم → سحب آمن → تأهيل → رعاية لاحقة → خطة منع الانتكاس.</p>
   <div class="grid">
     <div class="tile"><h3>التقييم الأولي</h3><ul><li>تاريخ التعاطي والمواد والشدة.</li><li>فحوصات السلامة والمخاطر.</li></ul></div>
     <div class="tile"><h3>Detox</h3><ul><li>سحب آمن بإشراف طبي.</li><li>ترطيب ونوم ودعم غذائي.</li></ul></div>
     <div class="tile"><h3>Rehab</h3><ul><li>CBT للإدمان، مهارات رفض، إدارة مثيرات.</li><li>مجموعات دعم/أسرة.</li></ul></div>
     <div class="tile"><h3>Aftercare</h3><ul><li>متابعة أسبوعية أول 3 أشهر.</li><li>نشاطات بديلة صحية.</li></ul></div>
-    <div class="tile"><h3>منع الانتكاس</h3><ul><li>قائمة مثيرات شخصية + بدائل فورية.</li><li>شبكة تواصل سريع.</li></ul></div>
+    <div class="tile"><h3>منع الانتكاس</h3><ul><li>قائمة مثيرات شخصية + بدائل.</li><li>شبكة تواصل فوري.</li></ul></div>
   </div>
   <div class="row" style="margin-top:12px">
     <a class="btn gold" href="/case">اربط مع دراسة الحالة</a>
@@ -541,26 +439,6 @@ BOOK_FORM = """
     <div class="row"><button class="btn gold" type="submit">إرسال عبر واتساب</button><a class="btn alt" href="/">رجوع</a></div>
   </form>
   <script>
-  const KEY='case_state';
-  function persistCase(){
-    const form=document.querySelector('form[action="/case"]');
-    const data={};
-    form.querySelectorAll('input[type=checkbox]').forEach(ch=>{ if(ch.checked) data[ch.name]=true; });
-    data.notes=form.querySelector('[name=notes]')?.value||'';
-    localStorage.setItem(KEY, JSON.stringify(data));
-  }
-  (function restore(){
-    try{
-      const data=JSON.parse(localStorage.getItem(KEY)||'{}');
-      Object.keys(data).forEach(k=>{
-        const el=document.querySelector('[name="'+k+'"]');
-        if(el && el.type==='checkbox') el.checked=true;
-      });
-      if(data.notes){ const n=document.querySelector('[name=notes]'); if(n) n.value=data.notes; }
-    }catch(e){}
-  })();
-</script>
-  <script>
     function validateBook(){
       const phone=document.querySelector('[name="phone"]');
       if(!/^\\d{9,15}$/.test(phone.value||'')){ alert('الرجاء إدخال رقم صحيح (9–15 رقم).'); return false; }
@@ -588,14 +466,13 @@ def book():
     return redirect(wa_link, code=302)
 
 # ========= دراسة الحالة =========
-def c(data,*keys):
+def c(data,*keys):  # helper: count selected
     return sum(1 for k in keys if data.get(k) is not None)
 
-# نموذج موسّع
 FORM_HTML = r"""
 <div class="card">
   <h1>📝 دراسة الحالة</h1>
-  <p class="small">قسّم الأعراض بدقة؛ ستظهر ترشيحات أولية وروابط لـ CBT وبرنامج الإدمان والحجز. <b>اختياراتك تُحفظ تلقائيًا</b>.</p>
+  <div class="small">قسّم الأعراض بدقة؛ ستظهر ترشيحات أولية وروابط لأدوات CBT وبرنامج الإدمان والحجز. <b>اختياراتك تُحفظ تلقائيًا</b>.</div>
 
   <form method="post" action="/case" oninput="persistCase()">
     <div class="grid">
@@ -641,20 +518,30 @@ FORM_HTML = r"""
         <label class="chk"><input type="checkbox" name="negative_symptoms"> أعراض سلبية</label>
         <label class="chk"><input type="checkbox" name="catatonia"> سمات كاتاتونية</label>
         <label class="chk"><input type="checkbox" name="decline_function"> تدهور وظيفي</label>
-        <label class="chk"><input type="checkbox" name="duration_lt_1m"> المدة &lt; شهر</label>
-        <label class="chk"><input type="checkbox" name="duration_ge_1m"> المدة ≥ شهر</label>
-        <label class="chk"><input type="checkbox" name="duration_ge_6m"> المدة ≥ 6 أشهر</label>
+        <label class="chk"><input type="checkbox" name="duration_lt_1m"> المدّة &lt; شهر</label>
+        <label class="chk"><input type="checkbox" name="duration_ge_1m"> المدّة ≥ شهر</label>
+        <label class="chk"><input type="checkbox" name="duration_ge_6m"> المدّة ≥ 6 أشهر</label>
       </div>
 
       <div class="tile"><h3>ثنائي القطب / أعراض الهوس</h3>
-        <label class="chk"><input type="checkbox" name="elevated_mood"> مزاج مرتفع/اندفاع</label>
+        <label class="chk"><input type="checkbox" name="elevated_mood"> مزاج مرتفع/متهوّر</label>
         <label class="chk"><input type="checkbox" name="decreased_sleep_need"> قلة الحاجة للنوم</label>
         <label class="chk"><input type="checkbox" name="grandiosity"> شعور بالعظمة</label>
         <label class="chk"><input type="checkbox" name="racing_thoughts"> أفكار متسارعة</label>
         <label class="chk"><input type="checkbox" name="pressured_speech"> كلام ضاغط</label>
         <label class="chk"><input type="checkbox" name="risky_behavior"> سلوك محفوف بالمخاطر/صرف زائد</label>
-        <label class="chk"><input type="checkbox" name="mania_ge_7d"> استمرار ≥ 7 أيام</label>
-        <label class="chk"><input type="checkbox" name="mania_hospital"> احتاج دخول/تدخل</label>
+        <label class="chk"><input type="checkbox" name="mania_ge_7d"> استمرار الأعراض ≥ 7 أيام</label>
+        <label class="chk"><input type="checkbox" name="mania_hospital"> احتاج دخول/تدخل طبي</label>
+      </div>
+
+      <div class="tile"><h3>اضطرابات إضافية</h3>
+        <label class="chk"><input type="checkbox" name="insomnia"> أرق مستمر</label>
+        <label class="chk"><input type="checkbox" name="hypersomnia"> نوم زائد</label>
+        <label class="chk"><input type="checkbox" name="binge_eating"> نوبات أكل شره</label>
+        <label class="chk"><input type="checkbox" name="restrict_eating"> تقييد في الأكل</label>
+        <label class="chk"><input type="checkbox" name="adhd_inattention"> تشتت/نسيان واضح</label>
+        <label class="chk"><input type="checkbox" name="adhd_hyper"> فرط حركة/اندفاعية</label>
+        <label class="chk"><input type="checkbox" name="asd_social"> صعوبات تواصل/حساسية حسّية (ASD)</label>
       </div>
 
       <div class="tile"><h3>مواد</h3>
@@ -722,6 +609,14 @@ def build_recommendations(data: dict) -> Tuple[List[Tuple[str,str,int]], List[st
         picks.append(("وسواس قهري (OCD)", "وساوس + أفعال قهرية", 80)); go_cbt += ["ERP — وسواس","SA — إيقاف سلوكيات آمنة"]
     if c(data,"flashbacks","hypervigilance","avoidance") >= 2:
         picks.append(("آثار صدمة (PTSD/ASD)", "استرجاعات/يقظة/تجنّب", 70)); go_cbt += ["PTSD — تأريض/تنظيم","MB — يقظة"]
+
+    if c(data,"insomnia","hypersomnia") >= 1:
+        go_cbt += ["SH — نظافة النوم"]
+    if c(data,"binge_eating","restrict_eating") >= 1:
+        picks.append(("مخاوف الأكل", "نمط شره/تقييد", 55))
+        go_cbt += ["PS — حل المشكلات","MB — يقظة"]
+    if c(data,"adhd_inattention","adhd_hyper") >= 2:
+        picks.append(("سمات ADHD", "تشتّت واندفاعية مؤثرة", 60)); go_cbt += ["PS — حل المشكلات","روتين يومي"]
 
     if c(data,"craving","withdrawal","use_harm") >= 2:
         picks.append(("تعاطي مواد", "اشتهاء/انسحاب/استمرار رغم الضرر", 80)); go_cbt += ["RP — منع الانتكاس","PS — حل المشكلات"]
@@ -870,6 +765,7 @@ def health():
 # ========= رؤوس أمان =========
 @app.after_request
 def add_headers(resp):
+    # السماح بـ inline scripts اللازمة للصفحات
     csp = (
         "default-src 'self' data: blob: https://t.me https://wa.me https://api.whatsapp.com; "
         "script-src 'self' 'unsafe-inline' data: blob: https://t.me https://wa.me https://api.whatsapp.com; "
