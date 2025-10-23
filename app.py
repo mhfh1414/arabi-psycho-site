@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# Arabi Psycho — One-File (Purple × Gold) v5.2
-# Pages: Home / Case+DSM (one page, 70+ symptoms) / CBT
-# Fixes in v5.2: robust case→CBT linking, working checklist build/print/share, CSP inline allowed
+# Arabi Psycho — One-File (Purple × Gold) v5.5 FINAL
+# Single file: Home / Case (DSM merged, 70+ symptoms) / CBT with working checklist
+# Includes: Referrals, Print, Share, JSON save, and auto hand-off Case → CBT
 
 import os, json
 from datetime import datetime
@@ -9,7 +9,7 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# ====== Settings (env overrides) ======
+# ========= Settings (env overrides) =========
 BRAND = os.environ.get("BRAND_NAME", "عربي سايكو")
 LOGO  = os.environ.get("LOGO_URL", "https://upload.wikimedia.org/wikipedia/commons/3/36/Emoji_u1f985.svg")
 TG_URL = os.environ.get("TELEGRAM_URL", "https://t.me/arabipsycho")
@@ -17,12 +17,12 @@ WA_URL = os.environ.get("WHATSAPP_URL", "https://wa.me/966530565696")
 WA_BASE = WA_URL.split("?")[0]
 CACHE_BUST = os.environ.get("CACHE_BUST", datetime.utcnow().strftime("%Y%m%d%H%M%S"))
 
-# Referrals:
+# Referrals (WhatsApp deep links)
 PSYCHO_WA = os.environ.get("PSYCHOLOGIST_WA", "https://wa.me/966530565696")
 PSYCH_WA  = os.environ.get("PSYCHIATRIST_WA", "https://wa.me/966530565696")
 SOCIAL_WA = os.environ.get("SOCIAL_WORKER_WA", "https://wa.me/966530565696")
 
-# ====== HTML Shell ======
+# ========= HTML Shell =========
 def shell(title, content, active="home"):
     html = r"""
 <!doctype html><html lang="ar" dir="rtl"><head>
@@ -61,15 +61,27 @@ h1{font-weight:900;font-size:28px} h2{font-weight:800;margin:.2rem 0 .6rem} h3{f
 .header-result{display:flex;align-items:center;gap:12px;margin-bottom:10px}
 .header-result img{width:44px;height:44px;border-radius:10px}
 .footer{color:#fff;margin-top:24px;padding:14px;background:#3a0d72;text-align:center}
-@media print { @page { size: A4; margin: 16mm 14mm; }
-  .side, .footer, .screen-only { display:none !important; }
-  body { background:#fff; font-size:18px; line-height:1.8; }
-  .content { padding:0 !important; }
-  .card { box-shadow:none; border:none; padding:0; }
+#err{position:fixed;inset:10px 10px auto 10px;background:#fff5f5;border:1px solid #ffc1c1;color:#7a1f1f;border-radius:12px;padding:10px;z-index:9999;display:none}
+@media print {
+  @page { size: A4; margin: 16mm 14mm; }
+  .side, .footer, .screen-only { display:none!important }
+  body { background:#fff; font-size:18px; line-height:1.8 }
+  .content { padding:0!important }
+  .card { box-shadow:none; border:none; padding:0 }
   h1{font-size:26px} h2{font-size:22px} h3{font-size:18px}
 }
-</style></head><body>
-<script>window.__BUILD__='[[BUILD]]';</script>
+</style>
+<script>
+window.__BUILD__="[[BUILD]]";
+window.addEventListener('error', e => {
+  const b=document.getElementById('err');
+  if(!b) return;
+  b.style.display='block';
+  b.textContent='JS Error: '+(e.message||'')+' @ '+(e.filename||'')+':'+(e.lineno||'');
+});
+</script>
+</head><body>
+<div id="err"></div>
 <div class="layout">
   <aside class="side">
     <div class="logo"><img src="[[LOGO]]" alt="شعار"/><div>
@@ -101,23 +113,24 @@ h1{font-weight:900;font-size:28px} h2{font-weight:800;margin:.2rem 0 .6rem} h3{f
      .replace("[[CONTENT]]", content)
     return html
 
-# ====== Home ======
+# ========= Home =========
 @app.get("/")
 def home():
     content = """
     <div class="card" style="margin-bottom:14px">
       <h1>مرحبًا بك في [[BRAND]]</h1>
       <div class="small">ابدأ من «دراسة الحالة» لتحديد الأعراض، ثم انتقل لـ «CBT» بخطة جاهزة حسب حالتك.</div>
+      <div class="note">ابدأ بخطوة، فكل رحلةِ تعافٍ تبدأ بقرار. 🌿</div>
     </div>
     <div class="grid">
       <div class="tile"><h3>📝 دراسة الحالة (DSM مدمج)</h3><p class="small">أكثر من 70 عرض — نتيجة قابلة للطباعة والمشاركة والتحويل.</p><a class="btn gold" href="/case">ابدأ الآن</a></div>
-      <div class="tile"><h3>🧠 CBT</h3><p class="small">17 خطة (شاملة الغضب والثقة) + جدول 7/10/14 يوم.</p><a class="btn" href="/cbt">افتح CBT</a></div>
+      <div class="tile"><h3>🧠 CBT</h3><p class="small">17 خطة (تشمل إدارة الغضب والثقة بالنفس) + جدول 7/10/14 يوم.</p><a class="btn" href="/cbt">افتح CBT</a></div>
       <div class="tile"><h3>تواصل سريع</h3><a class="btn tg" href="[[TG_URL]]" target="_blank" rel="noopener">تيليجرام</a> <a class="btn wa" href="[[WA_URL]]" target="_blank" rel="noopener">واتساب</a></div>
     </div>
     """.replace("[[BRAND]]", BRAND).replace("[[TG_URL]]", TG_URL).replace("[[WA_URL]]", WA_URL)
     return shell("الرئيسية — " + BRAND, content, "home")
 
-# ====== Case + DSM (70+ symptoms) ======
+# ========= Case (DSM merged, 70+ symptoms) =========
 CASE_FORM = r"""
 <div class="card">
   <h1>📝 دراسة الحالة — (DSM مدمج)</h1>
@@ -148,6 +161,8 @@ CASE_FORM = r"""
         <label class="badge2"><input type="checkbox" name="hopeless"> تشاؤم/يأس</label>
         <label class="badge2"><input type="checkbox" name="somatic_pain"> آلام جسدية مرتبطة بالمزاج</label>
         <label class="badge2"><input type="checkbox" name="suicidal"> أفكار إيذاء/انتحار</label>
+        <label class="badge2"><input type="checkbox" name="dep_2w"> استمرار ≥ أسبوعين</label>
+        <label class="badge2"><input type="checkbox" name="dep_function"> تأثير على الدراسة/العمل/العلاقات</label>
       </div>
 
       <div class="tile"><h3>🟣 القلق العام</h3>
@@ -171,7 +186,7 @@ CASE_FORM = r"""
       </div>
 
       <div class="tile"><h3>🟣 الوسواس القهري</h3>
-        <label class="badge2"><input type="checkbox" name="obsessions"> وساوس مُلحة</label>
+        <label class="badge2"><input type="checkbox" name="obsessions"> وساوس مُلِحّة</label>
         <label class="badge2"><input type="checkbox" name="compulsions"> أفعال قهرية متكررة</label>
         <label class="badge2"><input type="checkbox" name="contamination"> تلوّث/غسل مفرط</label>
         <label class="badge2"><input type="checkbox" name="checking"> فحص وتفقد متكرر</label>
@@ -261,7 +276,7 @@ CASE_FORM = r"""
   </form>
 
   <script>
-    const KEY='case_state_v2';
+    const KEY='case_state_v55';
     function persistCase(){
       const f=document.querySelector('form[action="/case"]'); const data={};
       f.querySelectorAll('input[type=checkbox]').forEach(ch=>{ if(ch.checked) data[ch.name]=true; });
@@ -288,7 +303,8 @@ def _cnt(d,*keys): return sum(1 for k in keys if d.get(k))
 def suggest_plans(d):
     sug=[]
     # Depression
-    dep_core=_cnt(d,"low_mood","anhedonia"); dep_more=_cnt(d,"fatigue","sleep_issue","appetite_change","worthlessness","poor_concentration","psychomotor","hopeless","somatic_pain")
+    dep_core=_cnt(d,"low_mood","anhedonia")
+    dep_more=_cnt(d,"fatigue","sleep_issue","appetite_change","worthlessness","poor_concentration","psychomotor","hopeless","somatic_pain")
     if dep_core>=1 and (dep_core+dep_more)>=5: sug+=["ba","thought_record","sleep_hygiene","problem_solving"]
     elif dep_core>=1 and (dep_core+dep_more)>=3: sug+=["ba","thought_record","sleep_hygiene"]
     # GAD
@@ -319,6 +335,7 @@ def suggest_plans(d):
     # ASD supportive / social
     if _cnt(d,"asd_social","sensory","rigidity")>=2:
         sug+=["social_skills","self_confidence","problem_solving"]
+
     # Dedup & cap
     seen=set(); ordered=[]
     for k in sug:
@@ -374,8 +391,7 @@ RESULT_JS = r"""
   function saveJSON(){
     const data={
       items:[...document.querySelectorAll('#diag-items li')].map(li=>li.innerText),
-      cbt:[...document.querySelectorAll('.badge2')].map(b=>b.innerText.replace('🔧 ','')),
-      notes:[[NOTES_JSON]],
+      cbt:[...document.querySelectorAll('.badge2.plan')].map(b=>b.dataset.key),
       created_at:new Date().toISOString(), build: window.__BUILD__
     };
     const a=document.createElement('a');
@@ -384,35 +400,32 @@ RESULT_JS = r"""
   }
   function buildShare(){
     const items=[...document.querySelectorAll('#diag-items li')].map(li=>'- '+li.innerText).join('\n');
-    const msg='نتيجة دراسة الحالة — [[BRAND]]\n\n'+items+( [[NOTES_JSON]] ? '\n\nملاحظات: '+[[NOTES_JSON]]:'' )+'\n'+location.origin+'/case';
+    const msg='نتيجة دراسة الحالة — [[BRAND]]\\n\\n'+items+'\\n'+location.origin+'/case';
     const text=encodeURIComponent(msg);
     document.getElementById('share-wa').href='[[WA_BASE]]'+'?text='+text;
     document.getElementById('share-tg').href='https://t.me/share/url?url='+encodeURIComponent(location.origin+'/case')+'&text='+text;
   }
-  buildShare();
   function openCBTWithSuggestions(keys){
     try{ localStorage.setItem('cbt_suggested', JSON.stringify(keys||[])); }catch(e){}
     const qp = keys && keys.length ? ('?suggest='+encodeURIComponent(keys.join(','))) : '';
     location.href = '/cbt'+qp;
   }
+  buildShare();
 </script>
 """
 
 def _render_case_result(picks, plan_keys, notes):
-    PLAN_TITLES = {
+    TITLES = {
       "ba":"BA — تنشيط سلوكي","thought_record":"TR — سجل أفكار","sleep_hygiene":"SH — نظافة النوم",
       "interoceptive_exposure":"IE — تعرّض داخلي","graded_exposure":"GE — تعرّض تدرّجي","ocd_erp":"ERP — وسواس قهري",
       "ptsd_grounding":"PTSD — تأريض/تنظيم","problem_solving":"PS — حلّ المشكلات","worry_time":"WT — وقت القلق",
       "mindfulness":"MB — يقظة ذهنية","behavioral_experiments":"BE — تجارب سلوكية","safety_behaviors":"SA — إيقاف سلوكيات آمنة",
-      "bipolar_routine":"IPSRT — روتين ثنائي القطب","relapse_prevention":"RP — منع الانتكاس (إدمان)",
-      "social_skills":"SS — مهارات اجتماعية",
+      "bipolar_routine":"IPSRT — روتين ثنائي القطب","relapse_prevention":"RP — منع الانتكاس (إدمان)","social_skills":"SS — مهارات اجتماعية",
       "anger_management":"AM — إدارة الغضب","self_confidence":"SC — تعزيز الثقة"
     }
     lis = "".join([f"<li><b>{t}</b> — {w} <span class='small'>({s})</span></li>" for (t,w,s) in picks]) or "<li>لا توجد مؤشرات كافية.</li>"
-    cbt_badges = "".join([f"<span class='badge2'>🔧 {PLAN_TITLES.get(k,k)}</span>" for k in plan_keys]) or "<span class='small'>—</span>"
-    js = RESULT_JS.replace('[[NOTES_JSON]]', repr((notes or "").replace("\n"," ").strip()))\
-                  .replace('[[BRAND]]', BRAND)\
-                  .replace('[[WA_BASE]]', WA_BASE)
+    cbt_badges = "".join([f"<span class='badge2 plan' data-key='{k}'>🔧 {TITLES.get(k,k)}</span>" for k in plan_keys]) or "<span class='small'>—</span>"
+    js = RESULT_JS.replace('[[BRAND]]', BRAND).replace('[[WA_BASE]]', WA_BASE)
     praise = "أحسنت 👏 — كل خطوة وعي تقرّبك من التعافي. ثبّت هذا التقدم 🌿"
     html = f"""
     <div class="card">
@@ -437,7 +450,7 @@ def _render_case_result(picks, plan_keys, notes):
         <button class="btn" onclick="saveJSON()">💾 تنزيل JSON</button>
         <a class="btn wa" id="share-wa" target="_blank" rel="noopener">🟢 مشاركة واتساب</a>
         <a class="btn tg" id="share-tg" target="_blank" rel="noopener">✈️ مشاركة تيليجرام</a>
-        <a class="btn gold" onclick='openCBTWithSuggestions({json.dumps(plan_keys)})'>🧠 فتح CBT (منسّق حسب حالتك)</a>
+        <a class="btn gold" onclick="openCBTWithSuggestions({json.dumps(plan_keys)})">🧠 فتح CBT (منسّق حسب حالتك)</a>
       </div>
 
       <div class="row screen-only" style="margin-top:10px">
@@ -455,7 +468,6 @@ def _render_case_result(picks, plan_keys, notes):
 def case():
     if request.method == "GET":
         return shell("دراسة الحالة — DSM مدمج", CASE_FORM, "case")
-    # Convert incoming form (checkbox presence => True)
     data = {k: True for k in request.form.keys()}
     notes = request.form.get("notes","").strip()
     picks = preliminary_picks(data)
@@ -463,92 +475,16 @@ def case():
     html = _render_case_result(picks, plans, notes)
     return shell("نتيجة دراسة الحالة", html, "case")
 
-# ====== CBT (17 plans: + anger & self-confidence) ======
+# ========= CBT (17 plans: + anger & self-confidence) =========
 CBT_HTML = r"""
 <div class="card">
   <h1>🧠 العلاج المعرفي السلوكي (CBT)</h1>
   <p class="small">اختر خطة/خطة+خطة ثم أنشئ جدول 7/10/14 يوم. <b>إذا جئت من «دراسة الحالة» سنقترح لك خططًا تلقائيًا.</b></p>
 
   <h2>خطط جاهزة (17 خطة)</h2>
-  <div class="grid">
+  <div class="grid" id="plans"></div>
 
-    <div class="tile"><h3 id="t-ba">BA — تنشيط سلوكي</h3><ol>
-      <li>3 نشاطات مُجزية يوميًا.</li><li>قياس مزاج قبل/بعد.</li><li>رفع الصعوبة تدريجيًا.</li></ol>
-      <div class="row"><button class="btn alt" onclick="pick('ba')">اختيار</button><button class="btn" onclick="dl('ba')">تنزيل JSON</button></div></div>
-
-    <div class="tile"><h3 id="t-thought_record">TR — سجل أفكار</h3><ol>
-      <li>موقف→فكرة.</li><li>دلائل مع/ضد.</li><li>بديل متوازن + تجربة.</li></ol>
-      <div class="row"><button class="btn alt" onclick="pick('thought_record')">اختيار</button><button class="btn" onclick="dl('thought_record')">تنزيل JSON</button></div></div>
-
-    <div class="tile"><h3 id="t-sleep_hygiene">SH — نظافة النوم</h3><ol>
-      <li>أوقات ثابتة.</li><li>إيقاف الشاشات 60د.</li><li>لا كافيين قبل 6س.</li></ol>
-      <div class="row"><button class="btn alt" onclick="pick('sleep_hygiene')">اختيار</button><button class="btn" onclick="dl('sleep_hygiene')">تنزيل JSON</button></div></div>
-
-    <div class="tile"><h3 id="t-interoceptive_exposure">IE — تعرّض داخلي</h3><ol>
-      <li>إحداث إحساس آمن.</li><li>منع الطمأنة.</li><li>تكرار حتى الانطفاء.</li></ol>
-      <div class="row"><button class="btn alt" onclick="pick('interoceptive_exposure')">اختيار</button><button class="btn" onclick="dl('interoceptive_exposure')">تنزيل JSON</button></div></div>
-
-    <div class="tile"><h3 id="t-graded_exposure">GE — تعرّض تدرّجي</h3><ol>
-      <li>سُلّم 0→100.</li><li>تعرّض تصاعدي.</li><li>منع التجنّب/الطمأنة.</li></ol>
-      <div class="row"><button class="btn alt" onclick="pick('graded_exposure')">اختيار</button><button class="btn" onclick="dl('graded_exposure')">تنزيل JSON</button></div></div>
-
-    <div class="tile"><h3 id="t-ocd_erp">ERP — وسواس قهري</h3><ol>
-      <li>قائمة وساوس/طقوس.</li><li>ERP 3× أسبوع.</li><li>قياس القلق.</li></ol>
-      <div class="row"><button class="btn alt" onclick="pick('ocd_erp')">اختيار</button><button class="btn" onclick="dl('ocd_erp')">تنزيل JSON</button></div></div>
-
-    <div class="tile"><h3 id="t-ptsd_grounding">PTSD — تأريض/تنظيم</h3><ol>
-      <li>5-4-3-2-1.</li><li>تنفّس هادئ ×10.</li><li>روتين أمان.</li></ol>
-      <div class="row"><button class="btn alt" onclick="pick('ptsd_grounding')">اختيار</button><button class="btn" onclick="dl('ptsd_grounding')">تنزيل JSON</button></div></div>
-
-    <div class="tile"><h3 id="t-problem_solving">PS — حل المشكلات</h3><ol>
-      <li>تعريف دقيق.</li><li>عصف وتقييم.</li><li>خطة ومراجعة.</li></ol>
-      <div class="row"><button class="btn alt" onclick="pick('problem_solving')">اختيار</button><button class="btn" onclick="dl('problem_solving')">تنزيل JSON</button></div></div>
-
-    <div class="tile"><h3 id="t-worry_time">WT — وقت القلق</h3><ol>
-      <li>تأجيل القلق.</li><li>تدوين وسياق.</li><li>عودة للنشاط.</li></ol>
-      <div class="row"><button class="btn alt" onclick="pick('worry_time')">اختيار</button><button class="btn" onclick="dl('worry_time')">تنزيل JSON</button></div></div>
-
-    <div class="tile"><h3 id="t-mindfulness">MB — يقظة ذهنية</h3><ol>
-      <li>تنفّس 5د.</li><li>فحص جسدي.</li><li>وعي غير حاكم.</li></ol>
-      <div class="row"><button class="btn alt" onclick="pick('mindfulness')">اختيار</button><button class="btn" onclick="dl('mindfulness')">تنزيل JSON</button></div></div>
-
-    <div class="tile"><h3 id="t-behavioral_experiments">BE — تجارب سلوكية</h3><ol>
-      <li>فرضية.</li><li>تجربة صغيرة.</li><li>مراجعة دلائل.</li></ol>
-      <div class="row"><button class="btn alt" onclick="pick('behavioral_experiments')">اختيار</button><button class="btn" onclick="dl('behavioral_experiments')">تنزيل JSON</button></div></div>
-
-    <div class="tile"><h3 id="t-safety_behaviors">SA — إيقاف سلوكيات آمنة</h3><ol>
-      <li>حصر السلوكيات.</li><li>تقليل تدريجي.</li><li>بدائل تكيفية.</li></ol>
-      <div class="row"><button class="btn alt" onclick="pick('safety_behaviors')">اختيار</button><button class="btn" onclick="dl('safety_behaviors')">تنزيل JSON</button></div></div>
-
-    <div class="tile"><h3 id="t-bipolar_routine">IPSRT — روتين ثنائي القطب</h3><ol>
-      <li>ثبات نوم/طعام/نشاط.</li><li>مراقبة مزاج.</li><li>إنذارات مبكرة.</li></ol>
-      <div class="row"><button class="btn alt" onclick="pick('bipolar_routine')">اختيار</button><button class="btn" onclick="dl('bipolar_routine')">تنزيل JSON</button></div></div>
-
-    <div class="tile"><h3 id="t-relapse_prevention">RP — منع الانتكاس</h3><ol>
-      <li>مثيرات شخصية.</li><li>بدائل فورية.</li><li>شبكة تواصل.</li></ol>
-      <div class="row"><button class="btn alt" onclick="pick('relapse_prevention')">اختيار</button><button class="btn" onclick="dl('relapse_prevention')">تنزيل JSON</button></div></div>
-
-    <div class="tile"><h3 id="t-social_skills">SS — مهارات اجتماعية</h3><ol>
-      <li>رسائل حازمة.</li><li>تواصل بصري/نبرة.</li><li>تعرّض اجتماعي.</li></ol>
-      <div class="row"><button class="btn alt" onclick="pick('social_skills')">اختيار</button><button class="btn" onclick="dl('social_skills')">تنزيل JSON</button></div></div>
-
-    <div class="tile"><h3 id="t-anger_management">AM — إدارة الغضب</h3><ol>
-      <li>تعرف على إشارات الغضب (جسدية/فكرية).</li>
-      <li>خطة إيقاف مؤقت: تنفّس 4-6-8 + انسحاب قصير.</li>
-      <li>إعادة هيكلة أفكار الغضب + بدائل سلوكية.</li>
-    </ol>
-      <div class="row"><button class="btn alt" onclick="pick('anger_management')">اختيار</button><button class="btn" onclick="dl('anger_management')">تنزيل JSON</button></div></div>
-
-    <div class="tile"><h3 id="t-self_confidence">SC — تعزيز الثقة</h3><ol>
-      <li>سجل إنجازات يومية صغيرة.</li>
-      <li>تعرّض تدريجي لمهام 0→100 (ثقة/مهارة).</li>
-      <li>تدريب العبارات الإيجابية الواقعية.</li>
-    </ol>
-      <div class="row"><button class="btn alt" onclick="pick('self_confidence')">اختيار</button><button class="btn" onclick="dl('self_confidence')">تنزيل JSON</button></div></div>
-
-  </div>
-
-  <h2 style="margin-top:18px">📅 مولّد جدول الأيام (يدعم دمج خطتين)</h2>
+  <h2 style="margin-top:18px">📅 مولّد جدول الأيام</h2>
   <div class="tile">
     <div class="row">
       <label>الخطة A: <select id="planA"></select></label>
@@ -586,20 +522,26 @@ CBT_HTML = r"""
       self_confidence:{title:"SC — تعزيز الثقة",steps:["إنجازات يومية","تعرّض ثقة 0→100","عبارات إيجابية واقعية"]}
     };
 
+    const plansDiv = document.getElementById('plans');
     const selectA=document.getElementById('planA');
     const selectB=document.getElementById('planB');
 
-    (function fill(){
+    (function renderPlans(){
+      let html='';
+      for(const k in PLANS){
+        html += `<div class="tile"><h3 id="t-${k}">${PLANS[k].title}</h3><ol><li>${PLANS[k].steps[0]}</li><li>${PLANS[k].steps[1]}</li><li>${PLANS[k].steps[2]}</li></ol>
+          <div class="row"><button class="btn alt" onclick="pick('${k}')">اختيار</button>
+          <button class="btn" onclick="dl('${k}')">تنزيل JSON</button></div></div>`;
+      }
+      plansDiv.innerHTML = html;
+
       for(const k in PLANS){
         const o=document.createElement('option'); o.value=k; o.textContent=PLANS[k].title; selectA.appendChild(o);
         const o2=document.createElement('option'); o2.value=k; o2.textContent=PLANS[k].title; selectB.appendChild(o2);
       }
-      const saved=JSON.parse(localStorage.getItem('cbt_state')||'{}');
-      selectA.value=saved.planA||'ba';
-      if(saved.planB) selectB.value=saved.planB;
-      if(saved.days) document.getElementById('daysSelect').value=String(saved.days);
+      selectA.value='ba';
 
-      // Highlight suggested plans coming from Case:
+      // read suggestions from query or localStorage
       const qp=new URLSearchParams(location.search); let suggest=qp.get('suggest');
       if(!suggest){
         try{ suggest = (JSON.parse(localStorage.getItem('cbt_suggested')||'[]')||[]).join(','); }catch(e){}
@@ -614,12 +556,7 @@ CBT_HTML = r"""
       }
     })();
 
-    function persist(){
-      const state={planA:selectA.value, planB:selectB.value||'', days:parseInt(document.getElementById('daysSelect').value,10)||7};
-      try{ localStorage.setItem('cbt_state', JSON.stringify(state)); }catch(e){}
-    }
-
-    function pick(key){ selectA.value=key; persist(); window.scrollTo({top:document.getElementById('daysSelect').offsetTop-60,behavior:'smooth'}); }
+    function pick(key){ selectA.value=key; window.scrollTo({top:document.getElementById('daysSelect').offsetTop-60,behavior:'smooth'}); }
 
     function dl(key){
       const data=PLANS[key]||{};
@@ -629,14 +566,13 @@ CBT_HTML = r"""
     }
 
     function buildChecklist(){
-      persist();
       const a = selectA.value; const b = selectB.value; const days = parseInt(document.getElementById('daysSelect').value,10);
       const A = PLANS[a]; const B = PLANS[b] || null;
       if(!A){ alert('اختر خطة أولاً'); return; }
       const steps = [...A.steps, ...(B?B.steps:[])];
       const titles = [A.title].concat(B?[B.title]:[]).join(" + ");
 
-      let html="<h3 style='margin:6px 0'>"+titles+" — جدول "+days+" يوم</h3>";
+      let html=`<h3 style='margin:6px 0'>${titles} — جدول ${days} يوم</h3>`;
       html += "<table class='table'><thead><tr><th>اليوم</th>";
       steps.forEach((s,i)=> html += "<th>"+(i+1)+". "+s+"</th>");
       html += "</tr></thead><tbody>";
@@ -677,21 +613,29 @@ CBT_HTML = r"""
     }
   </script>
 </div>
-"""
+""".replace("[[BRAND]]", BRAND).replace("[[WA_BASE]]", WA_BASE)
 
 @app.get("/cbt")
 def cbt():
-    html = CBT_HTML.replace("[[BRAND]]", BRAND).replace("[[WA_BASE]]", WA_BASE)
-    return shell("CBT — خطط وتمارين", html, "cbt")
+    return shell("CBT — خطط وتمارين", CBT_HTML, "cbt")
 
-# ====== Health & Headers ======
+# ========= Routes =========
+@app.route("/case", methods=["POST","GET"])
+def case_route_alias():
+    # (Alias kept to be safe; both /case decorators map to same function signature.)
+    if request.method == "GET":
+        return shell("دراسة الحالة — DSM مدمج", CASE_FORM, "case")
+    data = {k: True for k in request.form.keys()}
+    notes = request.form.get("notes","").strip()
+    picks = preliminary_picks(data)
+    plans = suggest_plans(data)
+    html = _render_case_result(picks, plans, notes)
+    return shell("نتيجة دراسة الحالة", html, "case")
+
+# ========= Health & Security Headers =========
 @app.get("/health")
 def health():
     return jsonify({"ok": True, "brand": BRAND, "build": CACHE_BUST}), 200
-
-@app.get("/api/version")
-def version():
-    return jsonify({"version": "5.2", "brand": BRAND, "build": CACHE_BUST})
 
 @app.after_request
 def add_headers(resp):
@@ -707,5 +651,5 @@ def add_headers(resp):
 
 if __name__ == "__main__":
     # تشغيل محليًا: python app.py
-    # على Render/Gunicorn: gunicorn app:app
+    # على منصات الاستضافة: gunicorn app:app
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT","10000")))
