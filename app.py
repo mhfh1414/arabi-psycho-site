@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
-# Arabi Psycho — One-File (Purple × Gold) v5.0
+# Arabi Psycho — One-File (Purple × Gold) v5.1
 # Pages: Home / Case+DSM (one page, 70+ symptoms) / CBT
-# Features:
-# - Case page (DSM merged) with 70+ symptoms, smart preliminary suggestions
-# - Result page: print, share, referrals, and "Open CBT" passes suggested plans
-# - CBT: 15 plans + generator 7/10/14 days, suggestions preselected from Case
-# - Purple × Gold theme, RTL Arabic, CSP headers
+# Add-ons in v5.1: Anger Management + Self-Confidence plans linked to Case
 
 import os, json, urllib.parse
 from datetime import datetime
@@ -13,14 +9,14 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# ====== Settings (change via env) ======
+# ====== Settings (env overrides) ======
 BRAND = os.environ.get("BRAND_NAME", "عربي سايكو")
 LOGO  = os.environ.get("LOGO_URL", "https://upload.wikimedia.org/wikipedia/commons/3/36/Emoji_u1f985.svg")
 TG_URL = os.environ.get("TELEGRAM_URL", "https://t.me/arabipsycho")
 WA_URL = os.environ.get("WHATSAPP_URL", "https://wa.me/966530565696")
 CACHE_BUST = os.environ.get("CACHE_BUST", datetime.utcnow().strftime("%Y%m%d%H%M%S"))
 
-# Referrals (can be same number):
+# Referrals:
 PSYCHO_WA = os.environ.get("PSYCHOLOGIST_WA", "https://wa.me/966530565696")
 PSYCH_WA  = os.environ.get("PSYCHIATRIST_WA", "https://wa.me/966530565696")
 SOCIAL_WA = os.environ.get("SOCIAL_WORKER_WA", "https://wa.me/966530565696")
@@ -114,7 +110,7 @@ def home():
     </div>
     <div class="grid">
       <div class="tile"><h3>📝 دراسة الحالة (DSM مدمج)</h3><p class="small">أكثر من 70 عرض — نتيجة قابلة للطباعة والمشاركة والتحويل.</p><a class="btn gold" href="/case">ابدأ الآن</a></div>
-      <div class="tile"><h3>🧠 CBT</h3><p class="small">15 خطة + جدول 7/10/14 يوم — تُحفظ محليًا وتشارك بلمسة.</p><a class="btn" href="/cbt">افتح CBT</a></div>
+      <div class="tile"><h3>🧠 CBT</h3><p class="small">17 خطة (شاملة الغضب والثقة) + جدول 7/10/14 يوم.</p><a class="btn" href="/cbt">افتح CBT</a></div>
       <div class="tile"><h3>تواصل سريع</h3><a class="btn tg" href="[[TG_URL]]" target="_blank" rel="noopener">تيليجرام</a> <a class="btn wa" href="[[WA_URL]]" target="_blank" rel="noopener">واتساب</a></div>
     </div>
     """.replace("[[BRAND]]", BRAND).replace("[[TG_URL]]", TG_URL).replace("[[WA_URL]]", WA_URL)
@@ -288,25 +284,19 @@ CASE_FORM = r"""
 
 def _cnt(d,*keys): return sum(1 for k in keys if d.get(k))
 
-# Map: symptom-driven suggestion to CBT plans (keys used by CBT page)
-# plan keys: ba, thought_record, sleep_hygiene, interoceptive_exposure, graded_exposure,
-# ocd_erp, ptsd_grounding, problem_solving, worry_time, mindfulness, behavioral_experiments,
-# safety_behaviors, bipolar_routine, relapse_prevention, social_skills
 def suggest_plans(d):
     sug=[]
     # Depression
     dep_core=_cnt(d,"low_mood","anhedonia"); dep_more=_cnt(d,"fatigue","sleep_issue","appetite_change","worthlessness","poor_concentration","psychomotor","hopeless","somatic_pain")
     if dep_core>=1 and (dep_core+dep_more)>=5: sug+=["ba","thought_record","sleep_hygiene","problem_solving"]
     elif dep_core>=1 and (dep_core+dep_more)>=3: sug+=["ba","thought_record","sleep_hygiene"]
-    # Safety
-    if d.get("suicidal"): pass  # يظهر تنبيه لكن لا نضيف خطة خاصة
     # GAD
     if _cnt(d,"worry","tension","restlessness","irritability","mind_blank","sleep_anxiety","concentration_anxiety")>=3:
         sug+=["worry_time","mindfulness","problem_solving"]
-    # Panic/Agoraphobia
+    # Panic/Agoraphobia/Social
     if d.get("panic_attacks") or d.get("panic_fear"): sug+=["interoceptive_exposure","safety_behaviors"]
     if d.get("agoraphobia") or d.get("specific_phobia"): sug+=["graded_exposure"]
-    if d.get("social_fear"): sug+=["graded_exposure","social_skills","thought_record"]
+    if d.get("social_fear"): sug+=["graded_exposure","social_skills","thought_record","self_confidence"]
     # OCD
     if d.get("obsessions") and d.get("compulsions"): sug+=["ocd_erp","safety_behaviors","mindfulness"]
     # Trauma
@@ -316,7 +306,7 @@ def suggest_plans(d):
     if _cnt(d,"insomnia","hypersomnia","nightmares","irregular_sleep")>=1: sug+=["sleep_hygiene","mindfulness"]
     # ADHD
     if _cnt(d,"adhd_inattention","adhd_hyper","disorganization","time_blindness")>=2: sug+=["problem_solving","ba"]
-    # Bipolar (psychoeducation + routine)
+    # Bipolar
     if _cnt(d,"elevated_mood","decreased_sleep_need","grandiosity","racing_thoughts","pressured_speech","risk_spending")>=3:
         sug+=["bipolar_routine","sleep_hygiene"]
     # Substance
@@ -324,15 +314,16 @@ def suggest_plans(d):
         sug+=["relapse_prevention","problem_solving","mindfulness"]
     # Personality/anger
     if _cnt(d,"emotion_instability","impulsivity","anger_issues","perfectionism","dependence","social_withdrawal")>=2:
-        sug+=["mindfulness","problem_solving","social_skills"]
-    # ASD supportive
+        sug+=["anger_management","mindfulness","problem_solving","self_confidence"]
+    # ASD supportive / social
     if _cnt(d,"asd_social","sensory","rigidity")>=2:
-        sug+=["social_skills","problem_solving"]
-    # Dedup & order
+        sug+=["social_skills","self_confidence","problem_solving"]
+
+    # Dedup & cap
     seen=set(); ordered=[]
     for k in sug:
         if k not in seen: seen.add(k); ordered.append(k)
-    return ordered[:8]  # نعرض الأهم 8 كحد أعلى
+    return ordered[:10]
 
 def preliminary_picks(d):
     picks=[]
@@ -355,11 +346,9 @@ def preliminary_picks(d):
     if _cnt(d,"flashbacks","hypervigilance","startle","numbing","trauma_avoid","guilt_trauma")>=2:
         picks.append(("آثار صدمة (PTSD/ASD)","استرجاعات/يقظة/تجنّب","درجة 70"))
     # Sleep
-    if _cnt(d,"insomnia","hypersomnia","nightmares","irregular_sleep")>=1:
-        picks.append(("اضطراب نوم","صعوبات في بدء/استمرار النوم/كوابيس","درجة 55"))
+    if _cnt(d,"insomnia","hypersomnia","nightmares","irregular_sleep")>=1: picks.append(("اضطراب نوم","صعوبات بدء/استمرار النوم/كوابيس","درجة 55"))
     # ADHD
-    if _cnt(d,"adhd_inattention","adhd_hyper","disorganization","time_blindness")>=2:
-        picks.append(("سمات ADHD","تشتت/اندفاعية مع أثر وظيفي","درجة 60"))
+    if _cnt(d,"adhd_inattention","adhd_hyper","disorganization","time_blindness")>=2: picks.append(("سمات ADHD","تشتت/اندفاعية مع أثر وظيفي","درجة 60"))
     # Bipolar
     if _cnt(d,"elevated_mood","decreased_sleep_need","grandiosity","racing_thoughts","pressured_speech","risk_spending")>=3:
         picks.append(("سمات هوس/ثنائي القطب","مزاج مرتفع/نوم قليل/اندفاع","درجة 70"))
@@ -367,17 +356,14 @@ def preliminary_picks(d):
     if _cnt(d,"hallucinations","delusions","disorganized_speech","negative_symptoms","catatonia")>=2 and d.get("decline_function"):
         picks.append(("فصام/طيف ذهاني","ذهانية مع أثر وظيفي ملحوظ","درجة 80"))
     # Eating/body
-    if _cnt(d,"binge_eating","restrict_eating","body_image","purging")>=2:
-        picks.append(("اضطراب الأكل","شراهة/تقييد/انشغال بالشكل","درجة 60"))
+    if _cnt(d,"binge_eating","restrict_eating","body_image","purging")>=2: picks.append(("اضطراب الأكل","شراهة/تقييد/انشغال بالشكل","درجة 60"))
     # Substance
-    if _cnt(d,"craving","withdrawal","use_harm","loss_control","relapse_history")>=2:
-        picks.append(("تعاطي مواد","اشتهاء/انسحاب/استمرار رغم الضرر","درجة 80"))
+    if _cnt(d,"craving","withdrawal","use_harm","loss_control","relapse_history")>=2: picks.append(("تعاطي مواد","اشتهاء/انسحاب/استمرار رغم الضرر","درجة 80"))
     # Personality/anger
     if _cnt(d,"emotion_instability","impulsivity","anger_issues","perfectionism","dependence","social_withdrawal")>=3:
         picks.append(("صعوبات تنظيم عاطفي/سمات شخصية","تقلب/اندفاع/غضب/كمالية","درجة 60"))
     # ASD supportive
-    if _cnt(d,"asd_social","sensory","rigidity")>=2:
-        picks.append(("سمات طيف توحّد","تواصل/حساسية/صلابة روتين","درجة 55"))
+    if _cnt(d,"asd_social","sensory","rigidity")>=2: picks.append(("سمات طيف توحّد","تواصل/حساسية/صلابة روتين","درجة 55"))
     # Safety
     if d.get("suicidal"):
         picks.insert(0,("تنبيه أمان","وجود أفكار إيذاء — يُفضّل تواصلًا فوريًا مع مختص/الطوارئ","درجة 99"))
@@ -404,13 +390,8 @@ RESULT_JS = r"""
     document.getElementById('share-tg').href='https://t.me/share/url?url='+encodeURIComponent(location.origin+'/case')+'&text='+text;
   }
   buildShare();
-
-  // نقل الاقتراحات للـCBT
   function openCBTWithSuggestions(keys){
-    try{
-      // نخزن اقتراحات الخطط محليًا ليقرأها /cbt
-      localStorage.setItem('cbt_suggested', JSON.stringify(keys||[]));
-    }catch(e){}
+    try{ localStorage.setItem('cbt_suggested', JSON.stringify(keys||[])); }catch(e){}
     const qp = keys && keys.length ? ('?suggest='+encodeURIComponent(keys.join(','))) : '';
     location.href = '/cbt'+qp;
   }
@@ -418,25 +399,21 @@ RESULT_JS = r"""
 """
 
 def _render_case_result(picks, plan_keys, notes):
-    # Human titles for badges (map will be re-labeled on CBT page anyway)
     PLAN_TITLES = {
       "ba":"BA — تنشيط سلوكي","thought_record":"TR — سجل أفكار","sleep_hygiene":"SH — نظافة النوم",
       "interoceptive_exposure":"IE — تعرّض داخلي","graded_exposure":"GE — تعرّض تدرّجي","ocd_erp":"ERP — وسواس قهري",
       "ptsd_grounding":"PTSD — تأريض/تنظيم","problem_solving":"PS — حلّ المشكلات","worry_time":"WT — وقت القلق",
       "mindfulness":"MB — يقظة ذهنية","behavioral_experiments":"BE — تجارب سلوكية","safety_behaviors":"SA — إيقاف سلوكيات آمنة",
       "bipolar_routine":"IPSRT — روتين ثنائي القطب","relapse_prevention":"RP — منع الانتكاس (إدمان)",
-      "social_skills":"SS — مهارات اجتماعية"
+      "social_skills":"SS — مهارات اجتماعية",
+      "anger_management":"AM — إدارة الغضب","self_confidence":"SC — تعزيز الثقة"
     }
     lis = "".join([f"<li><b>{t}</b> — {w} <span class='small'>({s})</span></li>" for (t,w,s) in picks]) or "<li>لا توجد مؤشرات كافية.</li>"
     cbt_badges = "".join([f"<span class='badge2'>🔧 {PLAN_TITLES.get(k,k)}</span>" for k in plan_keys]) or "<span class='small'>—</span>"
     js = RESULT_JS.replace('[[NOTES_JSON]]', repr((notes or "").replace("\n"," ").strip()))\
                   .replace('[[BRAND]]', BRAND)\
                   .replace('[[WA_BASE]]', WA_URL.split("?")[0])
-
-    # Motivational phrases
     praise = "أحسنت 👏 — كل خطوة وعي تقرّبك من التعافي. ثبّت هذا التقدم 🌿"
-
-    # Build the final HTML
     html = f"""
     <div class="card">
       <div class='header-result'>
@@ -478,7 +455,6 @@ def _render_case_result(picks, plan_keys, notes):
 def case():
     if request.method == "GET":
         return shell("دراسة الحالة — DSM مدمج", CASE_FORM, "case")
-    # POST: collect checked boxes as True
     data = {k: True for k in request.form.keys()}
     notes = request.form.get("notes","").strip()
     picks = preliminary_picks(data)
@@ -486,13 +462,13 @@ def case():
     html = _render_case_result(picks, plans, notes)
     return shell("نتيجة دراسة الحالة", html, "case")
 
-# ====== CBT (15 plans + suggestions via suggest param or localStorage) ======
+# ====== CBT (17 plans: + anger & self-confidence) ======
 CBT_HTML = r"""
 <div class="card">
   <h1>🧠 العلاج المعرفي السلوكي (CBT)</h1>
   <p class="small">اختر خطة/خطة+خطة ثم أنشئ جدول 7/10/14 يوم. <b>إذا جئت من «دراسة الحالة» سنقترح لك خططًا تلقائيًا.</b></p>
 
-  <h2>خطط جاهزة (15 خطة)</h2>
+  <h2>خطط جاهزة (17 خطة)</h2>
   <div class="grid">
 
     <div class="tile"><h3 id="t-ba">BA — تنشيط سلوكي</h3><ol>
@@ -555,6 +531,20 @@ CBT_HTML = r"""
       <li>رسائل حازمة.</li><li>تواصل بصري/نبرة.</li><li>تعرّض اجتماعي.</li></ol>
       <div class="row"><button class="btn alt" onclick="pick('social_skills')">اختيار</button><button class="btn" onclick="dl('social_skills')">تنزيل JSON</button></div></div>
 
+    <div class="tile"><h3 id="t-anger_management">AM — إدارة الغضب</h3><ol>
+      <li>تعرف على إشارات الغضب (جسدية/فكرية).</li>
+      <li>خطة إيقاف مؤقت: تنفّس 4-6-8 + انسحاب قصير.</li>
+      <li>إعادة هيكلة أفكار الغضب + بدائل سلوكية.</li>
+    </ol>
+      <div class="row"><button class="btn alt" onclick="pick('anger_management')">اختيار</button><button class="btn" onclick="dl('anger_management')">تنزيل JSON</button></div></div>
+
+    <div class="tile"><h3 id="t-self_confidence">SC — تعزيز الثقة</h3><ol>
+      <li>سجل إنجازات يومية صغيرة.</li>
+      <li>تعرّض تدريجي لمهام 0→100 (ثقة/مهارة).</li>
+      <li>تدريب العبارات الإيجابية الواقعية.</li>
+    </ol>
+      <div class="row"><button class="btn alt" onclick="pick('self_confidence')">اختيار</button><button class="btn" onclick="dl('self_confidence')">تنزيل JSON</button></div></div>
+
   </div>
 
   <h2 style="margin-top:18px">📅 مولّد جدول الأيام (يدعم دمج خطتين)</h2>
@@ -590,7 +580,9 @@ CBT_HTML = r"""
       safety_behaviors:{title:"SA — إيقاف سلوكيات آمنة",steps:["حصر السلوكيات","تقليل تدريجي","بدائل تكيفية"]},
       bipolar_routine:{title:"IPSRT — روتين ثنائي القطب",steps:["ثبات نوم/طعام/نشاط","مراقبة مزاج يومي","إشارات مبكرة"]},
       relapse_prevention:{title:"RP — منع الانتكاس (إدمان)",steps:["مثيرات شخصية","بدائل فورية","شبكة تواصل"]},
-      social_skills:{title:"SS — مهارات اجتماعية",steps:["رسائل حازمة","تواصل بصري/نبرة","تعرّض اجتماعي"]}
+      social_skills:{title:"SS — مهارات اجتماعية",steps:["رسائل حازمة","تواصل بصري/نبرة","تعرّض اجتماعي"]},
+      anger_management:{title:"AM — إدارة الغضب",steps:["تعرف إشارات الغضب","إيقاف مؤقت 4-6-8","إعادة هيكلة + بدائل"]},
+      self_confidence:{title:"SC — تعزيز الثقة",steps:["إنجازات يومية","تعرّض ثقة 0→100","عبارات إيجابية واقعية"]}
     };
 
     const selectA=document.getElementById('planA');
@@ -606,17 +598,13 @@ CBT_HTML = r"""
       if(saved.planB) selectB.value=saved.planB;
       if(saved.days) document.getElementById('daysSelect').value=String(saved.days);
 
-      // التمايز من دراسة الحالة: نقرأ suggest من query أو من localStorage
       const qp=new URLSearchParams(location.search); let suggest=qp.get('suggest');
       if(!suggest){
         try{ suggest = (JSON.parse(localStorage.getItem('cbt_suggested')||'[]')||[]).join(','); }catch(e){}
       }
       if(suggest){
         const keys = suggest.split(',').map(s=>s.trim()).filter(Boolean);
-        // نبرز الكروت المقترحة ونضبط الخطة A تلقائيًا
-        if(keys.length){
-          selectA.value = PLANS[keys[0]] ? keys[0] : (saved.planA||'ba');
-        }
+        if(keys.length){ selectA.value = PLANS[keys[0]] ? keys[0] : (saved.planA||'ba'); }
         keys.forEach(k=>{
           const h=document.getElementById('t-'+k);
           if(h){ h.style.outline='3px solid var(--g)'; h.style.boxShadow='0 0 0 4px rgba(255,215,0,.25)'; }
