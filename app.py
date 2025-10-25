@@ -2103,22 +2103,212 @@ def add_headers(resp):
     resp.headers['X-Content-Type-Options'] = 'nosniff'
     resp.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
     return resp
-@app.route("/tests")
-def tests_page():
-    return """
-    <html dir='rtl'>
-    <head><meta charset='utf-8'><title>الاختبارات النفسية</title></head>
-    <body style='font-family:Tajawal; background:#f8f6ff; color:#2b1a4c; text-align:center;'>
-        <h1>🧠 الاختبارات النفسية والشخصية</h1>
-        <p>جرّب اختبارات القلق، الاكتئاب، والثقة بالنفس داخل صفحة الاختبارات.</p>
-        <a href='https://arabi-psycho-tests.onrender.com/tests'
-           style='display:inline-block; background:#4b0082; color:#fff;
-                  padding:10px 20px; border-radius:10px; text-decoration:none;'>
-           افتح صفحة الاختبارات 🔗
-        </a>
-    </body></html>
-    """
+# ========= [اختبارات نفسية / شخصية] =========
+# نحط هذا المقطع داخل app.py مع بقية الكود
+# 1) الداتا
+TESTS_DATA = [
+    {
+        "code": "phq9",
+        "name": "مقياس الاكتئاب (PHQ-9)",
+        "desc": "يساعدك تشوف شدة الأعراض الاكتئابية مثل المزاج المنخفض، فقدان المتعة، التعب… آخر أسبوعين.",
+        "items": [
+            "قلة الاهتمام / عدم الاستمتاع بالأشياء",
+            "شعور بالحزن أو الإحباط أو اليأس",
+            "مشاكل في النوم (زيادة أو قلة نوم)",
+            "إرهاق أو نقص بالطاقة",
+            "قلة الشهية أو أكل كثير",
+            "شعور سيّئ عن نفسك أو أنك فاشل",
+            "صعوبة التركيز (مثل قراءة أو متابعة برنامج)",
+            "الحركة بطيئة جدًا أو عصبية/تململ زيادة",
+            "أفكار أنك تؤذي نفسك أو لو أنك تموت"
+        ],
+        "score_help": "10 نقاط أو أكثر = يفضل تقييم طبي/نفسي حقيقي، خصوصًا لو فيه أفكار أذى."
+    },
+    {
+        "code": "gad7",
+        "name": "مقياس القلق (GAD-7)",
+        "desc": "يقيس التوتر/القلق العام: توتر، صعوبة تهدئة النفس، عصبية، توتر عضلي… آخر أسبوعين.",
+        "items": [
+            "الشعور بالتوتر أو القلق أو على أعصابك",
+            "عدم القدرة على إيقاف القلق أو السيطرة عليه",
+            "القلق الزائد عن أشياء يومية",
+            "صعوبة الاسترخاء",
+            "الشعور بالعصبية لدرجة صعبة تجلس بثبات",
+            "الانزعاج بسهولة أو العصبية السريعة",
+            "الخوف من أن شيء سيء سيحدث"
+        ],
+        "score_help": "درجات أعلى تعني قلق أعلى. إذا القلق معطل حياتك اليومية → استشارة مختص."
+    },
+    {
+        "code": "asd",
+        "name": "مؤشرات تشتت/اندفاع (نمط ADHD ذاتي)",
+        "desc": "مؤشرات صعوبة التركيز/الاندفاع/التنظيم عند البالغين. هذا مو تشخيص رسمي.",
+        "items": [
+            "سهولة التشتت / الشرود الذهني",
+            "نسيان مواعيد أو أشياء أساسية",
+            "تترك المهام مفتوحة بدون إنهاء",
+            "اندفاع بالكلام / المقاطعة قبل دورك",
+            "صعوبة الجلوس فترة طويلة بدون حركة",
+            "ضعف تنظيم الوقت / دايم مستعجل أو متأخر",
+            "تأجيل مزمن حتى مع مهام مهمة"
+        ],
+        "score_help": "إذا أغلبها ‘غالبًا/دائمًا’ وتسبب مشاكل في الدراسة/الوظيفة → فحص عند مختص اضطرابات انتباه."
+    },
+    {
+        "code": "bsi_ang",
+        "name": "غضب / تحكم في الانفعال",
+        "desc": "يساعدك تعرف إذا الغضب صار سريع أو خطر على علاقاتك/أمانك.",
+        "items": [
+            "أصرخ أو أنفجر بسرعة",
+            "أندم بعد النوبة لأنني جرحت شخص قريب مني",
+            "صعوبة أهدى لما أحد يستفزني",
+            "أفكّر أنفجر جسديًا (أكسر شي/أدفع أحد)",
+            "يحصل خلافات حادة بشكل متكرر",
+            "أقسو على نفسي بعد الغضب ('أنا وحش / ما أستحق أحد')"
+        ],
+        "score_help": "لو فيه غضب مع عنف أو أفكار أذية لغيرك → تدخل عاجل مع مختص أو تدخل أسري آمن."
+    }
+]
 
+# 2) صفحة HTML ديناميكية
+def render_tests_page():
+    cards_html_parts = []
+    for t in TESTS_DATA:
+        q_list = []
+        for idx, q in enumerate(t["items"], start=1):
+            q_html = f"""
+            <div style="border:1px solid #000;border-radius:12px;padding:10px;margin-bottom:10px;background:#fff;">
+              <div style="font-weight:700;color:var(--p);margin-bottom:6px;">{idx}. {q}</div>
+              <div class="row" style="gap:6px;">
+                <label class="badge2"><input type="radio" name="{t['code']}_q{idx}" value="0"> أبداً</label>
+                <label class="badge2"><input type="radio" name="{t['code']}_q{idx}" value="1"> أحياناً</label>
+                <label class="badge2"><input type="radio" name="{t['code']}_q{idx}" value="2"> غالباً</label>
+                <label class="badge2"><input type="radio" name="{t['code']}_q{idx}" value="3"> دائمًا / مزعج جدًا</label>
+              </div>
+            </div>
+            """
+            q_list.append(q_html)
+
+        card_html = f"""
+        <div class="tile" style="border:2px solid #000;">
+          <h3 style="margin-bottom:4px;">🧪 {t['name']}</h3>
+          <p class="small" style="margin-top:0;">{t['desc']}</p>
+
+          <div style="font-size:.8rem;font-weight:600;color:#5c4a00;background:var(--note-bg);border:1px dashed var(--note-border);border-radius:var(--radius-md);padding:8px 10px;margin:10px 0;">
+            اختيارك هنا يبقى في جهازك فقط (localStorage). ما نرسل أي إجابات للسيرفر.
+          </div>
+
+          <div id="{t['code']}_block">
+            {''.join(q_list)}
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <button class="btn gold" onclick="calcScore('{t['code']}', {len(t['items'])}, '{t['score_help']}')">احسب الدرجة</button>
+            <button class="btn alt" onclick="saveTest('{t['code']}', '{t['name']}', {len(t['items'])})">💾 حفظ JSON</button>
+          </div>
+
+          <div id="{t['code']}_result" style="margin-top:10px;font-size:.9rem;font-weight:700;color:#4b0082;"></div>
+        </div>
+        """
+        cards_html_parts.append(card_html)
+
+    page_html = f"""
+<div class="card" style="border:2px solid #000;">
+  <h1>🧪 اختبارات نفسية / شخصية (تقدير ذاتي)</h1>
+
+  <div class="note">
+    مهم:
+    <br/>• هذه أدوات فرز مبدئي (screening)، مو تشخيص نهائي.
+    <br/>• الدرجات العالية = يستحسن تشوف مختص بشري.
+    <br/>• لو عندك أفكار أذى نفسك أو غيرك هذا طارئ، مو مجرد اختبار.
+  </div>
+
+  <p class="small">
+    اختر إجابة لكل سؤال، بعدها اضغط "احسب الدرجة".
+    تقدر بعدين تحفظ نتيجتك كملف JSON عندك.
+  </p>
+
+  <div class="grid">
+    {''.join(cards_html_parts)}
+  </div>
+
+  <div class="divider"></div>
+
+  <h3>هل تحتاج تتكلم مع أحد الآن؟</h3>
+  <div class="row screen-only">
+    <a class="btn" href="{PSYCHO_WA}" target="_blank" rel="noopener">👨‍🎓 أخصائي نفسي (CBT / سلوكي)</a>
+    <a class="btn" href="{PSYCH_WA}"  target="_blank" rel="noopener">👨‍⚕️ طبيب نفسي (أدوية)</a>
+    <a class="btn" href="{SOCIAL_WA}" target="_blank" rel="noopener">🤝 أخصائي اجتماعي (دعم حياتي)</a>
+  </div>
+
+  <script>
+    // يحسب مجموع النقاط
+    function calcScore(code, count, helpText){
+      let total = 0;
+      for (let i=1;i<=count;i++){
+        const sel = document.querySelector('input[name="'+code+'_q'+i+'"]:checked');
+        if(sel){ total += parseInt(sel.value,10); }
+      }
+      const out = document.getElementById(code+'_result');
+      out.innerHTML = "الدرجة الكلية: <b>"+total+"</b><br/>"+helpText+
+        "<br/><span style='font-size:.8rem;color:#a00;'>🔴 لو فيه أفكار أذى للنفس/انتحار، هذا طارئ طبي فوري.</span>";
+
+      // حفظ آخر نتيجة محلي في المتصفح
+      try {{
+        const key = "test_"+code+"_last";
+        localStorage.setItem(key, JSON.stringify({{
+          score: total,
+          ts: new Date().toISOString()
+        }}));
+      }} catch(e) {{}}
+    }
+
+    // حفظ ملف JSON عند المستخدم
+    function saveTest(code, name, count){
+      const answers = [];
+      for (let i=1;i<=count;i++){
+        const sel = document.querySelector('input[name="'+code+'_q'+i+'"]:checked');
+        answers.push(sel ? parseInt(sel.value,10) : null);
+      }
+      const data = {{
+        test: code,
+        name: name,
+        answers: answers,
+        build: window.__BUILD__,
+        saved_at: new Date().toISOString()
+      }};
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(
+        new Blob([JSON.stringify(data,null,2)], {{type:'application/json'}})
+      );
+      a.download = code + "_result.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+  </script>
+
+</div>
+"""
+    return page_html
+
+# 3) الراوت الجديد /tests
+@app.get("/tests")
+def tests():
+    return shell("اختبارات نفسية / شخصية — " + BRAND, render_tests_page(), "tests")
+
+# ========= [تعديل الشيل/السايدبار لازم تكون مسويها فوق] =========
+# لازم تتأكد إن دالة shell فيها هذا اللينك داخل <nav class="nav">:
+#
+#       <a href="/tests" class="[[A_TESTS]]">
+#         <span>🧪 اختبارات نفسية</span>
+#         <small>اكتئاب · قلق · غضب</small>
+#       </a>
+#
+# وبرضو داخل return تبع shell() في سكة .replace(...) لازم ضفت:
+#      .replace("[[A_TESTS]]", "active" if active=="tests" else "")\
+#
+# بعد كذا انتهى.
+# ========= [نهاية مقطع الاختبارات] =========
 # ======================== Run ========================
 
 if __name__ == "__main__":
