@@ -2241,9 +2241,10 @@ def render_tests_page():
     <a class="btn" href="{SOCIAL_WA}" target="_blank" rel="noopener">🤝 أخصائي اجتماعي (دعم حياتي)</a>
   </div>
   <script>
+//<script>
 // حساب مجموع النقاط وعرض النتيجة
 function calcScore(code, count, helpText) {
-  let total = :0
+  let total = 0;
   for (let i = 1; i <= count; i++) {
     const sel = document.querySelector('input[name="'+code+'_'+i+'"]:checked');
     if (sel) {
