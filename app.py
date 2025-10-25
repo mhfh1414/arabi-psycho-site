@@ -2240,25 +2240,44 @@ def render_tests_page():
     <a class="btn" href="{PSYCH_WA}"  target="_blank" rel="noopener">👨‍⚕️ طبيب نفسي (أدوية)</a>
     <a class="btn" href="{SOCIAL_WA}" target="_blank" rel="noopener">🤝 أخصائي اجتماعي (دعم حياتي)</a>
   </div>
-
-  <script>
-    // يحسب مجموع النقاط
-    function calcScore(code, count, helpText){
-      let total = 0;
-      const out = document.getElementById(code + '_result');
-      out.innerHTML = "الدرجة الكلية: <b>" + total + "</b><br/>" + helpText +
-        "<br/><span style='font-size:.8rem;color:#a00;'>🔴 لو فيه أفكار أذى للنفس/انتحار، هذا طارئ طبي فوري.</span>";
-
-      // نحفظ النتيجة مؤقتاً بالمتصفح
-      try {
-        const key = "test_" + code + "_last";
-        localStorage.setItem(key, JSON.stringify({
-          score: total,
-          ts: new Date().toISOString()
-        }));
-      } catch(e) {}
+<script>
+// يحسب مجموع النقاط ويعرض النتيجة
+function calcScore(code, count, helpText){
+  let total = 0;
+  for (let i = 1; i <= count; i++){
+    const sel = document.querySelector('input[name="'+code+'_'+i+'"]:checked');
+    if(sel){
+      total += parseInt(sel.value || "0", 10);
     }
-  </script>
+  }
+
+  const out = document.getElementById(code + "_result");
+
+  // نعرض النتيجة بشكل نصي آمن
+  const text =
+    "الدرجة الكُلّية: " + total +
+    "\n\n" +
+    helpText +
+    "\n\n" +
+    "مهم: هذه ليست تشخيص نهائي. لو النتيجة عالية جدًا وتضايقك، تواصل مع مختص.";
+
+  // نرسلها <pre> عشان يحافظ على السطور
+  out.innerHTML = "<pre style='font-size:0.9rem; line-height:1.6; white-space:pre-wrap; background:#fff7d1; border:1px solid #e5c100; border-radius:8px; padding:10px; color:#2b1a4c;'>" +
+    text.replace(/</g,"&lt;") +
+    "</pre>";
+
+  // نحفظ آخر نتيجة محليًا (اختياري)
+  try {
+    const key = "test_" + code + "_last";
+    localStorage.setItem(key, JSON.stringify({
+      score: total,
+      tips: helpText,
+      ts: new Date().toISOString()
+    }));
+  } catch(e) {}
+}
+</script>
+  
 
 </div>
 """
