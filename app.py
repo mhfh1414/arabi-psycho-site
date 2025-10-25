@@ -2548,6 +2548,362 @@ def tests_page():
 </div>
 """
     return page_html
+    # ======================== /tests ========================
+# صفحة اختبارات نفسية بسيطة (اكتئاب / قلق) مع جمع النقاط بالـ JS فقط.
+# ملاحظة: هذا للتوعية فقط، مو تشخيص طبي.
+
+@app.get("/tests")
+def tests_page():
+    return """
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>الاختبارات النفسية الأولية</title>
+<style>
+  body{
+    background:#f8f6ff;
+    font-family:"Tajawal","Segoe UI",system-ui,sans-serif;
+    line-height:1.8;
+    color:#2b1a4c;
+    padding:20px;
+    direction:rtl;
+    text-align:right;
+  }
+  .wrap{
+    max-width:800px;
+    margin:0 auto;
+    background:#fff;
+    border:2px solid #000;
+    border-radius:16px;
+    box-shadow:0 10px 24px rgba(0,0,0,.06);
+    padding:20px 20px 32px;
+  }
+  h1{
+    font-size:24px;
+    font-weight:800;
+    color:#4B0082;
+    margin-top:0;
+    line-height:1.4;
+  }
+  h2{
+    font-size:18px;
+    font-weight:800;
+    color:#4B0082;
+    margin:24px 0 8px;
+  }
+  .note{
+    background:#fff7d1;
+    border:1px dashed #e5c100;
+    border-radius:10px;
+    padding:10px 12px;
+    font-size:.9rem;
+    font-weight:600;
+    color:#5c4a00;
+    box-shadow:0 4px 10px rgba(0,0,0,.05);
+    line-height:1.6;
+  }
+  .q-block{
+    background:#fafafa;
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:14px;
+    margin:10px 0 16px;
+    box-shadow:0 6px 12px rgba(0,0,0,.04);
+  }
+  .q-title{
+    font-weight:700;
+    color:#2b1a4c;
+    font-size:1rem;
+    margin-bottom:8px;
+  }
+  label.opt{
+    display:block;
+    background:#fff;
+    border:1px solid #ccc;
+    border-radius:10px;
+    padding:8px 10px;
+    margin:6px 0;
+    font-size:.9rem;
+    line-height:1.5;
+    cursor:pointer;
+    box-shadow:0 4px 10px rgba(0,0,0,.03);
+  }
+  label.opt input{
+    margin-left:6px;
+    transform:scale(1.2);
+  }
+  .btn-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:20px;
+  }
+  .btn{
+    background:#4B0082;
+    color:#fff;
+    font-weight:800;
+    text-decoration:none;
+    border:1px solid #000;
+    border-radius:10px;
+    box-shadow:0 4px 12px rgba(0,0,0,.25);
+    padding:10px 14px;
+    font-size:.9rem;
+    line-height:1.4;
+    cursor:pointer;
+    min-width:fit-content;
+    text-align:center;
+  }
+  .btn.gold{
+    background:#FFD700;
+    color:#4B0082;
+  }
+  .result-box{
+    margin-top:24px;
+    background:#fff;
+    border:2px solid #000;
+    border-radius:12px;
+    padding:16px;
+    box-shadow:0 10px 24px rgba(0,0,0,.07);
+    font-size:.95rem;
+    line-height:1.7;
+  }
+  .result-box h3{
+    margin-top:0;
+    font-size:1rem;
+    font-weight:800;
+    color:#4B0082;
+  }
+  .danger{
+    color:#a00000;
+    font-weight:700;
+  }
+  .links-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:16px;
+  }
+  .mini-link{
+    background:#fff;
+    border:1px solid #000;
+    border-radius:10px;
+    padding:8px 10px;
+    font-weight:700;
+    font-size:.8rem;
+    text-decoration:none;
+    color:#4B0082;
+    box-shadow:0 4px 10px rgba(0,0,0,.1);
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h1>🧪 اختبارات أولية (اكتئاب / قلق)</h1>
+
+  <div class="note">
+    هذي أسئلة سريعة تساعدك تشوف "هل الوضع يستاهل اهتمام؟".
+    مو تشخيص طبي نهائي، ولا تغني عن دكتور أو أخصائي.
+    لو فيه أفكار انتحار/إيذاء نفسك أو غيرك 👇 هذا طارئ.
+  </div>
+
+  <!-- ===== اكتئاب (نمط PHQ-9 مبسّط) ===== -->
+  <h2>أولًا: المزاج / الاكتئاب آخر أسبوعين</h2>
+
+  <div class="q-block">
+    <div class="q-title">1. مزاج منخفض / إحساس بالحزن أو الفراغ أغلب اليوم؟</div>
+    <label class="opt"><input type="radio" name="dep1" value="0">تقريبًا أبدًا</label>
+    <label class="opt"><input type="radio" name="dep1" value="1">بعض الأيام</label>
+    <label class="opt"><input type="radio" name="dep1" value="2">نصف الوقت تقريبًا</label>
+    <label class="opt"><input type="radio" name="dep1" value="3">تقريبًا كل يوم</label>
+  </div>
+
+  <div class="q-block">
+    <div class="q-title">2. فقدان الاهتمام / ما عاد تتهنى بأشياء كنت تحبها؟</div>
+    <label class="opt"><input type="radio" name="dep2" value="0">تقريبًا أبدًا</label>
+    <label class="opt"><input type="radio" name="dep2" value="1">بعض الأيام</label>
+    <label class="opt"><input type="radio" name="dep2" value="2">نصف الوقت تقريبًا</label>
+    <label class="opt"><input type="radio" name="dep2" value="3">تقريبًا كل يوم</label>
+  </div>
+
+  <div class="q-block">
+    <div class="q-title">3. نومك (صعوبة نوم / نوم كثير بزيادة / تقوم تعبان)؟</div>
+    <label class="opt"><input type="radio" name="dep3" value="0">تقريبًا أبدًا</label>
+    <label class="opt"><input type="radio" name="dep3" value="1">بعض الأيام</label>
+    <label class="opt"><input type="radio" name="dep3" value="2">نصف الوقت تقريبًا</label>
+    <label class="opt"><input type="radio" name="dep3" value="3">تقريبًا كل يوم</label>
+  </div>
+
+  <div class="q-block">
+    <div class="q-title">4. إحساس بالتعب / نقص طاقة حتى لو ما سويت شيء كبير؟</div>
+    <label class="opt"><input type="radio" name="dep4" value="0">تقريبًا أبدًا</label>
+    <label class="opt"><input type="radio" name="dep4" value="1">بعض الأيام</label>
+    <label class="opt"><input type="radio" name="dep4" value="2">نصف الوقت تقريبًا</label>
+    <label class="opt"><input type="radio" name="dep4" value="3">تقريبًا كل يوم</label>
+  </div>
+
+  <div class="q-block">
+    <div class="q-title">5. جلد ذات / إحساس إنك فاشل أو عبء على الناس؟</div>
+    <label class="opt"><input type="radio" name="dep5" value="0">تقريبًا أبدًا</label>
+    <label class="opt"><input type="radio" name="dep5" value="1">بعض الأيام</label>
+    <label class="opt"><input type="radio" name="dep5" value="2">نصف الوقت تقريبًا</label>
+    <label class="opt"><input type="radio" name="dep5" value="3">تقريبًا كل يوم</label>
+  </div>
+
+  <div class="q-block">
+    <div class="q-title">6. صعوبة تركيز (تشتت، ما تقدر تكمّل شغلة بسيطة)؟</div>
+    <label class="opt"><input type="radio" name="dep6" value="0">تقريبًا أبدًا</label>
+    <label class="opt"><input type="radio" name="dep6" value="1">بعض الأيام</label>
+    <label class="opt"><input type="radio" name="dep6" value="2">نصف الوقت تقريبًا</label>
+    <label class="opt"><input type="radio" name="dep6" value="3">تقريبًا كل يوم</label>
+  </div>
+
+  <div class="q-block">
+    <div class="q-title danger">7. أفكار أذى نفسك / ما تبي تكمل / تمني الموت؟</div>
+    <label class="opt"><input type="radio" name="dep7" value="0">أبدًا ما جاني كذا</label>
+    <label class="opt"><input type="radio" name="dep7" value="1">مر علي شوي</label>
+    <label class="opt"><input type="radio" name="dep7" value="2">يوميًا تقريبًا</label>
+    <label class="opt"><input type="radio" name="dep7" value="3">أفكار قوية ومخيفة الآن</label>
+  </div>
+
+  <!-- ===== قلق (GAD-7 مبسّط) ===== -->
+  <h2>ثانيًا: القلق / التوتر آخر أسبوعين</h2>
+
+  <div class="q-block">
+    <div class="q-title">1. قلق أو توتر زيادة عن اللزوم، صعب تهديه؟</div>
+    <label class="opt"><input type="radio" name="anx1" value="0">تقريبًا أبدًا</label>
+    <label class="opt"><input type="radio" name="anx1" value="1">بعض الأيام</label>
+    <label class="opt"><input type="radio" name="anx1" value="2">نصف الوقت تقريبًا</label>
+    <label class="opt"><input type="radio" name="anx1" value="3">تقريبًا كل يوم</label>
+  </div>
+
+  <div class="q-block">
+    <div class="q-title">2. صعوبة تتحكم بالقلق / يسيطر على بالك؟</div>
+    <label class="opt"><input type="radio" name="anx2" value="0">تقريبًا أبدًا</label>
+    <label class="opt"><input type="radio" name="anx2" value="1">بعض الأيام</label>
+    <label class="opt"><input type="radio" name="anx2" value="2">نصف الوقت تقريبًا</label>
+    <label class="opt"><input type="radio" name="anx2" value="3">تقريبًا كل يوم</label>
+  </div>
+
+  <div class="q-block">
+    <div class="q-title">3. توتر جسدي (شد عضلات، قلب يدق بقوة، تململ)؟</div>
+    <label class="opt"><input type="radio" name="anx3" value="0">تقريبًا أبدًا</label>
+    <label class="opt"><input type="radio" name="anx3" value="1">بعض الأيام</label>
+    <label class="opt"><input type="radio" name="anx3" value="2">نصف الوقت تقريبًا</label>
+    <label class="opt"><input type="radio" name="anx3" value="3">تقريبًا كل يوم</label>
+  </div>
+
+  <div class="q-block">
+    <div class="q-title">4. صرت عصبي وسريع الانفعال بسهولة؟</div>
+    <label class="opt"><input type="radio" name="anx4" value="0">تقريبًا أبدًا</label>
+    <label class="opt"><input type="radio" name="anx4" value="1">بعض الأيام</label>
+    <label class="opt"><input type="radio" name="anx4" value="2">نصف الوقت تقريبًا</label>
+    <label class="opt"><input type="radio" name="anx4" value="3">تقريبًا كل يوم</label>
+  </div>
+
+  <div class="q-block">
+    <div class="q-title">5. صعوبة تهدى / تهدي مخك قبل النوم؟</div>
+    <label class="opt"><input type="radio" name="anx5" value="0">تقريبًا أبدًا</label>
+    <label class="opt"><input type="radio" name="anx5" value="1">بعض الأيام</label>
+    <label class="opt"><input type="radio" name="anx5" value="2">نصف الوقت تقريبًا</label>
+    <label class="opt"><input type="radio" name="anx5" value="3">تقريبًا كل يوم</label>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn gold" onclick="calcAll()">احسب النتيجة</button>
+    <a class="btn" href="/">🏠 الرئيسية</a>
+    <a class="btn" href="/case">📝 دراسة الحالة</a>
+    <a class="btn" href="/cbt">🧠 CBT</a>
+    <a class="btn" href="/pharm">💊 الأدوية</a>
+  </div>
+
+  <div id="resultsBox" class="result-box" style="display:none;">
+    <h3>نتيجتك المبدئية</h3>
+    <div id="resText" style="white-space:pre-line"></div>
+
+    <div class="links-row">
+      <a class="mini-link" href="/cbt">خطط CBT لك</a>
+      <a class="mini-link" href="/case">إعادة دراسة الحالة</a>
+      <a class="mini-link" href="/pharm">معلومات الأدوية</a>
+    </div>
+
+    <div style="margin-top:12px;font-size:.8rem;color:#555;line-height:1.6;">
+      هذا الكلام للتوعية فقط، مو بديل تشخيص طبي رسمي.
+      لو فيه أفكار أذى نفسك أو غيرك: هذا طارئ، لازم دعم فوري.
+    </div>
+  </div>
+
+</div>
+
+<script>
+function sumGroup(prefix, count){
+  let total = 0;
+  for(let i=1;i<=count;i++){
+    const sel = document.querySelector('input[name="'+prefix+i+'"]:checked');
+    if(sel){
+      total += parseInt(sel.value,10);
+    }
+  }
+  return total;
+}
+
+function levelDesc(score, type){
+  // type = "dep" أو "anx"
+  // وصف بسيط بناءً على مجموع النقاط
+  if(type==="dep"){
+    if(score>=15) return "أعراض اكتئابية عالية. تحتاج تدخل مهني بسرعة.";
+    if(score>=10) return "أعراض اكتئابية متوسطة. واضح أنك تعاني، مهم تتكلم مع مختص.";
+    if(score>=5)  return "أعراض اكتئابية خفيفة/ملحوظة. راقب مزاجك وخذها جد.";
+    return "أعراض اكتئابية قليلة حسب إجاباتك.";
+  }
+  if(type==="anx"){
+    if(score>=15) return "توتر/قلق عالي جدًا مأثر على يومك.";
+    if(score>=10) return "قلق متوسط. واضح أنه مسبب ضغط عليك.";
+    if(score>=5)  return "قلق خفيف/ملحوظ. انتبه لنومك وتنفسك.";
+    return "قلق منخفض حسب إجاباتك.";
+  }
+  return "";
+}
+
+function calcAll(){
+  const depScore = sumGroup("dep",7);
+  const anxScore = sumGroup("anx",5);
+
+  let crisis = false;
+  const dep7 = document.querySelector('input[name="dep7"]:checked');
+  if(dep7){
+    const v = parseInt(dep7.value,10);
+    if(v>=2){ crisis = true; }
+  }
+
+  let text = "";
+  text += "مجموع (اكتئاب/المزاج): " + depScore + "/21\n";
+  text += levelDesc(depScore,"dep") + "\n\n";
+
+  text += "مجموع (القلق/التوتر): " + anxScore + "/15\n";
+  text += levelDesc(anxScore,"anx") + "\n\n";
+
+  if(crisis){
+    text += "🚨 تنبيه أمان مهم:\n";
+    text += "ذكرت أفكار إيذاء/انتحار قوية.\n";
+    text += "هذا وضع طارئ، لازم تواصل مع مختص الآن أو دعم طوارئ محلّي.\n";
+  } else {
+    text += "💡 نصيحة:\n";
+    text += "لو حسّيت الوضع قاعد يطلع عن سيطرتك، خلك شجاع واطلب مساعدة مهنية.\n";
+  }
+
+  const box  = document.getElementById("resultsBox");
+  const out  = document.getElementById("resText");
+  out.textContent = text;
+  box.style.display = "block";
+}
+</script>
+
+</body>
+</html>
+"""
 # ======================== Run ========================
 
 if __name__ == "__main__":
