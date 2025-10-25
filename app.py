@@ -2103,7 +2103,9 @@ def add_headers(resp):
     resp.headers['X-Content-Type-Options'] = 'nosniff'
     resp.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
     return resp
-
+@app.route('/tests')
+def show_tests():
+    return render_template('tests.html')
 
 # ======================== Run ========================
 
