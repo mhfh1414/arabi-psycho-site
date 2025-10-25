@@ -2103,9 +2103,21 @@ def add_headers(resp):
     resp.headers['X-Content-Type-Options'] = 'nosniff'
     resp.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
     return resp
-@app.route('/tests')
-def show_tests():
-    return render_template('tests.html')
+@app.route("/tests")
+def tests_page():
+    return """
+    <html dir='rtl'>
+    <head><meta charset='utf-8'><title>الاختبارات النفسية</title></head>
+    <body style='font-family:Tajawal; background:#f8f6ff; color:#2b1a4c; text-align:center;'>
+        <h1>🧠 الاختبارات النفسية والشخصية</h1>
+        <p>جرّب اختبارات القلق، الاكتئاب، والثقة بالنفس داخل صفحة الاختبارات.</p>
+        <a href='https://arabi-psycho-tests.onrender.com/tests'
+           style='display:inline-block; background:#4b0082; color:#fff;
+                  padding:10px 20px; border-radius:10px; text-decoration:none;'>
+           افتح صفحة الاختبارات 🔗
+        </a>
+    </body></html>
+    """
 
 # ======================== Run ========================
 
