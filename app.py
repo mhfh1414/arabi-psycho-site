@@ -2310,23 +2310,245 @@ def render_tests_page():
     return page_html
 
 # 3) الراوت الجديد /tests
-@app.get("/tests")
-def tests():
-    return shell("اختبارات نفسية / شخصية — " + BRAND, render_tests_page(), "tests")
+@app.route("/tests")
+def tests_page():
+    page_html = r"""
+<div class="card" style="border:2px solid #000;max-width:900px;margin:auto;">
+  <h1>🧪 اختبارات نفسية / شخصية (مساعدة ذاتية)</h1>
 
-# ========= [تعديل الشيل/السايدبار لازم تكون مسويها فوق] =========
-# لازم تتأكد إن دالة shell فيها هذا اللينك داخل <nav class="nav">:
-#
-#       <a href="/tests" class="[[A_TESTS]]">
-#         <span>🧪 اختبارات نفسية</span>
-#         <small>اكتئاب · قلق · غضب</small>
-#       </a>
-#
-# وبرضو داخل return تبع shell() في سكة .replace(...) لازم ضفت:
-#      .replace("[[A_TESTS]]", "active" if active=="tests" else "")\
-#
-# بعد كذا انتهى.
-# ========= [نهاية مقطع الاختبارات] =========
+  <div class="small">
+    هذه الأدوات تعطيك فكرة عن نمط الأعراض أو السمات، مو تشخيص طبي رسمي.
+    إذا النتيجة عالية جدًا أو فيها خطر على سلامتك، تواصل مع مختص فورًا.
+  </div>
+
+  <div class="note">
+    ⚠️ النتائج تُحسب محليًا في جهازك (JavaScript + localStorage)
+    وما تنرفع لسيرفر. يعني خصوصيتك عندك.
+  </div>
+
+  <h2 style="margin-top:24px">اختَر اختبار:</h2>
+
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;">
+    <div class="tile" style="border:1px solid #000;">
+      <h3>اكتئاب / مزاج منخفض (تقريبي)</h3>
+      <p class="small">
+        أسئلة عن المزاج، الطاقة، الإحساس بالقيمة الذاتية، والأفكار السلبية.
+      </p>
+      <button class="btn gold" onclick="openTest('dep')">ابدأ</button>
+    </div>
+
+    <div class="tile" style="border:1px solid #000;">
+      <h3>قلق عام / توتر مزمن</h3>
+      <p class="small">
+        قلق زائد، صعوبة تهدئة المخ، شد عضلي، نوم متأثر.
+      </p>
+      <button class="btn gold" onclick="openTest('anx')">ابدأ</button>
+    </div>
+
+    <div class="tile" style="border:1px solid #000;">
+      <h3>نوبات هلع / خوف من الهلع</h3>
+      <p class="small">
+        أسئلة حول الأعراض الجسدية المفاجئة، الخوف من تكرارها، وتجنّب أماكن.
+      </p>
+      <button class="btn gold" onclick="openTest('panic')">ابدأ</button>
+    </div>
+
+    <div class="tile" style="border:1px solid #000;">
+      <h3>تنظيم الغضب / الاندفاع</h3>
+      <p class="small">
+        هل الغضب يطلع بسرعة وبقوة؟ هل تندم بعد الانفجار؟
+      </p>
+      <button class="btn gold" onclick="openTest('anger')">ابدأ</button>
+    </div>
+
+    <div class="tile" style="border:1px solid #000;">
+      <h3>تشتت / تفرّد الانتباه (سمات ADHD)</h3>
+      <p class="small">
+        تشتت، نسيان، عدم تنظيم، اندفاع.
+      </p>
+      <button class="btn gold" onclick="openTest('adhd')">ابدأ</button>
+    </div>
+  </div>
+
+  <div class="divider" style="margin-top:24px;"></div>
+
+  <h2 id="test-title" style="display:none;margin-top:10px;"></h2>
+
+  <form id="test-form" style="display:none;">
+    <div id="test-questions" class="small" style="line-height:1.9;"></div>
+
+    <div class="row" style="margin-top:16px;flex-wrap:wrap;">
+      <button class="btn gold" type="button" onclick="calcScore()">احسب الدرجة</button>
+      <button class="btn alt" type="button" onclick="resetTest()">مسح</button>
+      <button class="btn" type="button" onclick="window.print()">🖨️ طباعة</button>
+    </div>
+
+    <div id="score-box" class="note" style="margin-top:16px; display:none;"></div>
+  </form>
+
+  <div class="divider" style="margin-top:24px;"></div>
+
+  <div class="row screen-only" style="margin-top:10px">
+    <a class="btn wa" href="{WA_URL}" target="_blank" rel="noopener">🟢 واتساب دعم</a>
+    <a class="btn tg" href="{TG_URL}" target="_blank" rel="noopener">✈️ تيليجرام دعم</a>
+    <a class="btn" href="{PSYCHO_WA}" target="_blank" rel="noopener">👨‍🎓 أخصائي نفسي</a>
+    <a class="btn" href="{PSYCH_WA}"  target="_blank" rel="noopener">👨‍⚕️ طبيب نفسي</a>
+  </div>
+
+  <script>
+    // بنك الأسئلة
+    // كل اختبار له:
+    //  title: عنوان
+    //  help:  نص توضيح بعد الحساب
+    //  items: مصفوفة أسئلة (0=أبدا ... 3=شديد مثلا)
+    const TESTS = {
+      dep: {
+        title: "مؤشرات مزاج منخفض / اكتئاب",
+        help: "درجة أعلى = مزاج منخفض وتأثير واضح على الحياة اليومية. هذا لا يغني عن تقييم مختص. لو فيه أفكار إيذاء النفس/انتحار لازم دعم عاجل.",
+        items: [
+          "أحس مزاجي نازل/حزين أغلب اليوم؟",
+          "صرت أفقد الاهتمام أو المتعة بالأشياء اللي كانت تهمني؟",
+          "تعب شديد / طاقة منخفضة حتى لو ما سويت شي؟",
+          "نوم مضروب (أرق أو نوم كثير جدًا)؟",
+          "أحس بقيمة ذاتية منخفضة / جلد ذاتي / ذنب؟",
+          "تركيزي صار أضعف / أفكاري بطيئة؟",
+          "أفكار الموت / الانسحاب من الحياة / ما أبغى أكمّل؟"
+        ]
+      },
+      anx: {
+        title: "قلق معمّم / توتر مستمر",
+        help: "درجة أعلى = قلق عالي أو توتر جسدي/ذهني مستمر. لو القلق قاعد يخرب نومك أو شغلك أو علاقاتك اطلب دعم.",
+        items: [
+          "أقلق على أشياء كثيرة بنفس الوقت وصعب أوقف التفكير؟",
+          "عضلاتي مشدودة / جسمي متوتر أغلب الوقت؟",
+          "صرت أنفجر بسرعة (نرفزة/انفعال عالي)؟",
+          "القلق مأثر على نومي؟",
+          "انتباهي/تركيزي يروح بسرعة بسبب القلق؟",
+          "قلبي يدق بسرعة/أحس برجفة أو ضيق صدر بدون سبب واضح؟",
+          "أخاف إنه بيصير شي سيء قريب (كارثة جاية)؟"
+        ]
+      },
+      panic: {
+        title: "نوبات هلع / خوف من الهلع",
+        help: "درجة أعلى = احتمال وجود نوبات هلع أو خوف/تجنّب بسببها. نوبات الهلع بحد ذاتها مو قاتلة، لكن الإحساس فعلاً يخوّف. لو توصل لحد ما تظن أنك بتموت اتصل بمختص.",
+        items: [
+          "صار لي فجأة خفقان قوي / صعوبة تنفس / دوخة / إحساس بموت قريب؟",
+          "الفجعة كانت خلال دقائق، قوية جدًا؟",
+          "بعدها بقي عندي خوف إنها ترجع؟",
+          "صرت أتجنّب أماكن أو مواقف عشان ما تجيني النوبة؟",
+          "أحتاج أحد يكون جنبي (شعور أمان) عشان أطلع لبعض الأماكن؟",
+          "أقرأ جسمي وأراقب أي إحساس بسيط وأفسره كأنه خطر كبير؟"
+        ]
+      },
+      anger: {
+        title: "التحكم بالغضب / الاندفاع",
+        help: "درجة أعلى = صعوبة تهدئة الغضب أو اندفاع بالأفعال/الكلام قبل التفكير. لو الغضب يسبب أذى لنفسك أو للي حولك اطلب تدخل محترف.",
+        items: [
+          "أغضب بسرعة وبقوة أكثر من أغلب الناس؟",
+          "أصرخ/أكسر/أهدد بدون ما أفكر؟",
+          "بعد ما أهدى أندم على اللي قلت/سويت؟",
+          "أحس الغضب يطلع بدون تحكم، كأنه ينفجر؟",
+          "الناس حولي يخافون من ردة فعلي؟",
+          "الغضب يخرب علاقاتي أو شغلي؟"
+        ]
+      },
+      adhd: {
+        title: "سمات تشتت/اندفاع (نمط ADHD)",
+        help: "درجة أعلى = صعوبة مستمرة في الانتباه/التنظيم/الوقت، أو اندفاع. التشخيص الرسمي لاضطراب فرط الحركة وتشتت الانتباه لازم يكون من مختص ويشمل تاريخ من الطفولة.",
+        items: [
+          "أنسى أشياء أساسية (مواعيد، أغراض، مهام) بسهولة؟",
+          "أدخل في مهام وأتشتت بسرعة حتى لو مهمة؟",
+          "أأجل بشكل مزمن وأتورط في آخر لحظة؟",
+          "صعب أجلس مكاني بدون حركة / أتوتر بسرعة؟",
+          "أقاطع الناس أو أتكلم قبل ما يخلصوا؟",
+          "أضيع الإحساس بالوقت وأتأخر كثير؟",
+          "التنظيم اليومي (أوراق/فلوس/مشتريات) فوضى؟"
+        ]
+      }
+    };
+
+    // الحالة الحالية
+    let currentCode = null;
+
+    // فتح اختبار
+    function openTest(code){
+      if(!TESTS[code]) return;
+      currentCode = code;
+
+      const boxTitle = document.getElementById('test-title');
+      const formEl   = document.getElementById('test-form');
+      const qBox     = document.getElementById('test-questions');
+      const scoreBox = document.getElementById('score-box');
+
+      // عنوان
+      boxTitle.textContent = "📋 " + TESTS[code].title;
+      boxTitle.style.display = 'block';
+
+      // بناء الأسئلة
+      const items = TESTS[code].items;
+      let html = "<div style='font-size:.95rem;color:#2b1a4c;'>";
+      html += "<p><b>التعليمات:</b> لكل سطر اختر أقرب شي لك بالفترة الحالية.<br/>0 = أبداً / نادرًا &nbsp;·&nbsp; 1 = شوي &nbsp;·&nbsp; 2 = واضح &nbsp;·&nbsp; 3 = شديد</p>";
+      for(let i=0;i<items.length;i++){
+        html += "<div style='margin:10px 0;padding:12px;border:1px solid #ddd;border-radius:8px;background:#fff;box-shadow:0 4px 10px rgba(0,0,0,.03);'>";
+        html += "<div style='margin-bottom:8px;font-weight:600;color:#4b0082;'>"+(i+1)+") "+items[i]+"</div>";
+        html += "<label class='badge2' style='margin-left:8px;'>0 <input type='radio' name='q"+i+"' value='0'></label>";
+        html += "<label class='badge2' style='margin-left:8px;'>1 <input type='radio' name='q"+i+"' value='1'></label>";
+        html += "<label class='badge2' style='margin-left:8px;'>2 <input type='radio' name='q"+i+"' value='2'></label>";
+        html += "<label class='badge2' style='margin-left:8px;'>3 <input type='radio' name='q"+i+"' value='3'></label>";
+        html += "</div>";
+      }
+      html += "</div>";
+
+      qBox.innerHTML = html;
+      formEl.style.display = 'block';
+      scoreBox.style.display = 'none';
+      scoreBox.innerHTML = '';
+      window.scrollTo({top: boxTitle.offsetTop-20, behavior:'smooth'});
+    }
+
+    // مسح
+    function resetTest(){
+      if(!currentCode) return;
+      const formEl   = document.getElementById('test-form');
+      const scoreBox = document.getElementById('score-box');
+      formEl.querySelectorAll('input[type=radio]').forEach(r => { r.checked = false; });
+      scoreBox.style.display='none';
+      scoreBox.innerHTML='';
+    }
+
+    // حساب الدرجة
+    function calcScore(){
+      if(!currentCode || !TESTS[currentCode]) return;
+      const items = TESTS[currentCode].items;
+      let total = 0;
+      for (let i=0;i<items.length;i++){
+        const sel = document.querySelector('input[name="q'+i+'"]:checked');
+        if(sel){
+          total += parseInt(sel.value,10);
+        }
+      }
+
+      const helpText = TESTS[currentCode].help;
+      const scoreBox = document.getElementById('score-box');
+      scoreBox.style.display='block';
+      scoreBox.innerHTML =
+        "الدرجة الكلية: <b>"+total+"</b><br/>"+
+        helpText+
+        "<br/><span style='font-size:.8rem;color:#a00;'>🔴 في حال وجود أفكار أذى للنفس أو للآخرين: هذا طارئ نفسي/طبي الآن، لا تنتظر.</span>";
+
+      // حفظ محلي
+      try{
+        localStorage.setItem(
+          "last_score_"+currentCode,
+          JSON.stringify({score:total, ts:new Date().toISOString()})
+        );
+      }catch(e){}
+    }
+  </script>
+
+</div>
+"""
+    return page_html
 # ======================== Run ========================
 
 if __name__ == "__main__":
