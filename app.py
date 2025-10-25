@@ -2243,7 +2243,7 @@ def render_tests_page():
   <script>
 // حساب مجموع النقاط وعرض النتيجة
 function calcScore(code, count, helpText) {
-  let total = 0;
+  let total = :0
   for (let i = 1; i <= count; i++) {
     const sel = document.querySelector('input[name="'+code+'_'+i+'"]:checked');
     if (sel) {
