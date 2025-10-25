@@ -2245,6 +2245,24 @@ def render_tests_page():
     // يحسب مجموع النقاط
     function calcScore(code, count, helpText){
       let total = 0;
+      const out = document.getElementById(code + '_result');
+      out.innerHTML = "الدرجة الكلية: <b>" + total + "</b><br/>" + helpText +
+        "<br/><span style='font-size:.8rem;color:#a00;'>🔴 لو فيه أفكار أذى للنفس/انتحار، هذا طارئ طبي فوري.</span>";
+
+      // نحفظ النتيجة مؤقتاً بالمتصفح
+      try {
+        const key = "test_" + code + "_last";
+        localStorage.setItem(key, JSON.stringify({
+          score: total,
+          ts: new Date().toISOString()
+        }));
+      } catch(e) {}
+    }
+  </script>
+
+</div>
+"""
+    return page_html
       for (let i=1;i<=count;i++){
         const sel = document.querySelector('input[name="'+code+'_q'+i+'"]:checked');
         if(sel){ total += parseInt(sel.value,10); }
