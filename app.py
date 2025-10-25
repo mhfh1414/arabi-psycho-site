@@ -2279,7 +2279,6 @@ def render_tests_page():
           ts: new Date().toISOString()
         }}));
       }} catch(e) {{}}
-    }
 
     // حفظ ملف JSON عند المستخدم
     function saveTest(code, name, count){
