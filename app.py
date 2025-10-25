@@ -2241,7 +2241,7 @@ def render_tests_page():
     <a class="btn" href="{SOCIAL_WA}" target="_blank" rel="noopener">🤝 أخصائي اجتماعي (دعم حياتي)</a>
   </div>
   <script>
-// النقاط / يعرض نتيجة
+// النقاط / عرض نتيجة
 function calcScore(code, count, helpText){
   let total = 0;
   for (let i = 1; i <= count; i++){
@@ -2252,14 +2252,11 @@ function calcScore(code, count, helpText){
   }
 
   const out = document.getElementById(code + "_result");
-
-  // نبين النتيجة مؤقتًا للمستخدم
   out.innerHTML = "<p>المجموع الكلي: <b>" + total + "</b><br/><br/>"
     + helpText +
-    "<br/><span style='font-size:.8rem;color:#a00;'>🔴 هذه ليست تشخيص نهائي طبي. إذا فيه خطر على نفسك أو غيرك تواصل دعم طارئ.</span>"
+    "<br/><span style='font-size:.8rem;color:#a00;'>⚠️ هذه ليست تشخيصًا نهائيًا. إذا لديك خطر على نفسك أو غيرك تواصل فورًا مع الدعم النفسي الطارئ.</span>"
     + "</p>";
 
-  // نخزّن آخر نسخة محلياً (localStorage) عشان ما تضيع عليه إذا رجع
   try {
     const key = "test_history_" + code;
     localStorage.setItem(key, JSON.stringify({
