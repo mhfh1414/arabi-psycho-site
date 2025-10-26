@@ -2412,18 +2412,65 @@ function calcScore(code, count, helpText) {
 </div>
 """
     return page_html
-
-@app.route("/tests")
 @app.route("/tests")
 def tests_page():
-    page_html = r"""
-    <div class="card" style="border:2px solid #000;max-width:900px;margin:auto;padding:15px;">
-        <h1>اختبارات نفسية / شخصية مساعدة</h1>
-        <p class="small">هذه الأدوات تعطيك فكرة عن نمط التفكير أو المشاعر أو السلوك. ليست تشخيصاً طبياً ولكنها تساعدك على فهم نفسك أكثر.</p>
-        <div class="note">تنبيه: إذا كانت النتيجة عالية جداً أو فيها خطر على سلامتك، تواصل مع مختص فوراً.</div>
+    page_html = """
+    <div class="card" style="border:2px solid #000;max-width:900px;margin:auto;padding:15px;line-height:1.6;font-family:sans-serif;">
+        <h1>اختبارات نفسية / شخصية (مساعدة فقط)</h1>
+
+        <p class="small" style="font-size:0.95rem;color:#222;">
+            هذه الأدوات تعطيك مؤشر مبدئي عن نمط التفكير أو المشاعر أو السلوك. هذه ليست تشخيصاً طبياً أو خطة علاج، لكنها قد تساعدك تفهم نفسك أكثر.
+        </p>
+
+        <div class="note" style="background:#fff3cd;border:1px solid #e0c000;border-radius:6px;padding:10px;font-size:0.9rem;color:#000;margin-top:10px;">
+            تنبيه مهم: إذا كانت النتيجة عالية جداً أو فيها خطر على نفسك أو غيرك، اطلب مساعدة فورية من مختص أو تواصل مع الطوارئ في منطقتك. لا تعتمد فقط على نتيجة الأداة.
+        </div>
+    </div>
+
+    <h2 style="margin-top:24px;text-align:center;">اختر اختبار من القائمة 👇</h2>
+
+    <div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;max-width:1000px;margin:20px auto;">
+        <div class="test-card" style="border:1px solid #999;border-radius:8px;padding:12px;">
+            <h3 style="margin-top:0;">مقياس القلق العام (GAD-7)</h3>
+            <p style="font-size:0.9rem;color:#333;">
+                أداة سريعة لقياس شدة القلق خلال آخر أسبوعين.
+            </p>
+            <a href="/tests/gad7" style="display:inline-block;background:#0044aa;color:#fff;padding:8px 12px;border-radius:6px;text-decoration:none;">ابدأ الاختبار</a>
+        </div>
+
+        <div class="test-card" style="border:1px solid #999;border-radius:8px;padding:12px;">
+            <h3 style="margin-top:0;">مقياس الاكتئاب (PHQ-9)</h3>
+            <p style="font-size:0.9rem;color:#333;">
+                أداة تساعد على تتبع الأعراض المزاجية مثل الحزن وفقد المتعة.
+            </p>
+            <a href="/tests/phq9" style="display:inline-block;background:#0044aa;color:#fff;padding:8px 12px;border-radius:6px;text-decoration:none;">ابدأ الاختبار</a>
+        </div>
+
+        <div class="test-card" style="border:1px solid #999;border-radius:8px;padding:12px;">
+            <h3 style="margin-top:0;">مقياس التوتر والإجهاد</h3>
+            <p style="font-size:0.9rem;color:#333;">
+                يساعدك تعرف إذا الضغط اليومي تعدّى حدك الصحي.
+            </p>
+            <a href="/tests/stress" style="display:inline-block;background:#0044aa;color:#fff;padding:8px 12px;border-radius:6px;text-decoration:none;">ابدأ الاختبار</a>
+        </div>
+
+        <div class="test-card" style="border:1px solid #999;border-radius:8px;padding:12px;">
+            <h3 style="margin-top:0;">مقياس الأفكار القهرية / السلوكية (وسواس)</h3>
+            <p style="font-size:0.9rem;color:#333;">
+                فحص سريع لأنماط مثل التحقق المتكرر أو الغسل أو العد.
+            </p>
+            <a href="/tests/ocd" style="display:inline-block;background:#0044aa;color:#fff;padding:8px 12px;border-radius:6px;text-decoration:none;">ابدأ الاختبار</a>
+        </div>
+    </div>
+
+    <div style="max-width:900px;margin:30px auto;font-size:0.8rem;color:#444;line-height:1.5;">
+        <p>
+            ملاحظة الخصوصية: الأجوبة تُجمع محلياً مؤقتاً فقط داخل متصفحك (localStorage) لعرض النتيجة لك. لا يتم إرسال النتائج للسيرفر.
+        </p>
     </div>
     """
     return page_html
+
       <h3>اكتئاب / مزاج منخفض (تقريبي)</h3>
       <p class="small">
         أسئلة عن المزاج، الطاقة، الإحساس بالقيمة الذاتية، والأفكار السلبية.
