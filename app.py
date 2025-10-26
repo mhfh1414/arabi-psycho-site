@@ -4426,6 +4426,415 @@ def tests_page():
 
 
 # ======================== (نهاية مقطع /tests) ========================
+# ======================== /tests ========================
+# صفحة اختبارات نفسية/شخصية بسيطة للتثقيف الذاتي فقط
+
+@app.route("/tests")
+def tests_page():
+    page_html = r"""<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>اختبارات نفسية / شخصية</title>
+
+<style>
+body{
+  font-family: Tahoma, Arial, sans-serif;
+  background:#f8f8ff;
+  color:#222;
+  margin:0;
+  padding:16px;
+  direction:rtl;
+  text-align:right;
+}
+.wrapper{
+  max-width:900px;
+  margin:0 auto 24px auto;
+  border:2px solid #000;
+  background:#fff;
+  padding:16px;
+}
+h1,h2,h3{
+  margin-top:0;
+  font-size:1.3rem;
+  line-height:1.5;
+}
+.note{
+  border:1px solid #000;
+  background:#fff8d5;
+  padding:12px;
+  font-size:.9rem;
+  line-height:1.6;
+  margin:12px 0;
+}
+.small{
+  font-size:.9rem;
+  line-height:1.6;
+  color:#000;
+}
+.table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:12px;
+  font-size:.9rem;
+}
+.table th,
+.table td{
+  border:1px solid #000;
+  padding:8px;
+  vertical-align:top;
+  text-align:center;
+}
+.table th:first-child,
+.table td:first-child{
+  text-align:right;
+  min-width:200px;
+}
+.row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:flex-start;
+  margin-top:12px;
+}
+.btn{
+  display:inline-block;
+  background:#004080;
+  color:#fff;
+  border:2px solid #000;
+  padding:8px 12px;
+  font-size:.9rem;
+  text-decoration:none;
+  cursor:pointer;
+}
+.btn.gold{
+  background:#d4a20b;
+  color:#000;
+}
+.btn.alt{
+  background:#fff;
+  color:#000;
+}
+.tile{
+  border:1px solid #000;
+  background:#fff;
+  padding:12px;
+  margin-top:12px;
+}
+.divider{
+  border-top:2px solid #000;
+  margin-top:24px;
+  margin-bottom:16px;
+}
+select{
+  font-size:1rem;
+  padding:4px 6px;
+}
+</style>
+</head>
+
+<body>
+<div class="wrapper">
+
+  <h1>اختبارات نفسية / شخصية (تقييم ذاتي سريع)</h1>
+
+  <div class="note">
+    <div style="font-weight:bold;">⚠️ تنبيه مهم:</div>
+    <div class="small">
+      • هذه الاختبارات للتثقيف فقط، وليست تشخيص طبي نهائي.<br/>
+      • لا توقف دواءك ولا تبدأ علاج جديد بدون مختص.<br/>
+      • إذا فيه خطر على نفسك أو على الآخرين كلم مختص فوريًا.
+    </div>
+  </div>
+
+  <div class="tile" style="border:1px solid #000; margin-bottom:16px;">
+    <label class="small" style="font-weight:700;">
+      اختر الاختبار:
+      <br/>
+      <select id="testPicker" onchange="showTest()" style="margin-top:6px;">
+        <option value="phq9">اكتئاب (PHQ-9 مبسّط)</option>
+        <option value="gad7">قلق عام (GAD-7 مبسّط)</option>
+        <option value="audit">استخدام مواد/كحول (توعوي)</option>
+        <option value="adhd">تشتت/اندفاع (مؤشرات للبالغين)</option>
+        <option value="anger">حدة الغضب / فقدان السيطرة</option>
+        <option value="selfesteem">تقدير الذات / الثقة بالنفس</option>
+      </select>
+    </label>
+  </div>
+
+  <!-- مكان عرض الأسئلة -->
+  <div id="testArea" class="tile" style="border:1px solid #000;">
+    جاري التحميل...
+  </div>
+
+  <div class="divider"></div>
+
+  <h3>تحتاج تتكلم مع شخص الآن؟</h3>
+  <div class="row" style="margin-top:8px;">
+    <a class="btn" href="{SOCIAL_WA}" target="_blank" rel="noopener">أخصائي اجتماعي (مساندة حياتية)</a>
+    <a class="btn" href="{PSYCHO_WA}" target="_blank" rel="noopener">أخصائي نفسي سلوكي/علاجي</a>
+    <a class="btn" href="{PSYCH_WA}" target="_blank" rel="noopener">طبيب نفسي (تشخيص/أدوية)</a>
+  </div>
+
+  <div class="divider"></div>
+
+  <h2 style="margin-top:0;">طريقة الاستخدام</h2>
+  <div class="small">
+    1. اختر اختبار من الأعلى.<br/>
+    2. جاوب بصراحة بدون تفكير طويل.<br/>
+    3. اضغط "احسب الدرجة".<br/>
+    4. النتيجة بس عشان تفهم حالك أكثر، مش تشخيص رسمي.
+  </div>
+
+</div>
+
+<script>
+// ===== بنك الاختبارات ==================================================
+const TEST_BANK = {
+  phq9: {
+    code: "phq9",
+    title: "أعراض اكتئابية (PHQ-9 مبسّط)",
+    desc: "خلال آخر أسبوعين، كم مرة شعرت بالآتي:",
+    help: "نقاط أعلى = أعراض اكتئابية أكثر. لو النتيجة عالية ومعها أفكار إيذاء النفس أو يأس شديد لازم دعم مختص الآن.",
+    answers: [
+      "أبدًا / تقريبًا أبدًا (0)",
+      "أيام قليلة (1)",
+      "أغلب الأيام (2)",
+      "تقريبًا كل يوم (3)"
+    ],
+    questions: [
+      "مزاج حزين / إحساس بالفراغ",
+      "قلة المتعة أو فقدان الاهتمام بأشياء تحبها",
+      "مشاكل نوم (قلة أو زيادة)",
+      "إرهاق أو نقص في الطاقة",
+      "تغيّر الشهية (أقل بكثير أو أكل زائد)",
+      "شعور بالذنب أو جلد الذات أو (أنا فاشل)",
+      "صعوبة التركيز / التفكير ببطء",
+      "بطء واضح في الحركة أو عصبية زائدة واضحة للناس",
+      "أفكار أن الحياة بلا قيمة أو أفكار أذى الذات"
+    ]
+  },
+
+  gad7: {
+    code: "gad7",
+    title: "قلق معمّم / توتر (GAD-7 مبسّط)",
+    desc: "آخر أسبوعين، لأي درجة ضايقتك هذه الأمور:",
+    help: "نقاط أعلى = قلق مستمر/مزعج. لو القلق يعطلك عن نومك أو شغلك أو علاقتك اطلب تقييم مهني.",
+    answers: [
+      "أبدًا تقريبًا (0)",
+      "أيام قليلة (1)",
+      "أكثر من النصف (2)",
+      "تقريبًا كل يوم (3)"
+    ],
+    questions: [
+      "توتر شديد / على أعصابي",
+      "ما أقدر أوقف القلق أو أتحكم فيه",
+      "قلق على أشياء كثيرة بنفس الوقت",
+      "صعوبة أسترخي",
+      "تململ / ما أقدر أجلس هادي",
+      "انزعاج بسرعة / تحسس جسدي (شد، نبض)",
+      "خوف من حدوث شيء سيء"
+    ]
+  },
+
+  audit: {
+    code: "audit",
+    title: "سلوك تعاطي (مواد/كحول) — توعوي",
+    desc: "هذا الجزء للتوعية فقط حول علاقتك بالمواد:",
+    help: "درجة أعلى = مخاطرة أعلى. لو في اعتماد يومي أو أعراض انسحاب جسدية لازم طبيب مختص/عيادة متخصصة.",
+    answers: [
+      "أبدًا (0)",
+      "أحيانًا / نادر (1)",
+      "أسبوعيًا تقريبًا (2)",
+      "يوميًا أو شبه يومي (3)"
+    ],
+    questions: [
+      "أستخدم حتى لو قلت لنفسي (اليوم لا)",
+      "أستخدم أكثر مما كنت ناوي",
+      "أحس باحتياج قوي / اشتهاء قوي",
+      "استمريت رغم مشاكل صحية/عائلية واضحة",
+      "قريب قال لي: وضعك صار خطر",
+      "صرت أستخدم بسرّية",
+      "أخاف لو أوقف فجأة يصير انسحاب قوي"
+    ]
+  },
+
+  adhd: {
+    code: "adhd",
+    title: "سمات تشتت/اندفاع (بالغين)",
+    desc: "خلال الأشهر الأخيرة، كم يحصل معك التالي:",
+    help: "درجة أعلى = سمات تشبه ADHD. هذا ليس تشخيص رسمي. لو التأثير قوي على دوامك أو حياتك اطلب تقييم متخصص.",
+    answers: [
+      "نادراً / أبدًا (0)",
+      "أحيانًا (1)",
+      "كثير (2)",
+      "شبه دائم (3)"
+    ],
+    questions: [
+      "أغلط بأشياء بسيطة لأن تركيزي يطيح",
+      "أفقد أغراضي (مفاتيح، أوراق، جوال...)",
+      "أكره وأأجل المهام المملة حتى لو ضرورية",
+      "أقاطع الناس قبل يكمّلون كلامهم",
+      "أتحرك كثير / أهز رجولي وأنا لازم أكون هادي",
+      "أأجل لين آخر لحظة دائم",
+      "أتلخبط بالوقت وأتأخر كثير"
+    ]
+  },
+
+  anger: {
+    code: "anger",
+    title: "حدة الغضب / فقدان السيطرة",
+    desc: "آخر شهر: لأي درجة هذا حقيقي بالنسبة لك:",
+    help: "نقاط أعلى = صعوبة تهدئة الانفعال. لو في نوبات تهديد/عنف أو خوف من أذى اطلب مساعدة حالًا.",
+    answers: [
+      "أبدًا (0)",
+      "قليل (1)",
+      "واضح (2)",
+      "شديد جدًا (3)"
+    ],
+    questions: [
+      "أنفجر بسرعة بصوت عالي",
+      "أجرح الناس بالكلام وبعدين أندم",
+      "أحس جسمي يولع (حرارة، نبض عالي)",
+      "أصير هجومي بالكلام (إهانة/تهديد)",
+      "أوصل مرحلة ما أقدر أوقف نفسي",
+      "الناس حولي حذرين من غضبي",
+      "غضبي خرّب علاقة/شغل"
+    ]
+  },
+
+  selfesteem: {
+    code: "selfesteem",
+    title: "تقدير الذات / الثقة بالنفس",
+    desc: "كيف تشوف نفسك بشكل عام:",
+    help: "نقاط أعلى = ثقة أقل/جلد ذاتي أعلى. العلاج السلوكي المعرفي يساعد تبني صورة ذاتية أعدل بدل (أنا قليل القيمة).",
+    answers: [
+      "أوافق جدًا (0)",
+      "أوافق نوعًا ما (1)",
+      "محايد / مو واضح (2)",
+      "ما أوافق / أحس نفسي قليل (3)"
+    ],
+    questions: [
+      "أعتقد أني أستحق الاحترام",
+      "أقدر أشوف نقاط قوتي",
+      "أشوف نفسي أقل من غيري بكثير",
+      "أستحق معاملة كويسة",
+      "حتى مع عيوبي أنا شخص له قيمة",
+      "أنا راضي/مقبول عند نفسي غالبًا",
+      "أشوف إنجازاتي مو بس أخطائي"
+    ]
+  }
+};
+
+// يرسم بلوك الأسئلة لاختبار واحد
+function renderTestBlock(def){
+  if(!def){
+    return "<p>لم يتم العثور على اختبار.</p>";
+  }
+
+  let html = "";
+  html += "<h2 style='margin-top:0; font-size:1.1rem;'>" + def.title + "</h2>";
+  html += "<div class='small' style='margin-bottom:10px;'>" + def.desc + "</div>";
+
+  // جدول الأسئلة
+  html += "<table class='table'><thead><tr>";
+  html += "<th>البند</th>";
+  for (let a_i = 0; a_i < def.answers.length; a_i++){
+    html += "<th>" + def.answers[a_i] + "</th>";
+  }
+  html += "</tr></thead><tbody>";
+
+  for (let q_i = 0; q_i < def.questions.length; q_i++){
+    const rowName = def.code + "_" + (q_i+1);
+    const qText = def.questions[q_i];
+    html += "<tr>";
+    html += "<td style='text-align:right;'>" + qText + "</td>";
+    for (let a_i = 0; a_i < def.answers.length; a_i++){
+        html += "<td><input type='radio' name='"+rowName+"' value='"+a_i+"'/></td>";
+    }
+    html += "</tr>";
+  }
+  html += "</tbody></table>";
+
+  // أزرار النتيجة
+  html += "<div class='row' style='margin-top:14px;'>";
+  html += "<button class='btn gold' type='button' onclick='calcScore(\""+def.code+"\","+def.questions.length+",\""+escapeHtml(def.help)+"\")'>احسب الدرجة</button>";
+  html += "<button class='btn alt' type='button' onclick='window.print()'>طباعة</button>";
+  html += "</div>";
+
+  // مكان النتيجة
+  html += "<div id='"+def.code+"_result' class='tile' style='border:1px solid #000; margin-top:16px;'>";
+  html += "<div class='small'>النتيجة تظهر هنا بعد الضغط على زر (احسب الدرجة).</div>";
+  html += "</div>";
+
+  return html;
+}
+
+// يحسب العلامة ويعرض شرح مختصر
+function calcScore(code, count, helpText){
+  let total = 0;
+  for (let i = 1; i <= count; i++){
+    const sel = document.querySelector('input[name="'+code+'_'+i+'"]:checked');
+    if(sel){
+      total += parseInt(sel.value || "0",10);
+    }
+  }
+  const out = document.getElementById(code+"_result");
+  if(out){
+    out.innerHTML =
+      "<p>المجموع الكلي: <b>"+total+"</b></p>" +
+      "<p class='small' style='line-height:1.7;'>"+helpText+"</p>" +
+      "<p class='small' style='color:#a00;font-size:.8rem;line-height:1.7;'>هذه ليست تشخيص نهائي. لو فيه خطر مباشر أو انهيار شديد اطلب دعم مختص الآن.</p>";
+  }
+
+  // نحفظها محلياً بالجهاز (اختياري)
+  try {
+    const key="test_history_"+code;
+    localStorage.setItem(key, JSON.stringify({score:total, ts:new Date().toISOString()}));
+  }catch(e){}
+}
+
+// نهرب النص قبل ما ندخله HTML
+function escapeHtml(str){
+  return (str||"")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+// يعرض الاختبار المختار
+function showTest(){
+  const picker = document.getElementById("testPicker");
+  const code = picker ? picker.value : "phq9";
+  const def = TEST_BANK[code] || null;
+  const area = document.getElementById("testArea");
+  if(area){
+    area.innerHTML = renderTestBlock(def);
+  }
+}
+
+// أول ما تفتح الصفحة
+(function init(){
+  showTest();
+})();
+</script>
+
+</body>
+</html>
+"""
+    # نرجع الـHTML مع روابط التواصل مدموجة من المتغيرات اللي عندك أصلاً
+    final_html = page_html.replace("{SOCIAL_WA}", SOCIAL_WA)\
+                          .replace("{PSYCHO_WA}", PSYCHO_WA)\
+                          .replace("{PSYCH_WA}", PSYCH_WA)
+
+    resp = make_response(final_html)
+    resp.headers["X-Content-Type-Options"] = "nosniff"
+    resp.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return resp
+# ======================== /tests (نهاية) ========================
 # ======================== Run ========================
 
 if __name__ == "__main__":
