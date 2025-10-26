@@ -2412,33 +2412,86 @@ function calcScore(code, count, helpText) {
 </div>
 """
     return page_html
-@app.route("/tests")
+
+   @app.route("/tests")
 def tests_page():
-    page_html = """
-<!DOCTYPE html>
+    page_html = """<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8"/>
-<title>اختبارات نفسية وشخصية</title>
-<style>
-body {
-    font-family: 'Tajawal', system-ui, sans-serif;
-    background:#f8f9fa;
-    color:#222;
-    line-height:1.6;
-    max-width:900px;
-    margin:20px auto;
-    padding:20px;
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>اختبارات نفسية</title>
+</head>
+<body style="font-family: Tahoma, Arial, sans-serif; background:#f8f8ff; color:#222; margin:0; padding:16px;">
+
+<div style="max-width:900px;margin:0 auto 24px auto;border:2px solid #000;padding:16px;border-radius:8px;background:#fff;">
+  <h1 style="margin-top:0;font-size:1.3rem;">🧠 اختبارات مساعدة / شخصية ونفسية</h1>
+  <p style="font-size:.9rem;line-height:1.6;">
+    هذه الأدوات تعطيك مؤشرات أولية عن نمط المشاعر أو القلق أو السلوك،
+    لكنها ليست تشخيصًا طبيًا رسميًا ولا تغني عن زيارة مختص.
+  </p>
+  <div style="background:#fff3cd;border:1px solid #856404;border-radius:6px;padding:10px 12px;font-size:.9rem;line-height:1.5;color:#856404;">
+    ⚠️ إذا النتيجة عالية جدًا أو فيها خطر على سلامتك أو فكرة أذى، تواصل مع مختص فورًا.
+  </div>
+</div>
+
+<h2 style="max-width:900px;margin:0 auto 12px auto;font-size:1.1rem;">اختر اختبار 👇</h2>
+
+<div style="max-width:900px;margin:0 auto 40px auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;">
+  <div style="border:1px solid #555;border-radius:8px;padding:12px;background:#fff;">
+    <h3 style="margin:0 0 8px 0;font-size:1.05rem;">مقياس الاكتئاب (PHQ-9)</h3>
+    <p style="margin:0 0 12px 0;font-size:.9rem;line-height:1.5;">
+      يفحص شدة أعراض الاكتئاب آخر أسبوعين مثل المزاج، فقدان المتعة، النوم، التركيز.
+    </p>
+    <a href="/tests/phq9" style="display:inline-block;background:#004aad;color:#fff;padding:8px 12px;border-radius:6px;text-decoration:none;font-weight:600;">
+      ابدأ الآن
+    </a>
+  </div>
+
+  <div style="border:1px solid #555;border-radius:8px;padding:12px;background:#fff;">
+    <h3 style="margin:0 0 8px 0;font-size:1.05rem;">مقياس القلق (GAD-7)</h3>
+    <p style="margin:0 0 12px 0;font-size:.9rem;line-height:1.5;">
+      يقيس التوتر والقلق العام (الأرق، الانزعاج، صعوبة الاسترخاء).
+    </p>
+    <a href="/tests/gad7" style="display:inline-block;background:#004aad;color:#fff;padding:8px 12px;border-radius:6px;text-decoration:none;font-weight:600;">
+      ابدأ الآن
+    </a>
+  </div>
+
+  <div style="border:1px solid #555;border-radius:8px;padding:12px;background:#fff;">
+    <h3 style="margin:0 0 8px 0;font-size:1.05rem;">فحص الأمان (أفكار أذى / خطر عاجل)</h3>
+    <p style="margin:0 0 12px 0;font-size:.9rem;line-height:1.5;color:#a00000;">
+      لو عندك أفكار أذى لنفسك أو إحساس أنك مو آمن، استخدم هذا أولاً.
+    </p>
+    <a href="/tests/suicide" style="display:inline-block;background:#a00000;color:#fff;padding:8px 12px;border-radius:6px;text-decoration:none;font-weight:600;">
+      أمانك أولاً
+    </a>
+  </div>
+</div>
+
+<script>
+function calcScore(code, count, helpText) {
+  let total = 0;
+  for (let i = 1; i <= count; i++) {
+    const sel = document.querySelector('input[name="'+code+'_'+i+'"]:checked');
+    if (sel) {
+      total += parseInt(sel.value || "0", 10);
+    }
+  }
+  const out = document.getElementById(code + "_result");
+  out.innerHTML =
+    "<p>المجموع الكلي: <b>" + total + "</b><br/><br/>" + helpText +
+    "<br/><span style='font-size:.8rem;color:#a00;'>⚠️ هذه ليست تشخيصًا نهائيًا. إذا لديك خطر على نفسك أو غيرك تواصل فورًا مع مختص.</span></p>";
+  try {
+    const key = "test_history_" + code;
+    localStorage.setItem(key, JSON.stringify({ score: total, ts: new Date().toISOString() }));
+  } catch(e) {}
 }
-.card {
-    border:2px solid #000;
-    background:#fff;
-    border-radius:10px;
-    padding:16px 20px;
-    margin-bottom:20px;
-}
-.small1 {
-    font-size:0.9rem;
+</script>
+
+</body>
+</html>"""
+    return page_html font-size:0.9rem;
     color:#444;
 }
 .note {
