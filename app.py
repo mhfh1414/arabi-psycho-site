@@ -2415,62 +2415,301 @@ function calcScore(code, count, helpText) {
 @app.route("/tests")
 def tests_page():
     page_html = """
-    <div class="card" style="border:2px solid #000;max-width:900px;margin:auto;padding:15px;line-height:1.6;font-family:sans-serif;">
-        <h1>اختبارات نفسية / شخصية (مساعدة فقط)</h1>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<title>اختبارات نفسية وشخصية</title>
+<style>
+body {
+    font-family: 'Tajawal', system-ui, sans-serif;
+    background:#f8f9fa;
+    color:#222;
+    line-height:1.6;
+    max-width:900px;
+    margin:20px auto;
+    padding:20px;
+}
+.card {
+    border:2px solid #000;
+    background:#fff;
+    border-radius:10px;
+    padding:16px 20px;
+    margin-bottom:20px;
+}
+.small1 {
+    font-size:0.9rem;
+    color:#444;
+}
+.note {
+    background:#fff8d5;
+    border:1px solid #d4c36a;
+    border-radius:8px;
+    padding:12px 14px;
+    margin-top:12px;
+    font-size:0.9rem;
+    color:#3a3300;
+}
+.grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:16px;
+    margin-top:24px;
+}
+.test-box {
+    background:#ffffff;
+    border:1px solid #888;
+    border-radius:10px;
+    padding:16px;
+}
+.test-box h3 {
+    font-size:1rem;
+    margin:0 0 8px;
+    color:#000;
+}
+.test-box p.desc {
+    font-size:0.85rem;
+    color:#444;
+    margin:0 0 12px;
+}
+.q-row {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    margin:6px 0;
+    font-size:0.9rem;
+}
+.q-row label {
+    flex:1 1 auto;
+}
+.q-row select {
+    width:70px;
+    font-size:0.9rem;
+}
+.calc-btn {
+    background:#0044aa;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    padding:10px 14px;
+    font-size:0.9rem;
+    cursor:pointer;
+    margin-top:12px;
+}
+.calc-btn:hover {
+    background:#003080;
+}
+.result-box {
+    background:#eef5ff;
+    border:1px solid #0044aa;
+    border-radius:8px;
+    padding:10px 12px;
+    margin-top:14px;
+    font-size:0.9rem;
+    color:#001a40;
+    min-height:48px;
+}
+.result-box b {
+    color:#c00;
+}
+</style>
+</head>
+<body>
 
-        <p class="small" style="font-size:0.95rem;color:#222;">
-            هذه الأدوات تعطيك مؤشر مبدئي عن نمط التفكير أو المشاعر أو السلوك. هذه ليست تشخيصاً طبياً أو خطة علاج، لكنها قد تساعدك تفهم نفسك أكثر.
+<div class="card">
+    <h1>اختبارات مساعدة نفسية / شخصية</h1>
+    <p class="small1">
+        هذه الأدوات تعطيك فكرة عن نمط تفكيرك أو مشاعرك أو السلوك. ليست تشخيص نهائي وليست بديل عن الطبيب أو الأخصائي.
+        نتيجتها قد تساعدك على فهم وضعك النفسي أكثر. إذا ظهرت نتيجة عالية جدا أو فيها خطر عليك أو على غيرك
+        تواصل مع مختص بشكل مباشر وفوري حفاظا على سلامتك.
+    </p>
+
+    <div class="note">
+        ملاحظة مهمة: الأرقام تحسب محليا فقط في جهازك باستخدام جافاسكربت والتخزين المحلي للمتصفح (localStorage).
+        لا يتم إرسال نتيجتك للسيرفر. إذا الجهاز مشترك مع أشخاص آخرين عندك بالبيت ومو حاب يحتفظوا بالنتيجة،
+        امسح بيانات المتصفح بعد ما تخلص.
+    </div>
+
+    <h2 style="margin-top:24px;">اختر اختبار وجاوب بصراحة:</h2>
+</div>
+
+<div class="grid">
+
+    <!-- اختبار القلق -->
+    <div class="test-box" id="test_anxiety">
+        <h3>مستوى القلق العام (قلق وتوتر)</h3>
+        <p class="desc">
+            هذا مقياس بسيط يساعدك تعرف إذا التوتر عندك مرتفع بشكل يحتاج تدخل (تنظيم تنفس، دعم علاجي سلوكي، أو زيارة مختص).
         </p>
 
-        <div class="note" style="background:#fff3cd;border:1px solid #e0c000;border-radius:6px;padding:10px;font-size:0.9rem;color:#000;margin-top:10px;">
-            تنبيه مهم: إذا كانت النتيجة عالية جداً أو فيها خطر على نفسك أو غيرك، اطلب مساعدة فورية من مختص أو تواصل مع الطوارئ في منطقتك. لا تعتمد فقط على نتيجة الأداة.
+        <div class="q-row">
+            <label>أشعر بتوتر أغلب اليوم</label>
+            <select name="anx_1">
+                <option value="0">أبدا</option>
+                <option value="1">قليل</option>
+                <option value="2">أحيانا</option>
+                <option value="3">كثير</option>
+            </select>
         </div>
+
+        <div class="q-row">
+            <label>أفكر بالأسوأ قبل ما يصير</label>
+            <select name="anx_2">
+                <option value="0">أبدا</option>
+                <option value="1">قليل</option>
+                <option value="2">أحيانا</option>
+                <option value="3">كثير</option>
+            </select>
+        </div>
+
+        <div class="q-row">
+            <label>دقات قلبي أو جسمي يشد (أرق / شد عضلي)</label>
+            <select name="anx_3">
+                <option value="0">أبدا</option>
+                <option value="1">قليل</option>
+                <option value="2">أحيانا</option>
+                <option value="3">كثير</option>
+            </select>
+        </div>
+
+        <button class="calc-btn" onclick="calcScore('anx',3,'إذا مجموعك فوق 6 راجع مختص أو اطلب دعم سلوكي/نفسي من شخص مؤهل')">
+            احسب النتيجة
+        </button>
+
+        <div class="result-box" id="anx_result"></div>
     </div>
 
-    <h2 style="margin-top:24px;text-align:center;">اختر اختبار من القائمة 👇</h2>
-
-    <div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;max-width:1000px;margin:20px auto;">
-        <div class="test-card" style="border:1px solid #999;border-radius:8px;padding:12px;">
-            <h3 style="margin-top:0;">مقياس القلق العام (GAD-7)</h3>
-            <p style="font-size:0.9rem;color:#333;">
-                أداة سريعة لقياس شدة القلق خلال آخر أسبوعين.
-            </p>
-            <a href="/tests/gad7" style="display:inline-block;background:#0044aa;color:#fff;padding:8px 12px;border-radius:6px;text-decoration:none;">ابدأ الاختبار</a>
-        </div>
-
-        <div class="test-card" style="border:1px solid #999;border-radius:8px;padding:12px;">
-            <h3 style="margin-top:0;">مقياس الاكتئاب (PHQ-9)</h3>
-            <p style="font-size:0.9rem;color:#333;">
-                أداة تساعد على تتبع الأعراض المزاجية مثل الحزن وفقد المتعة.
-            </p>
-            <a href="/tests/phq9" style="display:inline-block;background:#0044aa;color:#fff;padding:8px 12px;border-radius:6px;text-decoration:none;">ابدأ الاختبار</a>
-        </div>
-
-        <div class="test-card" style="border:1px solid #999;border-radius:8px;padding:12px;">
-            <h3 style="margin-top:0;">مقياس التوتر والإجهاد</h3>
-            <p style="font-size:0.9rem;color:#333;">
-                يساعدك تعرف إذا الضغط اليومي تعدّى حدك الصحي.
-            </p>
-            <a href="/tests/stress" style="display:inline-block;background:#0044aa;color:#fff;padding:8px 12px;border-radius:6px;text-decoration:none;">ابدأ الاختبار</a>
-        </div>
-
-        <div class="test-card" style="border:1px solid #999;border-radius:8px;padding:12px;">
-            <h3 style="margin-top:0;">مقياس الأفكار القهرية / السلوكية (وسواس)</h3>
-            <p style="font-size:0.9rem;color:#333;">
-                فحص سريع لأنماط مثل التحقق المتكرر أو الغسل أو العد.
-            </p>
-            <a href="/tests/ocd" style="display:inline-block;background:#0044aa;color:#fff;padding:8px 12px;border-radius:6px;text-decoration:none;">ابدأ الاختبار</a>
-        </div>
-    </div>
-
-    <div style="max-width:900px;margin:30px auto;font-size:0.8rem;color:#444;line-height:1.5;">
-        <p>
-            ملاحظة الخصوصية: الأجوبة تُجمع محلياً مؤقتاً فقط داخل متصفحك (localStorage) لعرض النتيجة لك. لا يتم إرسال النتائج للسيرفر.
+    <!-- اختبار المزاج / الحزن -->
+    <div class="test-box" id="test_mood">
+        <h3>مزاجي وحالتي النفسية (حزن / إحباط)</h3>
+        <p class="desc">
+            الأسئلة هنا تقيس مزاجك العام آخر أسبوع. إذا فيه مؤشرات اكتئاب قوي أو أفكار أذى،
+            اطلب مساعدة فورية.
         </p>
-    </div>
-    """
-    return page_html
 
+        <div class="q-row">
+            <label>ما عندي طاقة أو دافع أتحرك وأسوي الأشياء</label>
+            <select name="mood_1">
+                <option value="0">أبدا</option>
+                <option value="1">قليل</option>
+                <option value="2">أحيانا</option>
+                <option value="3">كثير</option>
+            </select>
+        </div>
+
+        <div class="q-row">
+            <label>أشعر بحزن أو ضيق بدون سبب واضح</label>
+            <select name="mood_2">
+                <option value="0">أبدا</option>
+                <option value="1">قليل</option>
+                <option value="2">أحيانا</option>
+                <option value="3">كثير</option>
+            </select>
+        </div>
+
+        <div class="q-row">
+            <label>الدنيا فقدت معناها / ما عاد يهمني شي زي أول</label>
+            <select name="mood_3">
+                <option value="0">أبدا</option>
+                <option value="1">قليل</option>
+                <option value="2">أحيانا</option>
+                <option value="3">كثير</option>
+            </select>
+        </div>
+
+        <button class="calc-btn" onclick="calcScore('mood',3,'إذا المجموع فوق 6 خذ الموضوع بجدية وتكلم مع مختص نفسي معتمد بأسرع وقت')">
+            احسب النتيجة
+        </button>
+
+        <div class="result-box" id="mood_result"></div>
+    </div>
+
+    <!-- صورة الذات / تقدير النفس -->
+    <div class="test-box" id="test_self">
+        <h3>نظرتي لنفسي (تقدير الذات)</h3>
+        <p class="desc">
+            أحيانا تحقير الذات المستمر يخلينا ننكسر أسرع تحت الضغط. هذا يعطيك لمحة هل جلد الذات عندك عالي.
+        </p>
+
+        <div class="q-row">
+            <label>أنتقد نفسي بقسوة حتى لو الغلط بسيط</label>
+            <select name="self_1">
+                <option value="0">أبدا</option>
+                <option value="1">قليل</option>
+                <option value="2">أحيانا</option>
+                <option value="3">كثير</option>
+            </select>
+        </div>
+
+        <div class="q-row">
+            <label>أشعر أني أقل من غيري أو ما أستحق الراحة / الاحترام</label>
+            <select name="self_2">
+                <option value="0">أبدا</option>
+                <option value="1">قليل</option>
+                <option value="2">أحيانا</option>
+                <option value="3">كثير</option>
+            </select>
+        </div>
+
+        <div class="q-row">
+            <label>أستصغر إنجازاتي حتى لو سويت شي كويس</label>
+            <select name="self_3">
+                <option value="0">أبدا</option>
+                <option value="1">قليل</option>
+                <option value="2">أحيانا</option>
+                <option value="3">كثير</option>
+            </select>
+        </div>
+
+        <button class="calc-btn" onclick="calcScore('self',3,'كل ما زادت الدرجة فوق 6 هذا دليل إن نقدك لذاتك عالي جدا وممكن يضر نفسيا. حاول تطلب دعم علاجي سلوكي-معرفي يركز على بناء التعاطف مع الذات.')">
+            احسب النتيجة
+        </button>
+
+        <div class="result-box" id="self_result"></div>
+    </div>
+
+</div> <!-- /grid -->
+
+<script>
+// حساب مجموع النقاط وكتابة النتيجة + حفظ محلي
+function calcScore(code, count, helpText) {
+    let total = 0;
+    for (let i = 1; i <= count; i++) {
+        const sel = document.querySelector('select[name="'+code+'_'+i+'"]');
+        if (sel) {
+            total += parseInt(sel.value || "0", 10);
+        }
+    }
+
+    const out = document.getElementById(code + "_result");
+    if (out) {
+        out.innerHTML =
+            "<p>المجموع الكلي: <b>" + total + "</b><br/><br/>" +
+            helpText +
+            "</p>";
+    }
+
+    // محاولة حفظ آخر نتيجة محليا في المتصفح (بدون إرسال لأي سيرفر)
+    try {
+        const key = "test_history_" + code;
+        const payload = {
+            score: total,
+            ts: new Date().toISOString()
+        };
+        localStorage.setItem(key, JSON.stringify(payload));
+    } catch(e) {
+        // تجاهل أي خطأ تخزين
+    }
+}
+</script>
+
+</body>
+</html>
+"""
+    resp = make_response(page_html)
+    add_headers(resp)
+    return resp
       <h3>اكتئاب / مزاج منخفض (تقريبي)</h3>
       <p class="small">
         أسئلة عن المزاج، الطاقة، الإحساس بالقيمة الذاتية، والأفكار السلبية.
