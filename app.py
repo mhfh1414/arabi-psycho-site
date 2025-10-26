@@ -2412,7 +2412,760 @@ function calcScore(code, count, helpText) {
 </div>
 """
     return page_html
+@app.route("/tests")
+def tests_page():
+    page_html = """<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>اختبارات نفسية</title>
+<style>
+body{
+  font-family: Tahoma, Arial, sans-serif;
+  background:#f8f8ff;
+  color:#222;
+  margin:0;
+  padding:16px;
+  direction:rtl;
+  text-align:right;
+}
+.wrapper{
+  max-width:900px;
+  margin:0 auto 24px auto;
+  border:2px solid #000;
+  padding:16px;
+  border-radius:8px;
+  background:#fff;
+}
+h1.sectionTitle{
+  margin-top:0;
+  font-size:1.3rem;
+}
+p.lead{
+  font-size:.9rem;
+  line-height:1.6;
+  margin-top:0;
+}
+.warnbox{
+  background:#fff3cd;
+  border:1px solid #856404;
+  border-radius:6px;
+  padding:10px 12px;
+  font-size:.9rem;
+  line-height:1.5;
+  color:#856404;
+  margin-top:12px;
+}
+.tests-grid{
+  max-width:900px;
+  margin:0 auto 40px auto;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:16px;
+}
+.card{
+  border:1px solid #555;
+  border-radius:8px;
+  padding:12px;
+  background:#fff;
+}
+.card h3{
+  margin:0 0 8px 0;
+  font-size:1.05rem;
+}
+.card p{
+  margin:0 0 12px 0;
+  font-size:.9rem;
+  line-height:1.5;
+}
+.card p.danger{
+  color:#a00000;
+}
+a.btn{
+  display:inline-block;
+  background:#004aad;
+  color:#fff;
+  padding:8px 12px;
+  border-radius:6px;
+  text-decoration:none;
+  font-weight:600;
+  font-size:.9rem;
+}
+a.btn.danger{
+  background:#a00000;
+}
+.footer-note{
+  max-width:900px;
+  margin:0 auto;
+  font-size:.8rem;
+  line-height:1.5;
+  color:#444;
+  background:#f0f0f0;
+  border:1px solid #aaa;
+  border-radius:6px;
+  padding:12px;
+}
+</style>
+</head>
+<body>
 
+<div class="wrapper">
+  <h1 class="sectionTitle">اختبارات مساعدة / شخصية ونفسية</h1>
+  <p class="lead">
+    هذه الأدوات تعطيك مؤشرات أولية عن نمط المشاعر أو القلق أو السلوك،
+    لكنها ليست تشخيصا طبيا رسميا ولا تغني عن زيارة مختص.
+  </p>
+  <div class="warnbox">
+    إذا النتيجة عالية جدا أو فيها خطر على سلامتك أو فكرة أذى،
+    تواصل مع مختص بشكل فوري أو تواصل مع خدمات الطوارئ المحلية.
+  </div>
+</div>
+
+<h2 style="max-width:900px;margin:0 auto 12px auto;font-size:1.1rem;">
+اختر اختبار:
+</h2>
+
+<div class="tests-grid">
+
+  <div class="card">
+    <h3>مقياس الاكتئاب (PHQ-9)</h3>
+    <p>
+      يفحص شدة أعراض الاكتئاب خلال آخر أسبوعين: المزاج، فقدان المتعة،
+      مشاكل النوم، الأكل، التركيز، الشعور بالذنب أو اليأس.
+    </p>
+    <a class="btn" href="/tests/phq9">ابدأ الآن</a>
+  </div>
+
+  <div class="card">
+    <h3>مقياس القلق العام (GAD-7)</h3>
+    <p>
+      يقيس القلق المستمر (توتر، انزعاج، صعوبة الاسترخاء، تشتت بسبب القلق).
+    </p>
+    <a class="btn" href="/tests/gad7">ابدأ الآن</a>
+  </div>
+
+  <div class="card">
+    <h3>فحص السلامة الفورية</h3>
+    <p class="danger">
+      لو عندك أفكار خطيرة جدا (أذية ذاتية أو أذية لشخص آخر) هذا الفحص مهم.
+    </p>
+    <a class="btn danger" href="/tests/safety">السلامة أولا</a>
+  </div>
+
+</div>
+
+<div class="footer-note">
+  ملاحظة: هذه ليست بديلا عن التقييم المهني. إذا كنت في خطر مباشر،
+  اطلب مساعدة طبية أو طارئة الآن، ولا تنتظر النتيجة.
+</div>
+
+</body>
+</html>"""
+    return page_html
+
+
+# ===== PHQ-9 (اكتئاب) =====
+@app.route("/tests/phq9")
+def phq9_page():
+    page_html = """<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>مقياس الاكتئاب (PHQ-9)</title>
+<style>
+body{
+  font-family: Tahoma, Arial, sans-serif;
+  background:#ffffff;
+  color:#222;
+  margin:0;
+  padding:16px;
+  direction:rtl;
+  text-align:right;
+  line-height:1.6;
+}
+.wrapper{
+  max-width:900px;
+  margin:0 auto;
+}
+.qbox{
+  border:1px solid #999;
+  border-radius:6px;
+  padding:12px;
+  margin-bottom:16px;
+  background:#f9f9f9;
+}
+.qtitle{
+  margin:0 0 8px 0;
+  font-weight:bold;
+}
+.scaleRow label{
+  display:inline-block;
+  margin-inline-end:12px;
+  font-size:.9rem;
+}
+.resultBox{
+  border:2px solid #004aad;
+  background:#eef3ff;
+  color:#000;
+  border-radius:8px;
+  padding:12px;
+  margin-top:24px;
+  font-size:.9rem;
+  line-height:1.5;
+}
+.btnCalc{
+  background:#004aad;
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  padding:10px 14px;
+  font-size:1rem;
+  cursor:pointer;
+}
+.backLink{
+  display:inline-block;
+  margin-top:24px;
+  font-size:.9rem;
+  text-decoration:none;
+  color:#004aad;
+}
+.noteWarn{
+  background:#fff3cd;
+  border:1px solid #856404;
+  border-radius:6px;
+  padding:10px 12px;
+  font-size:.85rem;
+  line-height:1.5;
+  color:#856404;
+  margin:16px 0;
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <h1 style="margin-top:0;font-size:1.2rem;">مقياس الاكتئاب (PHQ-9)</h1>
+
+  <p style="font-size:.9rem;">
+    لكل عبارة، اختر كم مرة شعرت بذلك خلال آخر أسبوعين:
+  </p>
+
+  <div class="noteWarn">
+    الدرجات الأعلى تعني أعراض اكتئاب أكثر. إذا حصلت على درجة عالية جدا
+    أو لديك أفكار بإيذاء نفسك، اطلب مساعدة فورية من مختص أو الطوارئ.
+  </div>
+
+  <!-- الأسئلة -->
+  <div class="qbox">
+    <p class="qtitle">1. قلة الاهتمام أو المتعة في عمل الأشياء؟</p>
+    <div class="scaleRow">
+      <label><input type="radio" name="phq9_1" value="0"> أبداً</label>
+      <label><input type="radio" name="phq9_1" value="1"> عدة أيام</label>
+      <label><input type="radio" name="phq9_1" value="2"> أكثر من النصف</label>
+      <label><input type="radio" name="phq9_1" value="3"> تقريبا كل يوم</label>
+    </div>
+  </div>
+
+  <div class="qbox">
+    <p class="qtitle">2. شعور بالحزن أو الإحباط أو اليأس؟</p>
+    <div class="scaleRow">
+      <label><input type="radio" name="phq9_2" value="0"> أبداً</label>
+      <label><input type="radio" name="phq9_2" value="1"> عدة أيام</label>
+      <label><input type="radio" name="phq9_2" value="2"> أكثر من النصف</label>
+      <label><input type="radio" name="phq9_2" value="3"> تقريبا كل يوم</label>
+    </div>
+  </div>
+
+  <div class="qbox">
+    <p class="qtitle">3. صعوبة في النوم أو النوم الزيادة بشكل مفرط؟</p>
+    <div class="scaleRow">
+      <label><input type="radio" name="phq9_3" value="0"> أبداً</label>
+      <label><input type="radio" name="phq9_3" value="1"> عدة أيام</label>
+      <label><input type="radio" name="phq9_3" value="2"> أكثر من النصف</label>
+      <label><input type="radio" name="phq9_3" value="3"> تقريبا كل يوم</label>
+    </div>
+  </div>
+
+  <div class="qbox">
+    <p class="qtitle">4. تعب أو نقص طاقة؟</p>
+    <div class="scaleRow">
+      <label><input type="radio" name="phq9_4" value="0"> أبداً</label>
+      <label><input type="radio" name="phq9_4" value="1"> عدة أيام</label>
+      <label><input type="radio" name="phq9_4" value="2"> أكثر من النصف</label>
+      <label><input type="radio" name="phq9_4" value="3"> تقريبا كل يوم</label>
+    </div>
+  </div>
+
+  <div class="qbox">
+    <p class="qtitle">5. ضعف الشهية أو الأكل الزائد؟</p>
+    <div class="scaleRow">
+      <label><input type="radio" name="phq9_5" value="0"> أبداً</label>
+      <label><input type="radio" name="phq9_5" value="1"> عدة أيام</label>
+      <label><input type="radio" name="phq9_5" value="2"> أكثر من النصف</label>
+      <label><input type="radio" name="phq9_5" value="3"> تقريبا كل يوم</label>
+    </div>
+  </div>
+
+  <div class="qbox">
+    <p class="qtitle">6. شعور بأنك فاشل أو خذلت نفسك أو العائلة؟</p>
+    <div class="scaleRow">
+      <label><input type="radio" name="phq9_6" value="0"> أبداً</label>
+      <label><input type="radio" name="phq9_6" value="1"> عدة أيام</label>
+      <label><input type="radio" name="phq9_6" value="2"> أكثر من النصف</label>
+      <label><input type="radio" name="phq9_6" value="3"> تقريبا كل يوم</label>
+    </div>
+  </div>
+
+  <div class="qbox">
+    <p class="qtitle">7. صعوبة في التركيز (قراءة، تلفاز، عمل روتيني)؟</p>
+    <div class="scaleRow">
+      <label><input type="radio" name="phq9_7" value="0"> أبداً</label>
+      <label><input type="radio" name="phq9_7" value="1"> عدة أيام</label>
+      <label><input type="radio" name="phq9_7" value="2"> أكثر من النصف</label>
+      <label><input type="radio" name="phq9_7" value="3"> تقريبا كل يوم</label>
+    </div>
+  </div>
+
+  <div class="qbox">
+    <p class="qtitle">
+      8. بطء في الحركة أو الكلام بشكل يلاحظه الآخرون؟
+      أو العكس: عصبية وحركة زائدة جدا؟
+    </p>
+    <div class="scaleRow">
+      <label><input type="radio" name="phq9_8" value="0"> أبداً</label>
+      <label><input type="radio" name="phq9_8" value="1"> عدة أيام</label>
+      <label><input type="radio" name="phq9_8" value="2"> أكثر من النصف</label>
+      <label><input type="radio" name="phq9_8" value="3"> تقريبا كل يوم</label>
+    </div>
+  </div>
+
+  <div class="qbox">
+    <p class="qtitle">
+      9. أفكار أنك ستكون أفضل لو لم تكن موجودا
+      أو أنك تؤذي نفسك؟
+    </p>
+    <div class="scaleRow">
+      <label><input type="radio" name="phq9_9" value="0"> أبداً</label>
+      <label><input type="radio" name="phq9_9" value="1"> عدة أيام</label>
+      <label><input type="radio" name="phq9_9" value="2"> أكثر من النصف</label>
+      <label><input type="radio" name="phq9_9" value="3"> تقريبا كل يوم</label>
+    </div>
+  </div>
+
+  <button class="btnCalc" onclick="calcScore('phq9',9,'درجة أعلى = أعراض اكتئاب أشد. إذا السؤال الأخير (رقم 9) فيه نقاط أعلى من 0 تواصل مع مختص الآن.')">
+    احسب الدرجة
+  </button>
+
+  <div id="phq9_result" class="resultBox" style="margin-bottom:24px;">
+    النتيجة ستظهر هنا بعد الضغط على احسب الدرجة.
+  </div>
+
+  <a class="backLink" href="/tests">&larr; رجوع لقائمة الاختبارات</a>
+</div>
+
+<script>
+function calcScore(code, count, helpText) {
+  var total = 0;
+  for (var i = 1; i <= count; i++) {
+    var sel = document.querySelector('input[name="'+code+'_'+i+'"]:checked');
+    if (sel) {
+      total += parseInt(sel.value || "0", 10);
+    }
+  }
+  var out = document.getElementById(code + "_result");
+  out.innerHTML =
+    "المجموع الكلي: <b>" + total + "</b><br/><br/>" +
+    helpText +
+    "<br/><span style='font-size:.8rem;color:#a00;'>هذه ليست تشخيصا نهائيا. إذا لديك خطر على نفسك أو غيرك تواصل فورا مع مختص أو الطوارئ.</span>";
+
+  try {
+    var key = "test_history_" + code;
+    localStorage.setItem(key, JSON.stringify({
+      score: total,
+      ts: new Date().toISOString()
+    }));
+  } catch(e) {}
+}
+</script>
+
+</body>
+</html>"""
+    return page_html
+
+
+# ===== GAD-7 (قلق) =====
+@app.route("/tests/gad7")
+def gad7_page():
+    page_html = """<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>مقياس القلق العام (GAD-7)</title>
+<style>
+body{
+  font-family: Tahoma, Arial, sans-serif;
+  background:#ffffff;
+  color:#222;
+  margin:0;
+  padding:16px;
+  direction:rtl;
+  text-align:right;
+  line-height:1.6;
+}
+.wrapper{
+  max-width:900px;
+  margin:0 auto;
+}
+.qbox{
+  border:1px solid #999;
+  border-radius:6px;
+  padding:12px;
+  margin-bottom:16px;
+  background:#f9f9f9;
+}
+.qtitle{
+  margin:0 0 8px 0;
+  font-weight:bold;
+}
+.scaleRow label{
+  display:inline-block;
+  margin-inline-end:12px;
+  font-size:.9rem;
+}
+.resultBox{
+  border:2px solid #004aad;
+  background:#eef3ff;
+  color:#000;
+  border-radius:8px;
+  padding:12px;
+  margin-top:24px;
+  font-size:.9rem;
+  line-height:1.5;
+}
+.btnCalc{
+  background:#004aad;
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  padding:10px 14px;
+  font-size:1rem;
+  cursor:pointer;
+}
+.backLink{
+  display:inline-block;
+  margin-top:24px;
+  font-size:.9rem;
+  text-decoration:none;
+  color:#004aad;
+}
+.noteWarn{
+  background:#fff3cd;
+  border:1px solid #856404;
+  border-radius:6px;
+  padding:10px 12px;
+  font-size:.85rem;
+  line-height:1.5;
+  color:#856404;
+  margin:16px 0;
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <h1 style="margin-top:0;font-size:1.2rem;">مقياس القلق العام (GAD-7)</h1>
+
+  <p style="font-size:.9rem;">
+    خلال آخر أسبوعين، كم مرة شعرت بالتالي:
+  </p>
+
+  <div class="noteWarn">
+    الدرجات الأعلى تعني قلق أعلى. إذا القلق يوقفك عن النوم
+    أو يخليك ما تقدر تتحكم بنفسك، تواصل مع مختص.
+  </div>
+
+  <div class="qbox">
+    <p class="qtitle">1. شعور بالتوتر أو العصبية أو على الحافة؟</p>
+    <div class="scaleRow">
+      <label><input type="radio" name="gad7_1" value="0"> أبداً</label>
+      <label><input type="radio" name="gad7_1" value="1"> عدة أيام</label>
+      <label><input type="radio" name="gad7_1" value="2"> أكثر من النصف</label>
+      <label><input type="radio" name="gad7_1" value="3"> تقريبا كل يوم</label>
+    </div>
+  </div>
+
+  <div class="qbox">
+    <p class="qtitle">2. ما تقدر توقف القلق أو السيطرة عليه؟</p>
+    <div class="scaleRow">
+      <label><input type="radio" name="gad7_2" value="0"> أبداً</label>
+      <label><input type="radio" name="gad7_2" value="1"> عدة أيام</label>
+      <label><input type="radio" name="gad7_2" value="2"> أكثر من النصف</label>
+      <label><input type="radio" name="gad7_2" value="3"> تقريبا كل يوم</label>
+    </div>
+  </div>
+
+  <div class="qbox">
+    <p class="qtitle">3. قلق مفرط في مواضيع كثيرة وصعب تتحكم فيه؟</p>
+    <div class="scaleRow">
+      <label><input type="radio" name="gad7_3" value="0"> أبداً</label>
+      <label><input type="radio" name="gad7_3" value="1"> عدة أيام</label>
+      <label><input type="radio" name="gad7_3" value="2"> أكثر من النصف</label>
+      <label><input type="radio" name="gad7_3" value="3"> تقريبا كل يوم</label>
+    </div>
+  </div>
+
+  <div class="qbox">
+    <p class="qtitle">4. صعوبة في الاسترخاء؟</p>
+    <div class="scaleRow">
+      <label><input type="radio" name="gad7_4" value="0"> أبداً</label>
+      <label><input type="radio" name="gad7_4" value="1"> عدة أيام</label>
+      <label><input type="radio" name="gad7_4" value="2"> أكثر من النصف</label>
+      <label><input type="radio" name="gad7_4" value="3"> تقريبا كل يوم</label>
+    </div>
+  </div>
+
+  <div class="qbox">
+    <p class="qtitle">5. صعوبة تجلس بهدوء بسبب التململ أو الانزعاج الداخلي؟</p>
+    <div class="scaleRow">
+      <label><input type="radio" name="gad7_5" value="0"> أبداً</label>
+      <label><input type="radio" name="gad7_5" value="1"> عدة أيام</label>
+      <label><input type="radio" name="gad7_5" value="2"> أكثر من النصف</label>
+      <label><input type="radio" name="gad7_5" value="3"> تقريبا كل يوم</label>
+    </div>
+  </div>
+
+  <div class="qbox">
+    <p class="qtitle">6. سرعة الانزعاج أو الاستثارة بسهولة؟</p>
+    <div class="scaleRow">
+      <label><input type="radio" name="gad7_6" value="0"> أبداً</label>
+      <label><input type="radio" name="gad7_6" value="1"> عدة أيام</label>
+      <label><input type="radio" name="gad7_6" value="2"> أكثر من النصف</label>
+      <label><input type="radio" name="gad7_6" value="3"> تقريبا كل يوم</label>
+    </div>
+  </div>
+
+  <div class="qbox">
+    <p class="qtitle">7. خوف كأن شيء سيء جدا ممكن يصير؟</p>
+    <div class="scaleRow">
+      <label><input type="radio" name="gad7_7" value="0"> أبداً</label>
+      <label><input type="radio" name="gad7_7" value="1"> عدة أيام</label>
+      <label><input type="radio" name="gad7_7" value="2"> أكثر من النصف</label>
+      <label><input type="radio" name="gad7_7" value="3"> تقريبا كل يوم</label>
+    </div>
+  </div>
+
+  <button class="btnCalc" onclick="calcScore('gad7',7,'درجة أعلى = قلق أشد. إذا القلق موقف نومك أو يخليك تتصرف بشكل خطير اطلب مساعدة مهنية.')">
+    احسب الدرجة
+  </button>
+
+  <div id="gad7_result" class="resultBox" style="margin-bottom:24px;">
+    النتيجة ستظهر هنا بعد الضغط على احسب الدرجة.
+  </div>
+
+  <a class="backLink" href="/tests">&larr; رجوع لقائمة الاختبارات</a>
+</div>
+
+<script>
+function calcScore(code, count, helpText) {
+  var total = 0;
+  for (var i = 1; i <= count; i++) {
+    var sel = document.querySelector('input[name="'+code+'_'+i+'"]:checked');
+    if (sel) {
+      total += parseInt(sel.value || "0", 10);
+    }
+  }
+  var out = document.getElementById(code + "_result");
+  out.innerHTML =
+    "المجموع الكلي: <b>" + total + "</b><br/><br/>" +
+    helpText +
+    "<br/><span style='font-size:.8rem;color:#a00;'>هذه ليست تشخيصا نهائيا. إذا لديك خطر على نفسك أو غيرك تواصل فورا مع مختص أو الطوارئ.</span>";
+
+  try {
+    var key = "test_history_" + code;
+    localStorage.setItem(key, JSON.stringify({
+      score: total,
+      ts: new Date().toISOString()
+    }));
+  } catch(e) {}
+}
+</script>
+
+</body>
+</html>"""
+    return page_html
+
+
+# ===== Safety / انذار أمان سريع =====
+@app.route("/tests/safety")
+def safety_page():
+    page_html = """<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>فحص السلامة الفورية</title>
+<style>
+body{
+  font-family: Tahoma, Arial, sans-serif;
+  background:#fff;
+  color:#222;
+  margin:0;
+  padding:16px;
+  direction:rtl;
+  text-align:right;
+  line-height:1.6;
+}
+.wrapper{
+  max-width:900px;
+  margin:0 auto;
+}
+.dangerBox{
+  border:2px solid #a00000;
+  background:#fff0f0;
+  border-radius:8px;
+  padding:16px;
+  margin-bottom:24px;
+  color:#a00000;
+  font-size:.95rem;
+  line-height:1.6;
+}
+.qbox{
+  border:1px solid #999;
+  border-radius:6px;
+  padding:12px;
+  margin-bottom:16px;
+  background:#f9f9f9;
+}
+.qtitle{
+  margin:0 0 8px 0;
+  font-weight:bold;
+  color:#000;
+}
+.scaleRow label{
+  display:inline-block;
+  margin-inline-end:12px;
+  font-size:.9rem;
+}
+.resultBox{
+  border:2px solid #a00000;
+  background:#fff0f0;
+  color:#000;
+  border-radius:8px;
+  padding:12px;
+  margin-top:24px;
+  font-size:.9rem;
+  line-height:1.5;
+}
+.btnCalc{
+  background:#a00000;
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  padding:10px 14px;
+  font-size:1rem;
+  cursor:pointer;
+}
+.backLink{
+  display:inline-block;
+  margin-top:24px;
+  font-size:.9rem;
+  text-decoration:none;
+  color:#004aad;
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="dangerBox">
+    هذا الفحص سريع للتأكد من مستوى الخطر.
+    إذا كان عندك نية قوية تؤذي نفسك أو أحد ثاني الآن،
+    اطلب مساعدة مباشرة (أقرب طوارئ/خدمة إسعاف/شخص بالغ مسؤول).
+    لا تنتظر.
+  </div>
+
+  <div class="qbox">
+    <p class="qtitle">1. هل فكرت تأذي نفسك جسديا (اليوم أو خلال آخر 24 ساعة)؟</p>
+    <div class="scaleRow">
+      <label><input type="radio" name="safe_1" value="0"> لا إطلاقا</label>
+      <label><input type="radio" name="safe_1" value="1"> فكرة بسيطة بدون نية</label>
+      <label><input type="radio" name="safe_1" value="2"> نعم مع نية أو خطة</label>
+    </div>
+  </div>
+
+  <div class="qbox">
+    <p class="qtitle">2. هل فكرت تؤذي شخص آخر بشكل متعمد؟</p>
+    <div class="scaleRow">
+      <label><input type="radio" name="safe_2" value="0"> لا إطلاقا</label>
+      <label><input type="radio" name="safe_2" value="1"> غضب فقط</label>
+      <label><input type="radio" name="safe_2" value="2"> نعم بشكل جدي</label>
+    </div>
+  </div>
+
+  <div class="qbox">
+    <p class="qtitle">3. هل تشعر إنك حاليا في مكان آمن؟</p>
+    <div class="scaleRow">
+      <label><input type="radio" name="safe_3" value="0"> نعم آمن</label>
+      <label><input type="radio" name="safe_3" value="1"> مو متأكد</label>
+      <label><input type="radio" name="safe_3" value="2"> لا، مو آمن</label>
+    </div>
+  </div>
+
+  <button class="btnCalc" onclick="calcSafety()">
+    اعرض التوصية
+  </button>
+
+  <div id="safety_result" class="resultBox" style="margin-bottom:24px;">
+    النتيجة ستظهر هنا بعد الضغط على الزر.
+  </div>
+
+  <a class="backLink" href="/tests">&larr; رجوع لقائمة الاختبارات</a>
+</div>
+
+<script>
+function valOrZero(n){
+  var v = document.querySelector('input[name="'+n+'"]:checked');
+  if(!v){return 0;}
+  return parseInt(v.value||"0",10);
+}
+
+function calcSafety(){
+  var s1 = valOrZero("safe_1"); // أذية نفسك
+  var s2 = valOrZero("safe_2"); // أذية الآخرين
+  var s3 = valOrZero("safe_3"); // الأمان الحالي
+  var risk = s1 + s2 + s3;
+
+  var msg = "";
+  if (s1 >= 2 || s2 >= 2 || s3 >= 2) {
+    msg = "خطر عالي جدا الآن. تواصل مع الطوارئ/الإسعاف/شخص بالغ مسؤول فورا. لا تبقى وحدك.";
+  } else if (risk >= 3) {
+    msg = "الخطر موجود ويحتاج تدخل سريع جدا. لا تتجاهل هذه المشاعر. تحدث مع مختص نفسي أو جهة دعم عاجلة الآن.";
+  } else if (risk >= 1) {
+    msg = "يوجد قلق. حاول ما تكون وحدك الليلة، وتكلم مع شخص تثق فيه، وحدد موعد دعم مهني نفس اليوم إذا تقدر.";
+  } else {
+    msg = "الخطر الحالي منخفض حسب إجاباتك، لكن إذا شعرت أن الوضع يتغير أو صار أسوأ اطلب مساعدة فورية.";
+  }
+
+  var box = document.getElementById("safety_result");
+  box.innerHTML =
+    "<b>التوصية:</b><br/>" + msg +
+    "<br/><br/><span style='font-size:.8rem;color:#a00;'>هذه ليست مساعدة طبية رسمية. إذا في خطر مباشر الآن اطلب نجدة طبية أو طوارئ حالا.</span>";
+
+  try {
+    localStorage.setItem("test_history_safety", JSON.stringify({
+      riskScore: risk,
+      ts: new Date().toISOString()
+    }));
+  } catch(e){}
+}
+</script>
+
+</body>
+</html>"""
+    return page_html
    @app.route("/tests")
 def tests_page():
     page_html = """<!DOCTYPE html>
