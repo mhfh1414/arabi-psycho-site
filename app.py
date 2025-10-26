@@ -2414,20 +2414,16 @@ function calcScore(code, count, helpText) {
     return page_html
 
 @app.route("/tests")
+@app.route("/tests")
 def tests_page():
     page_html = r"""
     <div class="card" style="border:2px solid #000;max-width:900px;margin:auto;padding:15px;">
         <h1>اختبارات نفسية / شخصية مساعدة</h1>
         <p class="small">هذه الأدوات تعطيك فكرة عن نمط التفكير أو المشاعر أو السلوك. ليست تشخيصاً طبياً ولكنها تساعدك على فهم نفسك أكثر.</p>
-        <div class="note">⚠️ إذا كانت النتيجة عالية جداً أو فيها خطر على سلامتك، تواصل مع مختص فوراً.</div>
+        <div class="note">تنبيه: إذا كانت النتيجة عالية جداً أو فيها خطر على سلامتك، تواصل مع مختص فوراً.</div>
     </div>
     """
     return page_html
-    """
-    return page_html
-
-  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;">
-    <div class="tile" style="border:1px solid #000;">
       <h3>اكتئاب / مزاج منخفض (تقريبي)</h3>
       <p class="small">
         أسئلة عن المزاج، الطاقة، الإحساس بالقيمة الذاتية، والأفكار السلبية.
