@@ -2418,7 +2418,7 @@ function calcScore(code, count, helpText) {
 def tests_page():
     page_html = r"""
 <div class="card" style="border:2px solid #000;max-width:900px;margin:auto;">
-  <h1>🧪 اختبارات نفسية / شخصية (مساعدة ذاتية)</h1>
+ <h1>اختبارات مساعدة ذاتية</h1> 
 
   <div class="small">
     هذه الأدوات تعطيك فكرة عن نمط الأعراض أو السمات، مو تشخيص طبي رسمي.
