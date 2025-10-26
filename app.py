@@ -2423,16 +2423,6 @@ def tests_page():
     </div>
     """
     return page_html
-
-        <div class="note">
-            🔸 يتم حساب النتيجة محليًا في جهازك عبر المتصفح (JavaScript + localStorage). لا يتم إرسال بياناتك إلى السيرفر أو أي جهة أخرى.
-        </div>
-    </div>
-
-    <h2 style="margin-top:24px;">👇 اختر اختبارك:</h2>
-    <div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
-        <!-- سيتم هنا عرض الكروت الخاصة بالاختبارات -->
-    </div>
     """
     return page_html
 
