@@ -2241,10 +2241,151 @@ def render_tests_page():
     <a class="btn" href="{SOCIAL_WA}" target="_blank" rel="noopener">🤝 أخصائي اجتماعي (دعم حياتي)</a>
   </div>
   <script>
-//<script>
+# ======================================================================
+# الصفحة: /tests — الاختبارات النفسية والشخصية
+# ======================================================================
+
+@app.route("/tests")
+def tests():
+    content = r"""
+<div class="card" style="border:2px solid #000;">
+  <h1>🧩 الاختبارات النفسية والشخصية</h1>
+  <p class="small">
+    هذه مجموعة من الاختبارات المبدئية لزيادة وعيك بذاتك وحالتك النفسية.  
+    النتائج تقريبية وليست تشخيصًا طبيًا، لكنها تساعدك على فهم نمطك النفسي أكثر.
+  </p>
+
+  <div class="note">
+    اختر الإجابات بصدق وبدون تفكير طويل، ثم اضغط "احسب النتيجة".
+  </div>
+
+  <!-- اختبار الاكتئاب -->
+  <div class="tile" style="border:1px solid #000;">
+    <h2>🌧️ اختبار الاكتئاب (PHQ-9)</h2>
+    <p class="small">اختر درجة تكرار الأعراض خلال الأسبوعين الماضيين:</p>
+
+    <ol>
+      <li>قلة الاهتمام أو المتعة بالأنشطة اليومية.</li>
+      <li>الشعور بالإحباط أو الحزن أو اليأس.</li>
+      <li>صعوبة النوم أو النوم الزائد.</li>
+      <li>قلة الشهية أو الأكل الزائد.</li>
+      <li>التعب أو فقدان الطاقة.</li>
+      <li>الشعور بتأنيب الضمير أو الفشل.</li>
+      <li>صعوبة التركيز.</li>
+      <li>بطء الحركة أو العصبية الزائدة.</li>
+      <li>أفكار بأنك ستكون أفضل ميتًا.</li>
+    </ol>
+
+    <p class="small">
+      0 = أبدًا &nbsp;&nbsp;
+      1 = عدة أيام &nbsp;&nbsp;
+      2 = أكثر من نصف الأيام &nbsp;&nbsp;
+      3 = تقريبًا كل يوم
+    </p>
+
+    <div id="phq_inputs">
+      <script>
+        for(let i=1;i<=9;i++){
+          document.write('<div><label>السؤال '+i+': ');
+          for(let v=0;v<=3;v++){
+            document.write('<input type="radio" name="phq_'+i+'" value="'+v+'">'+v+' ');
+          }
+          document.write('</label></div>');
+        }
+      </script>
+    </div>
+
+    <div class="row" style="margin-top:10px">
+      <button class="btn gold" onclick="calcScore('phq',9,'0–4 طبيعي، 5–9 خفيف، 10–14 متوسط، 15+ عالي')">احسب النتيجة</button>
+      <button class="btn alt" onclick="window.print()">🖨️ طباعة</button>
+      <a class="btn wa" id="share_phq" target="_blank" rel="noopener">🟢 مشاركة واتساب</a>
+    </div>
+    <div id="phq_result" class="note"></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- اختبار القلق -->
+  <div class="tile" style="border:1px solid #000;">
+    <h2>⚡ اختبار القلق العام (GAD-7)</h2>
+    <p class="small">خلال الأسبوعين الماضيين، كم مرة شعرت بما يلي:</p>
+
+    <ol>
+      <li>توتر أو قلق مفرط.</li>
+      <li>عدم القدرة على التوقف عن القلق.</li>
+      <li>الانشغال الدائم بالأفكار.</li>
+      <li>صعوبة الاسترخاء.</li>
+      <li>العصبية أو الانفعال السريع.</li>
+      <li>الخوف من حدوث الأسوأ.</li>
+      <li>صعوبة النوم بسبب التفكير.</li>
+    </ol>
+
+    <div id="gad_inputs">
+      <script>
+        for(let i=1;i<=7;i++){
+          document.write('<div><label>السؤال '+i+': ');
+          for(let v=0;v<=3;v++){
+            document.write('<input type="radio" name="gad_'+i+'" value="'+v+'">'+v+' ');
+          }
+          document.write('</label></div>');
+        }
+      </script>
+    </div>
+
+    <div class="row" style="margin-top:10px">
+      <button class="btn gold" onclick="calcScore('gad',7,'0–4 طبيعي، 5–9 خفيف، 10–14 متوسط، 15+ عالي')">احسب النتيجة</button>
+      <button class="btn alt" onclick="window.print()">🖨️ طباعة</button>
+      <a class="btn wa" id="share_gad" target="_blank" rel="noopener">🟢 مشاركة واتساب</a>
+    </div>
+    <div id="gad_result" class="note"></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- اختبار الشخصية -->
+  <div class="tile" style="border:1px solid #000;">
+    <h2>🌈 اختبار السمات الشخصية</h2>
+    <p class="small">قيّم نفسك من 0 إلى 4:</p>
+    <ol>
+      <li>أحب التفاعل مع الآخرين.</li>
+      <li>أفكر قبل أن أتكلم.</li>
+      <li>أعيش بانضباط وتنظيم.</li>
+      <li>أتأثر بمشاعر الآخرين بسهولة.</li>
+      <li>أتعامل مع التوتر بهدوء.</li>
+    </ol>
+
+    <div id="pers_inputs">
+      <script>
+        for(let i=1;i<=5;i++){
+          document.write('<div><label>السؤال '+i+': ');
+          for(let v=0;v<=4;v++){
+            document.write('<input type="radio" name="pers_'+i+'" value="'+v+'">'+v+' ');
+          }
+          document.write('</label></div>');
+        }
+      </script>
+    </div>
+
+    <div class="row" style="margin-top:10px">
+      <button class="btn gold" onclick="calcScore('pers',5,'كلما ارتفعت النتيجة زادت السمة الإيجابية.')">احسب النتيجة</button>
+      <button class="btn alt" onclick="window.print()">🖨️ طباعة</button>
+      <a class="btn wa" id="share_pers" target="_blank" rel="noopener">🟢 مشاركة واتساب</a>
+    </div>
+    <div id="pers_result" class="note"></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <p class="small">
+    ⚠️ النتائج للاستنارة فقط، ولا تُعتبر تشخيصًا.  
+    للمساعدة الفعلية يمكنك التواصل مع مختصينا عبر واتساب أو تيليجرام من الأسفل.
+  </p>
+</div>
+
+<script>
 // حساب مجموع النقاط وعرض النتيجة
 function calcScore(code, count, helpText) {
-  let total =0
+  let total = 0;
   for (let i = 1; i <= count; i++) {
     const sel = document.querySelector('input[name="'+code+'_'+i+'"]:checked');
     if (sel) {
@@ -2258,30 +2399,15 @@ function calcScore(code, count, helpText) {
   try {
     const key = "test_history_" + code;
     localStorage.setItem(key, JSON.stringify({ score: total, ts: new Date().toISOString() }));
+
+    // مشاركة واتساب
+    const msg = encodeURIComponent("نتيجتي في اختبار "+code.toUpperCase()+" هي "+total+" نقطة. "+helpText);
+    document.getElementById("share_"+code).href = "https://wa.me/?text="+msg;
   } catch(e) {}
 }
 </script>
-  const answers = [];
-      for (let i=1;i<=count;i++){
-        const sel = document.querySelector('input[name="'+code+'_q'+i+'"]:checked');
-        answers.push(sel ? parseInt(sel.value,10) : null);
-      }
-      const data = {{
-        test: code,
-        name: name,
-        answers: answers,
-        build: window.__BUILD__,
-        saved_at: new Date().toISOString()
-      }};
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(
-        new Blob([JSON.stringify(data,null,2)], {{type:'application/json'}})
-      );
-      a.download = code + "_result.json";
-      a.click();
-      URL.revokeObjectURL(a.href);
-    }
-  </script>
+"""
+    return shell("الاختبارات النفسية والشخصية — " + BRAND, content, "tests")
 
 </div>
 """
