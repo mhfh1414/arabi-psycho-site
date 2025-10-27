@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-عربي سايكو — ملف واحد كامل (Purple × Gold) v7.1
+عربي سايكو — ملف واحد كامل (Purple × Gold) v7.2
 
 الصفحات:
     /        الرئيسية
@@ -50,6 +50,7 @@ CACHE_BUST = os.environ.get(
 )
 
 SLOGAN = "«نراك بعين الاحترام، ونسير معك بخطوات عملية.»"
+
 
 # ======================== أدوات تحليل الأعراض ========================
 
@@ -340,7 +341,7 @@ def build_case_result_html(picks, plan_keys):
         <a class="btn wa" target="_blank" rel="noopener"
            href="{WA_BASE}">🟢 مشاركة واتساب</a>
         <a class="btn tg" target="_blank" rel="noopener"
-           href="{TG_URL}">✈️ مشاركة تيليجرام</a>
+           href="{TG_URL}">✈️ تيليجرام</a>
         <a class="btn gold" href="/cbt">🧠 فتح CBT (مخصّص لحالتك)</a>
       </div>
 
@@ -351,69 +352,74 @@ def build_case_result_html(picks, plan_keys):
       </div>
     </section>
     """
-
     return html
 
-# ======================== الـ Layout العام ========================
+
+# ======================== shell() آمن بدون f-string داخل سكربت ========================
 
 def shell(page_title, content_html, active="home"):
-    # inline CSS + minimal JS (for checklist builder etc.)
-    base_html = f"""<!DOCTYPE html>
+    """
+    نبني الصفحة عن طريق قالب فيه [[PLACEHOLDER]] ثم replace()
+    عشان ما ينفجر بسبب أقواس الجافاسكربت.
+    """
+
+    template = r"""<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>{page_title}</title>
+<title>[[PAGE_TITLE]]</title>
 <style>
-body {{
+/* نفس الستايل */
+body {
     background-color:#0a0612;
     color:#f7f3d6;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     margin:0;
     padding:0 12px 80px;
     line-height:1.6;
-}}
-header {{
+}
+header {
     text-align:center;
     padding:16px 8px 8px;
-}}
-header .brand-row {{
+}
+header .brand-row {
     display:flex;
     flex-direction:column;
     align-items:center;
     gap:8px;
-}}
-.logo {{
+}
+.logo {
     width:64px;
     height:64px;
     border-radius:50%;
     border:2px solid #d1b23a;
     background-color:#1a132b;
     object-fit:contain;
-}}
-.brand-name-big {{
+}
+.brand-name-big {
     font-size:20px;
     font-weight:600;
     color:#f7f3d6;
-}}
-.slogan {{
+}
+.slogan {
     font-size:14px;
     color:#d1b23a;
     font-weight:500;
-}}
-.subline {{
+}
+.subline {
     font-size:12px;
     color:#888;
-}}
-nav.nav {{
+}
+nav.nav {
     display:flex;
     flex-wrap:wrap;
     justify-content:center;
     gap:8px;
     margin:16px auto 24px;
     max-width:800px;
-}}
-nav.nav a {{
+}
+nav.nav a {
     text-decoration:none;
     background-color:#1a132b;
     border:1px solid #3a2f55;
@@ -425,17 +431,17 @@ nav.nav a {{
     font-size:14px;
     line-height:1.4;
     box-shadow:0 0 10px rgba(209,178,58,0.2);
-}}
-nav.nav a small {{
+}
+nav.nav a small {
     display:block;
     font-size:11px;
     color:#d1b23a;
-}}
-nav.nav a.active {{
+}
+nav.nav a.active {
     border:1px solid #d1b23a;
     box-shadow:0 0 12px rgba(209,178,58,0.6);
-}}
-.ref-box {{
+}
+.ref-box {
     border:1px solid #3a2f55;
     background-color:#1a132b;
     border-radius:12px;
@@ -443,21 +449,21 @@ nav.nav a.active {{
     max-width:800px;
     margin:0 auto 24px;
     box-shadow:0 0 20px rgba(209,178,58,0.15);
-}}
-.ref-box h4 {{
+}
+.ref-box h4 {
     margin:0 0 8px;
     font-size:15px;
     color:#d1b23a;
     font-weight:600;
-}}
-.ref-links {{
+}
+.ref-links {
     display:flex;
     flex-wrap:wrap;
     gap:8px;
     font-size:13px;
     line-height:1.4;
-}}
-.ref-links a {{
+}
+.ref-links a {
     display:flex;
     flex-direction:column;
     flex:1;
@@ -468,13 +474,13 @@ nav.nav a.active {{
     border-radius:10px;
     border:1px solid #3a2f55;
     padding:8px;
-}}
-.ref-links a span {{
+}
+.ref-links a span {
     font-size:12px;
     color:#d1b23a;
-}}
+}
 
-.main-wrap {{
+.main-wrap {
     max-width:900px;
     margin:0 auto;
     background-color:#1a132b;
@@ -482,29 +488,29 @@ nav.nav a.active {{
     border-radius:16px;
     padding:16px;
     box-shadow:0 0 30px rgba(209,178,58,0.15);
-}}
+}
 
-h1,h2,h3,h4,h5 {{
+h1,h2,h3,h4,h5 {
     color:#f7f3d6;
     font-weight:600;
     line-height:1.4;
-}}
-h1 {{font-size:20px; margin:0 0 12px;}}
-h2 {{font-size:18px; margin:16px 0 8px;}}
-h3 {{font-size:16px; margin:16px 0 8px;}}
+}
+h1 {font-size:20px; margin:0 0 12px;}
+h2 {font-size:18px; margin:16px 0 8px;}
+h3 {font-size:16px; margin:16px 0 8px;}
 
-p,li,label,small,div {{
+p,li,label,small,div {
     font-size:14px;
-}}
-small.small {{
+}
+small.small {
     font-size:11px;
     color:#aaa;
-}}
-.dx-list {{
+}
+.dx-list {
     margin:0;
     padding:0 16px;
-}}
-.badge2 {{
+}
+.badge2 {
     display:inline-flex;
     align-items:center;
     gap:6px;
@@ -517,37 +523,37 @@ small.small {{
     line-height:1.4;
     color:#f7f3d6;
     box-shadow:0 0 12px rgba(209,178,58,0.15);
-}}
-.badge2 input[type=checkbox] {{
+}
+.badge2 input[type=checkbox] {
     accent-color:#d1b23a;
     transform:scale(1.2);
-}}
-.grid {{
+}
+.grid {
     display:flex;
     flex-wrap:wrap;
     gap:12px;
-}}
-.tile {{
+}
+.tile {
     background-color:#1f1634;
     border-radius:12px;
     padding:10px;
     flex:1;
     min-width:260px;
     box-shadow:0 0 20px rgba(209,178,58,0.08);
-}}
-.tile h3 {{
+}
+.tile h3 {
     color:#d1b23a;
     font-size:14px;
     margin:0 0 8px;
     font-weight:600;
 }
-.tile label {{
+.tile label {
     display:flex;
     flex-wrap:wrap;
     font-size:13px;
-}}
+}
 
-input,select,textarea {{
+input,select,textarea {
     width:100%;
     background-color:#2a2045;
     border:1px solid #3a2f55;
@@ -557,24 +563,24 @@ input,select,textarea {{
     padding:8px;
     margin-top:4px;
     font-family:inherit;
-}}
-textarea {{
+}
+textarea {
     min-height:80px;
     resize:vertical;
-}}
+}
 
-.divider {{
+.divider {
     border-top:1px solid #3a2f55;
     margin:16px 0;
-}}
+}
 
-.row {{
+.row {
     display:flex;
     flex-wrap:wrap;
     gap:10px;
-}}
+}
 
-.btn {{
+.btn {
     background-color:#2a2045;
     border:1px solid #3a2f55;
     border-radius:10px;
@@ -587,40 +593,40 @@ textarea {{
     text-align:center;
     min-width:120px;
     box-shadow:0 0 12px rgba(209,178,58,0.15);
-}}
-.btn.gold {{
+}
+.btn.gold {
     background-color:#3b2a00;
     border:1px solid #d1b23a;
     color:#f7f3d6;
     box-shadow:0 0 16px rgba(209,178,58,0.45);
     font-weight:600;
-}}
-.btn.alt {{
+}
+.btn.alt {
     background-color:#1f1634;
-}}
-.btn.wa {{
+}
+.btn.wa {
     background-color:#1a2f1a;
     border:1px solid #2d5f2d;
-}}
-.btn.tg {{
+}
+.btn.tg {
     background-color:#1a2538;
     border:1px solid #2d4b7a;
-}}
-.btn.pro {{
+}
+.btn.pro {
     flex:1;
     min-width:140px;
     background-color:#241a3c;
     border:1px solid #3a2f55;
-}}
+}
 
-.share-row,.help-row {{
+.share-row,.help-row {
     display:flex;
     flex-wrap:wrap;
     gap:10px;
     margin-top:16px;
-}}
+}
 
-.case-result .header-box {{
+.case-result .header-box {
     display:flex;
     flex-wrap:nowrap;
     align-items:center;
@@ -630,26 +636,26 @@ textarea {{
     border-radius:12px;
     padding:10px;
     box-shadow:0 0 20px rgba(209,178,58,0.15);
-}}
-.logo-sm {{
+}
+.logo-sm {
     width:44px;
     height:44px;
     border-radius:50%;
     border:2px solid #d1b23a;
     object-fit:contain;
     background-color:#0a0612;
-}}
-.brand-name {{
+}
+.brand-name {
     font-weight:600;
     font-size:14px;
     color:#f7f3d6;
-}}
-.case-result .sub {{
+}
+.case-result .sub {
     font-size:12px;
     color:#d1b23a;
     line-height:1.4;
-}}
-.case-result .praise {{
+}
+.case-result .praise {
     font-size:14px;
     color:#f7f3d6;
     background-color:#1f1634;
@@ -658,41 +664,41 @@ textarea {{
     padding:10px;
     margin-top:12px;
     box-shadow:0 0 20px rgba(209,178,58,0.15);
-}}
-.plans-wrap {{
+}
+.plans-wrap {
     display:flex;
     flex-wrap:wrap;
     gap:6px;
     margin-bottom:8px;
-}}
-.next-steps {{
+}
+.next-steps {
     padding-right:20px;
     font-size:14px;
     line-height:1.6;
-}}
+}
 
-footer {{
+footer {
     text-align:center;
     color:#888;
     font-size:12px;
     margin:32px auto 12px;
     max-width:900px;
     line-height:1.5;
-}}
-footer .legal {{
+}
+footer .legal {
     color:#d1b23a;
     font-size:12px;
     margin-top:8px;
-}}
+}
 
-#print-note {{
+#print-note {
     font-size:11px;
     color:#777;
     text-align:center;
     margin-top:8px;
-}}
+}
 
-#checklist {{
+#checklist {
     margin-top:16px;
     background-color:#1f1634;
     border:1px solid #3a2f55;
@@ -702,214 +708,213 @@ footer .legal {{
     font-size:14px;
     line-height:1.6;
     overflow-x:auto;
-}}
-.check-day {{
+}
+.check-day {
     border-bottom:1px solid #3a2f55;
     padding:8px 0;
-}}
-.check-day:last-child {{
+}
+.check-day:last-child {
     border-bottom:none;
-}}
-.check-day h4 {{
+}
+.check-day h4 {
     margin:0 0 6px;
     font-size:14px;
     color:#d1b23a;
-}}
-.todo-item {{
+}
+.todo-item {
     display:flex;
     align-items:flex-start;
     gap:6px;
     font-size:14px;
     line-height:1.5;
-}}
-.todo-item input[type=checkbox] {{
+}
+.todo-item input[type=checkbox] {
     accent-color:#d1b23a;
     transform:scale(1.2);
     margin-top:2px;
-}}
+}
 
-.search-bar {{
+.search-bar {
     display:flex;
     gap:8px;
     flex-wrap:wrap;
     margin:12px 0 16px;
-}}
-.search-bar input {{
+}
+.search-bar input {
     flex:1;
     min-width:200px;
-}}
-.search-bar button {{
+}
+.search-bar button {
     min-width:100px;
-}}
+}
 
-.drug-card {{
+.drug-card {
     background-color:#241a3c;
     border:1px solid #3a2f55;
     border-radius:12px;
     padding:12px;
     margin-bottom:12px;
     box-shadow:0 0 20px rgba(209,178,58,0.15);
-}}
-.drug-card h3 {{
+}
+.drug-card h3 {
     margin:0 0 8px;
     font-size:15px;
     color:#d1b23a;
-}}
-.drug-card .sec {{
+}
+.drug-card .sec {
     font-size:13px;
     line-height:1.5;
     color:#f7f3d6;
-}}
-.drug-card .warn {{
+}
+.drug-card .warn {
     color:#ff7676;
     font-size:12px;
     margin-top:6px;
     line-height:1.5;
-}}
-
+}
 </style>
 
 <script>
-// ================= CBT PLANS DATA (سلوكيات يومية) =================
-const CBT_LIBRARY = {{
-  "ba": {{
-    title: "BA — تنشيط سلوكي",
-    tasks: [
+// مكتبة CBT
+const CBT_LIBRARY = {
+  "ba": {
+    "title": "BA — تنشيط سلوكي",
+    "tasks": [
       "اخرج من الغرفة ولو 10 دقائق مشي خفيف.",
       "نشاط بسيط كنت تسويه قبل (قهوة مع نفسك / هواية).",
       "تواصل مع شخص واحد تثق فيه برسالة قصيرة ودودة."
     ]
-  }},
-  "thought_record": {{
-    title: "TR — سجل أفكار",
-    tasks: [
+  },
+  "thought_record": {
+    "title": "TR — سجل أفكار",
+    "tasks": [
       "أكتب الموقف اللي ضايقك.",
       "ما هو الفكرة السلبية اللي طلعت في بالك؟",
       "ما هو الدليل أنها 100% صحيحة؟ ما هو الدليل ضدها؟",
       "اكتب نسخة فكرية أهدأ وأكثر توازن."
     ]
-  }},
-  "sleep_hygiene": {{
-    title: "SH — نظافة النوم",
-    tasks: [
+  },
+  "sleep_hygiene": {
+    "title": "SH — نظافة النوم",
+    "tasks": [
       "نام واستيقظ تقريبًا نفس الوقت اليوم.",
       "لا قهوة ثقيلة قبل النوم بـ 6 ساعات.",
       "سريرك للنوم فقط، لا للجوال 60 دقيقة قبل النوم."
     ]
-  }},
-  "problem_solving": {{
-    title: "PS — حلّ المشكلات",
-    tasks: [
+  },
+  "problem_solving": {
+    "title": "PS — حلّ المشكلات",
+    "tasks": [
       "حدّد مشكلة محددة بصيغة سؤال.",
       "اكتب 3 حلول ممكنة بدون تقييم.",
       "اختر حل واحد صغير وجرّبه اليوم.",
       "قيّم النتيجة آخر اليوم."
     ]
-  }},
-  "worry_time": {{
-    title: "WT — وقت القلق",
-    tasks: [
+  },
+  "worry_time": {
+    "title": "WT — وقت القلق",
+    "tasks": [
       "لو جاءك قلق طول اليوم: قل له (مو وقته الآن).",
       "حدد 15 دقيقة ثابتة لاحقًا للقلق فقط.",
       "في الوقت المحدد اكتب كل المخاوف على ورق."
     ]
-  }},
-  "mindfulness": {{
-    title: "MB — يقظة ذهنية",
-    tasks: [
+  },
+  "mindfulness": {
+    "title": "MB — يقظة ذهنية",
+    "tasks": [
       "تمرين تنفس 4-4-6: شهيق 4 / ثبات 4 / زفير 6.",
       "ركّز على إحساس القدم بالأرض 60 ثانية.",
       "لاحظ الفكرة بدون تصديقها، فقط لاحظها وعد."
     ]
-  }},
-  "interoceptive_exposure": {{
-    title: "IE — تعرّض داخلي (هلع)",
-    tasks: [
+  },
+  "interoceptive_exposure": {
+    "title": "IE — تعرّض داخلي (هلع)",
+    "tasks": [
       "راقب خفقان القلب بدون محاولة تهدئة فورية.",
       "ذكّر نفسك: (الأعراض مزعجة لكن مو خطيرة).",
       "دوّن شدة القلق من 0 إلى 10 بعد دقيقتين."
     ]
-  }},
-  "graded_exposure": {{
-    title: "GE — تعرّض تدرّجي",
-    tasks: [
+  },
+  "graded_exposure": {
+    "title": "GE — تعرّض تدرّجي",
+    "tasks": [
       "حدد موقف يخوفك بدرجة 3/10 مو 10/10.",
       "ادخل الموقف مدة قصيرة بدون هروب مباشر.",
       "دوّن النتيجة الحقيقية اللي حصلت مو التوقع الكارثي."
     ]
-  }},
-  "social_skills": {{
-    title: "SS — مهارات اجتماعية",
-    tasks: [
+  },
+  "social_skills": {
+    "title": "SS — مهارات اجتماعية",
+    "tasks": [
       "ابدأ تحية قصيرة مع شخص (السلام عليكم + سؤال بسيط).",
       "تدرب تقول (عفوًا، أحتاج دقيقة أرتب فكرتي).",
       "تسمية شعورك بصوت واضح: (أنا قلق شوي الآن)."
     ]
-  }},
-  "self_confidence": {{
-    title: "SC — تعزيز الثقة",
-    tasks: [
+  },
+  "self_confidence": {
+    "title": "SC — تعزيز الثقة",
+    "tasks": [
       "اكتب إنجاز بسيط عملته اليوم حتى لو شكلك تقليل من قيمته.",
       "قل لنفسك بصوت مسموع (أنا أتحرك، حتى لو خطوة صغيرة).",
       "توقف عن جملة جلد ذاتي وحدة اليوم (بدلها بجملة ألطف وواقعية)."
     ]
-  }},
-  "safety_behaviors": {{
-    title: "SA — إيقاف سلوكيات الطمأنة",
-    tasks: [
+  },
+  "safety_behaviors": {
+    "title": "SA — إيقاف سلوكيات الطمأنة",
+    "tasks": [
       "قلل سؤال (هل أنا بخير؟) للناس من 10 مرات إلى 5.",
       "جرّب تبقى في الموقف المقلق بدون رسائل طمأنة فورية.",
       "لاحظ: هل القلق فعلاً يطلع للسماء أو ينزل بعد كم دقيقة؟"
     ]
-  }},
-  "ocd_erp": {{
-    title: "ERP — وسواس قهري",
-    tasks: [
+  },
+  "ocd_erp": {
+    "title": "ERP — وسواس قهري",
+    "tasks": [
       "اختر فكرة وسواسية متوسطة القوة (مو أقوى شي).",
       "امنع الطقس القهري (غسل/تفقد) فقط لدقيقة إضافية.",
       "دوّن مستوى الضيق بعد دقيقة وبعد 5 دقائق."
     ]
-  }},
-  "ptsd_grounding": {{
-    title: "PTSD — تأريض/تنظيم",
-    tasks: [
+  },
+  "ptsd_grounding": {
+    "title": "PTSD — تأريض/تنظيم",
+    "tasks": [
       "تمرين 5-4-3-2-1: سمِّ 5 أشياء تشوفها الآن، 4 تلمسها، 3 تسمعها...",
-      "ذكر النفس: (أنا في {BRAND} الآن، مو في الحدث القديم).",
+      "ذكر النفس: (أنت الآن في بيئة آمنة، مو في الحدث القديم).",
       "تنفس بطيء من البطن 2 دقيقة."
     ]
-  }},
-  "bipolar_routine": {{
-    title: "IPSRT — روتين ثابت",
-    tasks: [
+  },
+  "bipolar_routine": {
+    "title": "IPSRT — روتين ثابت",
+    "tasks": [
       "نوم/استيقاظ تقريبًا نفس الساعة.",
       "وجبات في أوقات شبه ثابتة.",
       "سجل التقلب المزاجي رقمياً (0 هادي / 10 متهور)."
     ]
-  }},
-  "relapse_prevention": {{
-    title: "RP — منع الانتكاس (إدمان)",
-    tasks: [
+  },
+  "relapse_prevention": {
+    "title": "RP — منع الانتكاس (إدمان)",
+    "tasks": [
       "اكتب أقوى مُحفّز اليوم (شخص / مكان / إحساس).",
       "اكتب خطة استبدال (بديل سليم تُسويه بدل التعاطي).",
       "راسل دعمك البشري ولو (سلام أنا صامد معك)."
     ]
-  }},
-  "anger_management": {{
-    title: "AM — إدارة الغضب",
-    tasks: [
+  },
+  "anger_management": {
+    "title": "AM — إدارة الغضب",
+    "tasks": [
       "إذا حسّيت الغضب يطلع فوق 6/10: خذ انسحاب هادئ دقيقة.",
       "اكتب ما هو الشيء اللي تحت الغضب؟ (جرح؟ إحساس عدم احترام؟).",
       "ارجع وتكلم بصيغة (أنا أحس...) بدل (إنت دايم...)."
     ]
-  }}
-}};
+  }
+};
 
-// يبني الـ <select> في صفحة CBT
-function initPlanSelectors() {{
+// يبني القوائم المنسدلة للخطط
+function initPlanSelectors() {
   const selA = document.getElementById("planA");
   const selB = document.getElementById("planB");
   if (!selA || !selB) return;
-  Object.keys(CBT_LIBRARY).forEach(key => {{
+  Object.keys(CBT_LIBRARY).forEach(key => {
     const optA = document.createElement("option");
     optA.value = key;
     optA.textContent = CBT_LIBRARY[key].title;
@@ -919,154 +924,150 @@ function initPlanSelectors() {{
     optB.value = key;
     optB.textContent = CBT_LIBRARY[key].title;
     selB.appendChild(optB);
-  }});
-}}
+  });
+}
 
-// يبني جدول المهام اليومي لعدد أيام محدد
-function buildChecklist() {{
+// يبني الجدول اليومي
+function buildChecklist() {
   const days = parseInt(document.getElementById("daysSelect").value || "7");
   const planA = document.getElementById("planA").value;
   const planB = document.getElementById("planB").value || null;
 
   const out = [];
-  for (let d=1; d<=days; d++) {{
-    out.push({{
+  for (let d=1; d<=days; d++) {
+    out.push({
       day: d,
       tasks: []
-    }});
-  }}
+    });
+  }
 
-  function pushTasks(planKey) {{
+  function pushTasks(planKey) {
     if (!planKey) return;
     const lib = CBT_LIBRARY[planKey];
     if (!lib) return;
-    lib.tasks.forEach(t => {{
-      out.forEach(dayObj => {{
-        dayObj.tasks.push({{ text: t, done:false, plan: planKey }});
-      }});
-    }});
-  }}
+    lib.tasks.forEach(t => {
+      out.forEach(dayObj => {
+        dayObj.tasks.push({ text: t, done:false, plan: planKey });
+      });
+    });
+  }
 
   pushTasks(planA);
   pushTasks(planB);
 
-  // render HTML checklist
   const wrap = document.getElementById("checklist");
   wrap.innerHTML = "";
-  out.forEach(dayObj => {{
+  out.forEach(dayObj => {
     const div = document.createElement("div");
     div.className = "check-day";
     div.innerHTML = "<h4>اليوم " + dayObj.day + "</h4>";
-    dayObj.tasks.forEach(task => {{
+    dayObj.tasks.forEach(task => {
       const row = document.createElement("div");
       row.className = "todo-item";
       row.innerHTML = `
         <input type="checkbox">
         <div>
-          <div>${{task.text}}</div>
-          <small class="small">(${BRAND}) خطة: ${{
-            CBT_LIBRARY[task.plan]?.title || task.plan
-          }}</small>
+          <div>${task.text}</div>
+          <small class="small">خطة: ${CBT_LIBRARY[task.plan]?.title || task.plan}</small>
         </div>
       `;
       div.appendChild(row);
-    }});
+    });
     wrap.appendChild(div);
-  }});
+  });
 
   // share links
   const waLink = document.getElementById("share-wa");
   const tgLink = document.getElementById("share-tg");
-  if (waLink) {{
-    waLink.href = "{WA_BASE}?text=" + encodeURIComponent("جدول CBT من {BRAND} ✔");
-  }}
-  if (tgLink) {{
-    tgLink.href = "{TG_URL}";
-  }}
-}}
+  if (waLink) {
+    waLink.href = "[[WA_BASE]]?text=" + encodeURIComponent("جدول CBT ✔");
+  }
+  if (tgLink) {
+    tgLink.href = "[[TG_URL]]";
+  }
+}
 
-// يحفظ الجدول كـ JSON تنزيل
-function saveChecklist() {{
+// يحفظ الجدول كـ JSON
+function saveChecklist() {
   const wrap = document.getElementById("checklist");
   const txt = wrap.innerText || wrap.textContent || "";
-  const blob = new Blob([txt], {{type:"application/json"}});
+  const blob = new Blob([txt], {type:"application/json"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "cbt-plan-{CACHE_BUST}.json";
+  a.download = "cbt-plan-[[CACHE_BUST]].json";
   a.click();
-}}
+}
 
-// تنزيل نتيجة دراسة الحالة كـ JSON بسيط
-function downloadJSON() {{
+// تنزيل نتيجة دراسة الحالة
+function downloadJSON() {
   const sec = document.querySelector(".case-result");
   if (!sec) return;
-  const data = {{
-    brand: "{BRAND}",
-    ts: "{CACHE_BUST}",
+  const data = {
+    brand: "[[BRAND]]",
+    ts: "[[CACHE_BUST]]",
     summaryText: sec.innerText
-  }};
-  const blob = new Blob([JSON.stringify(data, null, 2)], {{type:"application/json"}});
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "case-summary-{CACHE_BUST}.json";
+  a.download = "case-summary-[[CACHE_BUST]].json";
   a.click();
-}}
+}
 
-// بحث الأدوية محلي (static list)
+// بحث الأدوية
 const DRUGS = [
-  {{
+  {
     name: "مثبطات السيروتونين الانتقائية (SSRI)",
     use: "غالباً للقلق والاكتئاب وأحيانًا الوسواس القهري",
     common: "غثيان خفيف، صداع، تغير نوم/شهية، أحيانًا برود جنسي",
     urgent: "أفكار انتحارية جديدة أو أسوأ بشكل مفاجئ، تهيج شديد، هوس/اندفاع غير طبيعي"
-  }},
-  {{
+  },
+  {
     name: "مثبتات المزاج",
     use: "لتقلب المزاج الشديد أو نوبات المزاج المرتفع",
     common: "عطش، رجفة خفيفة، زيادة وزن محتملة",
     urgent: "تقيؤ شديد، رعشة قوية، تشوش وعي، خمول مفاجئ غير طبيعي"
-  }},
-  {{
+  },
+  {
     name: "مضادات الذهان الحديثة",
     use: "تُصرف للهلاوس/الأوهام أو الاضطراب الشديد أو التهيج العالي",
     common: "نعاس، زيادة شهية، جفاف فم",
     urgent: "تيبس شديد بالعضلات، حرارة، ارتباك ذهني قوي"
-  }},
-  {{
+  },
+  {
     name: "أدوية النوم/القلق المهدئة (قصيرة المدى فقط)",
     use: "أرق حاد قصير المدى أو قلق شديد مؤقت",
     common: "نعاس، تباطؤ تركيز، بطء رد فعل",
     urgent: "نعاس مفرط جدًا، تداخل كلام، تنفس بطيء أو ضعيف"
-  }},
-  {{
+  },
+  {
     name: "أدوية دعم الإدمان / منع الانتكاس",
     use: "تقلل الرغبة أو تساعد تثبيت السلوك بعد الإيقاف",
     common: "غثيان بسيط، صداع، دوخة خفيفة",
     urgent: "اصفرار عين/جلد، ألم بطن قوي، تشنج، هلاوس"
-  }}
+  }
 ];
 
-// يرسم نتائج البحث في صفحة /pharm
-function pharmSearch() {{
+function pharmSearch() {
   const q = (document.getElementById("pharm-q").value || "").trim().toLowerCase();
   const zone = document.getElementById("pharm-results");
   zone.innerHTML = "";
   DRUGS.filter(d => (
     d.name.toLowerCase().includes(q) ||
     d.use.toLowerCase().includes(q)
-  )).forEach(d => {{
+  )).forEach(d => {
     const card = document.createElement("div");
     card.className = "drug-card";
     card.innerHTML = `
-      <h3>${{d.name}}</h3>
-      <div class="sec"><b>لماذا يُصرف؟</b> ${{d.use}}</div>
-      <div class="sec"><b>أعراض جانبية شائعة:</b> ${{d.common}}</div>
-      <div class="warn"><b>مراجعة طبية فورية إذا:</b> ${{d.urgent}}</div>
+      <h3>${d.name}</h3>
+      <div class="sec"><b>لماذا يُصرف؟</b> ${d.use}</div>
+      <div class="sec"><b>أعراض جانبية شائعة:</b> ${d.common}</div>
+      <div class="warn"><b>مراجعة طبية فورية إذا:</b> ${d.urgent}</div>
       <div class="warn"><b>تحذير:</b> لا تبدأ/توقف الدواء بدون إشراف طبي مباشر.</div>
     `;
     zone.appendChild(card);
-  }});
-}}
+  });
+}
 </script>
 
 </head>
@@ -1074,27 +1075,27 @@ function pharmSearch() {{
 
 <header>
   <div class="brand-row">
-    <img src="{LOGO}" class="logo" alt="logo"/>
-    <div class="brand-name-big">{BRAND}</div>
-    <div class="slogan">{SLOGAN}</div>
-    <div class="subline">بنفسجي × ذهبي — @{BRAND.replace(" ", "")}</div>
+    <img src="[[LOGO]]" class="logo" alt="logo"/>
+    <div class="brand-name-big">[[BRAND]]</div>
+    <div class="slogan">[[SLOGAN]]</div>
+    <div class="subline">بنفسجي × ذهبي — @[[BRAND_NO_SPACE]]</div>
   </div>
 </header>
 
 <nav class="nav">
-  <a href="/" class="{ 'active' if active=='home' else '' }">
+  <a href="/" class="[[ACTIVE_HOME]]">
     <span>🏠 الرئيسية</span>
     <small>الصفحة الأولى</small>
   </a>
-  <a href="/case" class="{ 'active' if active=='case' else '' }">
+  <a href="/case" class="[[ACTIVE_CASE]]">
     <span>📝 دراسة الحالة</span>
     <small>أعراضك وتشخيص مبدئي</small>
   </a>
-  <a href="/cbt" class="{ 'active' if active=='cbt' else '' }">
+  <a href="/cbt" class="[[ACTIVE_CBT]]">
     <span>🧠 CBT</span>
     <small>الخطط + الجدول</small>
   </a>
-  <a href="/pharm" class="{ 'active' if active=='pharm' else '' }">
+  <a href="/pharm" class="[[ACTIVE_PHARM]]">
     <span>💊 دليل الأدوية النفسية</span>
     <small>متى يُصرف / التحذيرات</small>
   </a>
@@ -1103,15 +1104,15 @@ function pharmSearch() {{
 <div class="ref-box">
   <h4>📞 دعم مباشر الآن</h4>
   <div class="ref-links">
-    <a href="{PSYCHO_WA}" target="_blank" rel="noopener">
+    <a href="[[PSYCHO_WA]]" target="_blank" rel="noopener">
       👨‍🎓 أخصائي نفسي
       <span>خطة سلوكية/سلوكية معرفية</span>
     </a>
-    <a href="{PSYCH_WA}" target="_blank" rel="noopener">
+    <a href="[[PSYCH_WA]]" target="_blank" rel="noopener">
       👨‍⚕️ طبيب نفسي
       <span>تشخيص طبي / أدوية</span>
     </a>
-    <a href="{SOCIAL_WA}" target="_blank" rel="noopener">
+    <a href="[[SOCIAL_WA]]" target="_blank" rel="noopener">
       🤝 أخصائي اجتماعي
       <span>دعم أسري / مواقف حياتية</span>
     </a>
@@ -1119,13 +1120,13 @@ function pharmSearch() {{
 </div>
 
 <main class="main-wrap">
-{content_html}
+[[CONTENT]]
 </main>
 
 <footer>
-  © جميع الحقوق محفوظة لـ {BRAND} — {SLOGAN}<br/>
-  تيليجرام الدعم: {TG_URL} · واتساب: {WA_URL}<br/>
-  الإصدار البنفسجي × الذهبي — BUILD {CACHE_BUST}
+  © جميع الحقوق محفوظة لـ [[BRAND]] — [[SLOGAN]]<br/>
+  تيليجرام الدعم: [[TG_URL]] · واتساب: [[WA_URL]]<br/>
+  الإصدار البنفسجي × الذهبي — BUILD [[BUILD]]
   <div class="legal">
     هذه الأداة ليست بديلاً عن رعاية صحية طارئة أو طبيب نفسي مرخّص.
   </div>
@@ -1135,7 +1136,30 @@ function pharmSearch() {{
 </body>
 </html>
 """
-    return base_html
+
+    html_out = (
+        template
+        .replace("[[PAGE_TITLE]]", page_title)
+        .replace("[[LOGO]]", LOGO)
+        .replace("[[BRAND]]", BRAND)
+        .replace("[[BRAND_NO_SPACE]]", BRAND.replace(" ", ""))
+        .replace("[[SLOGAN]]", SLOGAN)
+        .replace("[[TG_URL]]", TG_URL)
+        .replace("[[WA_URL]]", WA_URL)
+        .replace("[[WA_BASE]]", WA_BASE)
+        .replace("[[CACHE_BUST]]", CACHE_BUST)
+        .replace("[[BUILD]]", CACHE_BUST)
+        .replace("[[PSYCHO_WA]]", PSYCHO_WA)
+        .replace("[[PSYCH_WA]]", PSYCH_WA)
+        .replace("[[SOCIAL_WA]]", SOCIAL_WA)
+        .replace("[[ACTIVE_HOME]]", "active" if active == "home" else "")
+        .replace("[[ACTIVE_CASE]]", "active" if active == "case" else "")
+        .replace("[[ACTIVE_CBT]]", "active" if active == "cbt" else "")
+        .replace("[[ACTIVE_PHARM]]", "active" if active == "pharm" else "")
+        .replace("[[CONTENT]]", content_html)
+    )
+
+    return html_out
 
 
 # ======================== صفحات Flask ========================
@@ -1171,7 +1195,7 @@ def home():
     <section>
       <h2>🧠 CBT العلاج السلوكي المعرفي</h2>
       <p>
-        17 خطة واضحة (تنشيط سلوكي، إدارة الغضب، تعزيز الثقة بالنفس، نوم، هلع، وسواس...).
+        خطط واضحة (تنشيط سلوكي، إدارة الغضب، تعزيز الثقة بالنفس، نوم، هلع، وسواس...).
         الموقع يبني لك جدول يومي قابل للطباعة والمشاركة.
       </p>
       <a class="btn gold" href="/cbt">افتح CBT</a>
@@ -1463,9 +1487,9 @@ CBT_PAGE_HTML = f"""
     </select>
   </label>
 
-  <button class="btn gold" onclick="buildChecklist()">إنشاء الجدول</button>
-  <button class="btn alt" onclick="window.print()">🖨️ طباعة</button>
-  <button class="btn" onclick="saveChecklist()">💾 تنزيل JSON</button>
+  <button class="btn gold" type="button" onclick="buildChecklist()">إنشاء الجدول</button>
+  <button class="btn alt" type="button" onclick="window.print()">🖨️ طباعة</button>
+  <button class="btn" type="button" onclick="saveChecklist()">💾 تنزيل JSON</button>
   <a class="btn wa" id="share-wa" target="_blank" rel="noopener">🟢 واتساب</a>
   <a class="btn tg" id="share-tg" target="_blank" rel="noopener">✈️ تيليجرام</a>
 </div>
@@ -1507,7 +1531,7 @@ PHARM_PAGE_HTML = f"""
 
 <div class="search-bar">
   <input id="pharm-q" placeholder="ابحث باسم الدواء أو الحالة (مثال: اكتئاب / هلع / ذهان)">
-  <button class="btn gold" onclick="pharmSearch()">بحث</button>
+  <button class="btn gold" type="button" onclick="pharmSearch()">بحث</button>
 </div>
 
 <div id="pharm-results"></div>
@@ -1545,7 +1569,7 @@ def health():
 
 @app.after_request
 def add_headers(resp):
-    # CSP يحاول يحمي قدر الإمكان
+    # سياسة حماية محتوى
     csp = (
         "default-src 'self' data: blob: https://t.me https://wa.me https://api.whatsapp.com; "
         "script-src 'self' 'unsafe-inline' data: blob: https://t.me https://wa.me https://api.whatsapp.com; "
