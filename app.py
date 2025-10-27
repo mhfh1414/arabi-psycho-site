@@ -1,44 +1,35 @@
 # -*- coding: utf-8 -*-
-"""
-عربي سايكو — ملف واحد (Purple × Gold)
-v8.0 (full stack single-file Flask)
-
-الصفحات:
-    /            الرئيسية
-    /case        دراسة الحالة (DSM-style + إدمان)
-    /cbt         العلاج السلوكي المعرفي + مولّد الجداول
-    /pharm       الصيدلية النفسية (تثقيف فقط)
-    /tests       اختبارات نفسية/شخصية قصيرة
-    /health      فحص جاهزية السيرفر (Ping)
-
-⚠ مهم:
-- هذا مو تشخيص طبي ولا وصف علاج.
-- لا تبدأ/توقف دواء بدون دكتور/صيدلي مختص.
-- إذا عندك أفكار إيذاء أو انتحار: هذا طارئ، لازم دعم فوري من مختص أو خدمة طوارئ.
-
-التشغيل محلي:
-    python app.py
-
-التشغيل على Render/Railway:
-    gunicorn app:app --bind 0.0.0.0:$PORT
-"""
+# ======================================================================
+# عربي سايكو — ملف واحد كامل (Purple × Gold) v7.0
+#
+# صفحات:
+#   /        الرئيسية
+#   /case    دراسة الحالة (DSM + إدمان مدمج)
+#   /cbt     خطط CBT + مولد الجدول
+#   /pharm   دليل الأدوية النفسية (تثقيف فقط، بدون جرعات)
+#
+# ملاحظات أمان مهمّة:
+# - لا تعتبر أي شي هنا تشخيص طبي أو وصفة علاج. لازم طبيب/صيدلي مختص.
+# - لا تبدأ أو توقف دواء بدون إشراف طبي مباشر.
+#
+# تشغيل محلّي:
+#   python app.py
+#
+# تشغيل على Render / Railway / أي استضافة:
+#   gunicorn app:app --bind 0.0.0.0:$PORT
+# ======================================================================
 
 import os
+import json
 from datetime import datetime
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# ======================== إعدادات عامة / هوية البراند ========================
+# ======================== إعدادات عامة ========================
 
 BRAND = os.environ.get("BRAND_NAME", "عربي سايكو")
-SLOGAN = "«نراك بعين الاحترام، ونسير معك بخطوات عملية.»"
-
-LOGO = os.environ.get(
-    "LOGO_URL",
-    # أيقونة بومة (رمز الحكمة/الليل)
-    "https://upload.wikimedia.org/wikipedia/commons/3/36/Emoji_u1f985.svg"
-)
+LOGO  = os.environ.get("LOGO_URL", "https://upload.wikimedia.org/wikipedia/commons/3/36/Emoji_u1f985.svg")
 
 TG_URL = os.environ.get("TELEGRAM_URL", "https://t.me/arabipsycho")
 WA_URL = os.environ.get("WHATSAPP_URL", "https://wa.me/966530565696")
@@ -48,28 +39,589 @@ PSYCHO_WA = os.environ.get("PSYCHOLOGIST_WA", "https://wa.me/966530565696")
 PSYCH_WA  = os.environ.get("PSYCHIATRIST_WA", "https://wa.me/966530565696")
 SOCIAL_WA = os.environ.get("SOCIAL_WORKER_WA", "https://wa.me/966530565696")
 
-BUILD_STAMP = os.environ.get(
-    "CACHE_BUST",
-    datetime.utcnow().strftime("%Y%m%d%H%M%S")
-)
+CACHE_BUST = os.environ.get("CACHE_BUST", datetime.utcnow().strftime("%Y%m%d%H%M%S"))
+
+SLOGAN = "«نراك بعين الاحترام، ونسير معك بخطوات عملية.»"
 
 
-# ======================== منطق التحليل السريري المبسّط ========================
+# ======================== Layout موحّد ========================
+
+def shell(title, content, active="home"):
+    html = r"""
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>[[TITLE]]</title>
+<link rel="icon" href="[[LOGO]]"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+
+<style>
+:root{
+  --p:#4B0082;
+  --p-dark:#3a0d72;
+  --g:#FFD700;
+  --bg:#f8f6ff;
+  --ink:#2b1a4c;
+  --line:#000000;
+  --soft-shadow:0 10px 24px rgba(0,0,0,.06);
+  --radius-xl:16px;
+  --radius-md:12px;
+  --radius-sm:10px;
+  --card-border:#eee;
+  --section-bg:#fff;
+  --note-bg:#fff7d1;
+  --note-border:#e5c100;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  font-family:"Tajawal","Segoe UI",system-ui,sans-serif;
+  color:var(--ink);
+  font-size:16.5px;
+  line-height:1.7;
+  direction:rtl;
+  text-align:right;
+}
+.layout{
+  display:grid;
+  grid-template-columns:300px 1fr;
+  min-height:100vh;
+  border-left:1px solid var(--line);
+}
+.side{
+  background:linear-gradient(180deg,var(--p),var(--p-dark));
+  color:#fff;
+  padding:18px;
+  position:sticky;
+  top:0;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  border-left:1px solid #000;
+  border-right:1px solid #000;
+}
+.logo{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:18px;
+  border:1px solid rgba(0,0,0,.4);
+  background:rgba(0,0,0,.15);
+  border-radius:var(--radius-md);
+  padding:10px;
+  box-shadow:0 4px 12px rgba(0,0,0,.4);
+}
+.logo img{
+  width:52px;
+  height:52px;
+  border-radius:14px;
+  box-shadow:0 2px 8px rgba(0,0,0,.6);
+  background:#fff;
+  object-fit:cover;
+  border:2px solid var(--g);
+}
+.brand{
+  font-weight:900;
+  letter-spacing:.3px;
+  font-size:22px;
+  line-height:1.3;
+  color:#fff;
+  text-shadow:0 2px 4px rgba(0,0,0,.7);
+}
+.brand-handle{
+  font-size:.8rem;
+  font-weight:700;
+  color:var(--g);
+  background:rgba(0,0,0,.35);
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:999px;
+  border:1px solid #000;
+  box-shadow:0 2px 4px rgba(0,0,0,.7);
+}
+.side-slogan{
+  font-size:.9rem;
+  font-weight:500;
+  color:#fff;
+  margin-top:6px;
+  line-height:1.6;
+  text-shadow:0 2px 4px rgba(0,0,0,.6);
+}
+.badge{
+  display:inline-block;
+  background:var(--g);
+  color:#4b0082;
+  border-radius:999px;
+  padding:2px 10px;
+  font-weight:900;
+  font-size:.8rem;
+  margin-top:8px;
+  border:1px solid #000;
+  box-shadow:0 2px 4px rgba(0,0,0,.6);
+}
+.nav{
+  margin-top:20px;
+  padding-top:12px;
+  border-top:1px solid rgba(255,255,255,.4);
+  border-bottom:1px solid rgba(0,0,0,.8);
+}
+.nav a{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  color:#fff;
+  text-decoration:none;
+  background:rgba(0,0,0,.25);
+  border-radius:var(--radius-md);
+  margin:6px 0;
+  padding:10px 12px;
+  font-weight:700;
+  opacity:.9;
+  border:1px solid #000;
+  box-shadow:0 4px 12px rgba(0,0,0,.6);
+  font-size:15px;
+  line-height:1.4;
+}
+.nav a small{
+  font-size:.7rem;
+  color:var(--g);
+  font-weight:800;
+}
+.nav a.active{
+  background:rgba(255,215,0,.15);
+  outline:2px solid var(--g);
+  color:#fff;
+}
+.nav a:hover{
+  opacity:1;
+  background:rgba(0,0,0,.4);
+}
+.ref-box{
+  margin-top:auto;
+  background:rgba(0,0,0,.2);
+  border:1px solid #000;
+  border-radius:var(--radius-md);
+  box-shadow:0 4px 12px rgba(0,0,0,.6);
+  padding:12px;
+  font-size:.9rem;
+  line-height:1.6;
+  color:#fff;
+}
+.ref-box h4{
+  margin:0 0 8px;
+  color:var(--g);
+  font-size:1rem;
+  font-weight:800;
+  text-shadow:0 2px 4px rgba(0,0,0,.8);
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.ref-links{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.ref-links a{
+  display:block;
+  background:#000;
+  border-radius:var(--radius-md);
+  text-decoration:none;
+  font-weight:800;
+  border:1px solid var(--g);
+  box-shadow:0 4px 10px rgba(0,0,0,.7);
+  padding:8px 10px;
+  font-size:.8rem;
+  line-height:1.5;
+  color:#fff;
+}
+.ref-links a span{
+  display:block;
+  color:var(--g);
+  font-size:.7rem;
+  font-weight:700;
+}
+.content{
+  padding:26px;
+  background:var(--bg);
+  border-right:1px solid var(--line);
+}
+.card{
+  background:var(--section-bg);
+  border:1px solid var(--card-border);
+  border-radius:var(--radius-xl);
+  padding:22px;
+  box-shadow:var(--soft-shadow);
+  position:relative;
+}
+.card + .card{
+  margin-top:18px;
+}
+.grid{
+  display:grid;
+  gap:14px;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+}
+.tile{
+  background:#fff;
+  border:1px solid var(--card-border);
+  border-radius:var(--radius-md);
+  padding:14px;
+  box-shadow:0 6px 12px rgba(0,0,0,.04);
+  position:relative;
+}
+.tile h3{
+  margin-top:0;
+}
+h1{
+  font-weight:900;
+  font-size:28px;
+  line-height:1.4;
+  color:var(--p);
+  text-shadow:0 2px 4px rgba(0,0,0,.06);
+  margin-top:0;
+}
+h2{
+  font-weight:800;
+  margin:.2rem 0 .6rem;
+  font-size:20px;
+  color:var(--p);
+}
+h3{
+  font-weight:800;
+  margin:.2rem 0 .6rem;
+  font-size:17px;
+  color:var(--p);
+}
+.small{
+  font-size:.95rem;
+  opacity:.9;
+  line-height:1.7;
+  color:var(--ink);
+}
+.note{
+  background:var(--note-bg);
+  border:1px dashed var(--note-border);
+  border-radius:var(--radius-md);
+  padding:10px 12px;
+  margin:10px 0;
+  font-size:.9rem;
+  line-height:1.6;
+  font-weight:600;
+  color:#5c4a00;
+  box-shadow:0 4px 10px rgba(0,0,0,.05);
+}
+.btn{
+  display:inline-block;
+  background:var(--p);
+  color:#fff;
+  text-decoration:none;
+  padding:11px 16px;
+  border-radius:var(--radius-md);
+  font-weight:800;
+  cursor:pointer;
+  border:1px solid #000;
+  box-shadow:0 4px 12px rgba(0,0,0,.25);
+  font-size:.9rem;
+  line-height:1.4;
+  min-width:fit-content;
+  text-align:center;
+}
+.btn.alt{
+  background:#5b22a6;
+}
+.btn.gold{
+  background:var(--g);
+  color:#4b0082;
+}
+.btn.wa{
+  background:#25D366;
+}
+.btn.tg{
+  background:#229ED9;
+}
+.row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:flex-start;
+}
+.badge2{
+  display:inline-block;
+  border:1px solid var(--card-border);
+  background:#fafafa;
+  padding:6px 10px;
+  border-radius:999px;
+  margin:4px 4px 0 0;
+  font-weight:700;
+  font-size:.8rem;
+  line-height:1.4;
+  color:#222;
+  box-shadow:0 4px 10px rgba(0,0,0,.04);
+}
+.badge2.plan{
+  cursor:pointer;
+  user-select:none;
+  border:1px solid var(--g);
+  background:#fffdf2;
+  color:#000;
+  box-shadow:0 4px 10px rgba(255,215,0,.35);
+}
+.table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:.9rem;
+}
+.table th,
+.table td{
+  border:1px solid #eee;
+  padding:8px;
+  text-align:center;
+  vertical-align:top;
+  line-height:1.5;
+  min-width:60px;
+}
+.table thead th{
+  background:#fafafa;
+  font-weight:700;
+  color:#2b1a4c;
+}
+.header-result{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:10px;
+  flex-wrap:wrap;
+  border-bottom:1px solid var(--line);
+  padding-bottom:10px;
+}
+.header-result img{
+  width:48px;
+  height:48px;
+  border-radius:12px;
+  background:#fff;
+  border:2px solid var(--g);
+  box-shadow:0 4px 12px rgba(0,0,0,.4);
+  object-fit:cover;
+}
+.header-brand-wrap{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  line-height:1.4;
+}
+.header-brand-title{
+  font-weight:900;
+  font-size:22px;
+  color:var(--p);
+  text-shadow:0 2px 4px rgba(0,0,0,.06);
+}
+.header-brand-sub{
+  font-size:.8rem;
+  color:#444;
+  font-weight:600;
+}
+.divider{
+  width:100%;
+  border-top:1px solid var(--line);
+  margin:12px 0;
+}
+label.badge2 input[type=checkbox]{
+  margin-left:6px;
+  transform:scale(1.2);
+}
+input, select, textarea{
+  width:100%;
+  border:1px solid #ddd;
+  border-radius:var(--radius-md);
+  padding:10px;
+  font-family:inherit;
+  font-size:1rem;
+  line-height:1.5;
+  color:#000;
+  background:#fff;
+  box-shadow:0 4px 10px rgba(0,0,0,.03);
+}
+#err{
+  position:fixed;
+  inset:10px 10px auto 10px;
+  background:#fff5f5;
+  border:1px solid #ffc1c1;
+  color:#7a1f1f;
+  border-radius:var(--radius-md);
+  padding:10px;
+  z-index:9999;
+  display:none;
+  font-size:.8rem;
+  line-height:1.5;
+  box-shadow:0 8px 18px rgba(0,0,0,.2);
+}
+.footer{
+  color:#fff;
+  background:var(--p-dark);
+  text-align:center;
+  padding:16px;
+  border-top:1px solid #000;
+  border-bottom:1px solid #000;
+  font-size:.8rem;
+  font-weight:600;
+  text-shadow:0 2px 4px rgba(0,0,0,.7);
+}
+@media print {
+  @page { size: A4; margin: 16mm 14mm; }
+  .side,
+  .footer,
+  .screen-only,
+  #err { display:none !important; }
+  body {
+    background:#fff;
+    font-size:18px;
+    line-height:1.8;
+  }
+  .layout{
+    grid-template-columns:1fr;
+    border:none;
+  }
+  .content{
+    padding:0 !important;
+    background:#fff;
+    border:none;
+  }
+  .card{
+    box-shadow:none;
+    border:1px solid #000;
+    border-radius:0;
+    padding:0;
+  }
+  h1{font-size:26px}
+  h2{font-size:22px}
+  h3{font-size:18px}
+  .table th,
+  .table td{
+    font-size:.8rem;
+    padding:4px;
+  }
+}
+</style>
+
+<script>
+window.__BUILD__="[[BUILD]]";
+window.addEventListener('error', function(e){
+  var box=document.getElementById('err');
+  if(!box) return;
+  box.style.display='block';
+  box.textContent='JS Error: '+(e.message||'')+' @ '+(e.filename||'')+':'+(e.lineno||'');
+});
+</script>
+</head>
+
+<body>
+
+<div id="err"></div>
+
+<div class="layout">
+  <aside class="side">
+    <div class="logo">
+      <img src="[[LOGO]]" alt="شعار" onerror="this.style.display='none'">
+      <div>
+        <div class="brand">[[BRAND]]</div>
+        <div class="brand-handle">@ArabiPsycho</div>
+        <div class="side-slogan">[[SLOGAN]]</div>
+        <div class="badge">بنفسجي × ذهبي</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <a href="/" class="[[A_HOME]]">
+        <span>🏠 الرئيسية</span>
+        <small>الصفحة الأولى</small>
+      </a>
+      <a href="/case" class="[[A_CASE]]">
+        <span>📝 دراسة الحالة</span>
+        <small>أعراضك وتشخيص مبدئي</small>
+      </a>
+      <a href="/cbt" class="[[A_CBT]]">
+        <span>🧠 العلاج السلوكي المعرفي CBT</span>
+        <small>الخطط + الجدول</small>
+      </a>
+      <a href="/pharm" class="[[A_PHARM]]">
+        <span>💊 دليل الأدوية النفسية</span>
+        <small>متى يُصرف / التحذيرات</small>
+      </a>
+    </nav>
+
+    <div class="ref-box">
+      <h4>📞 دعم مباشر الآن</h4>
+      <div class="ref-links">
+        <a href="[[PSYCHO_WA]]" target="_blank" rel="noopener">
+          👨‍🎓 أخصائي نفسي
+          <span>خطة سلوكية/سلوكية معرفية</span>
+        </a>
+        <a href="[[PSYCH_WA]]" target="_blank" rel="noopener">
+          👨‍⚕️ طبيب نفسي
+          <span>تشخيص طبي / أدوية</span>
+        </a>
+        <a href="[[SOCIAL_WA]]" target="_blank" rel="noopener">
+          🤝 أخصائي اجتماعي
+          <span>دعم أسري / مواقف حياتية</span>
+        </a>
+      </div>
+    </div>
+
+  </aside>
+
+  <main class="content">
+    [[CONTENT]]
+  </main>
+</div>
+
+<div class="footer">
+  <div>© جميع الحقوق محفوظة لـ [[BRAND]] — [[SLOGAN]]</div>
+  <div style="margin-top:6px;font-size:.7rem;color:var(--g);">
+    تيليجرام الدعم: [[TG_URL]] · واتساب: [[WA_URL]]
+  </div>
+  <div style="margin-top:4px;font-size:.7rem;">
+    الإصدار البنفسجي × الذهبي — BUILD [[BUILD]]
+  </div>
+</div>
+
+</body>
+</html>
+""".replace("[[TITLE]]", title)\
+     .replace("[[LOGO]]", LOGO)\
+     .replace("[[BRAND]]", BRAND)\
+     .replace("[[TG_URL]]", TG_URL)\
+     .replace("[[WA_URL]]", WA_URL)\
+     .replace("[[SLOGAN]]", SLOGAN)\
+     .replace("[[BUILD]]", CACHE_BUST)\
+     .replace("[[PSYCHO_WA]]", PSYCHO_WA)\
+     .replace("[[PSYCH_WA]]", PSYCH_WA)\
+     .replace("[[SOCIAL_WA]]", SOCIAL_WA)\
+     .replace("[[A_HOME]]", "active" if active=="home" else "")\
+     .replace("[[A_CASE]]", "active" if active=="case" else "")\
+     .replace("[[A_CBT]]", "active" if active=="cbt" else "")\
+     .replace("[[A_PHARM]]", "active" if active=="pharm" else "")\
+     .replace("[[CONTENT]]", content)
+    return html
+
+
+# ======================== تحليل الأعراض ========================
 
 def _cnt(flags, *keys):
     return sum(1 for k in keys if flags.get(k))
 
 def preliminary_picks(flags):
-    """
-    يحاول يطلع "كتل" أعراض، مو تشخيص رسمي.
-    يرجّع list من tuples: (عنوان, وصف مبسّط, درجة تقريبية)
-    """
     picks = []
 
-    # اكتئاب / مزاج منخفض
     dep_core = _cnt(flags, "low_mood", "anhedonia")
-    dep_more = _cnt(
-        flags,
+    dep_more = _cnt(flags,
         "fatigue", "sleep_issue", "appetite_change",
         "worthlessness", "poor_concentration",
         "psychomotor", "hopeless", "somatic_pain"
@@ -81,40 +633,33 @@ def preliminary_picks(flags):
             "درجة 70"
         ))
 
-    # قلق عام / توتر
     if _cnt(flags, "worry", "tension", "restlessness", "irritability",
-            "mind_blank", "sleep_anxiety", "concentration_anxiety") >= 3:
+             "mind_blank", "sleep_anxiety", "concentration_anxiety") >= 3:
         picks.append((
             "قلق معمّم / توتر مستمر",
-            "قلق زائد صعب التحكم مع توتر جسدي أو نوم مضطرب أو تشوش التركيز",
+            "قلق زائد صعب التحكم مع توتر جسدي أو صعوبة نوم أو تشوش التركيز",
             "درجة 65"
         ))
 
-    # هلع
     if flags.get("panic_attacks") or flags.get("panic_fear"):
         picks.append((
             "نوبات هلع",
-            "نوبات قوية مفاجئة مع خوف من تكرارها أو تجنّب أماكن",
+            "نوبات مفاجئة قوية مع خوف من تكرارها أو تجنّب أماكن",
             "درجة 70"
         ))
-
-    # رُهاب
     if flags.get("agoraphobia") or flags.get("specific_phobia"):
         picks.append((
             "رُهاب/رهبة مواقف",
             "خوف محدد (أماكن/مواقف/أشياء) مع تجنّب وطلب أمان",
             "درجة 65"
         ))
-
-    # قلق اجتماعي
     if flags.get("social_fear"):
         picks.append((
             "قلق اجتماعي",
-            "خشية التقييم/الإحراج مع تجنّب اجتماعي",
+            "خشية التقييم من الآخرين/الإحراج مع تجنّب المواقف الاجتماعية",
             "درجة 65"
         ))
 
-    # وسواس قهري
     if flags.get("obsessions") and flags.get("compulsions"):
         picks.append((
             "وسواس قهري (OCD)",
@@ -122,115 +667,96 @@ def preliminary_picks(flags):
             "درجة 80"
         ))
 
-    # صدمة / يقظة مفرطة
     if _cnt(flags, "flashbacks", "hypervigilance", "startle",
-            "numbing", "trauma_avoid", "guilt_trauma") >= 2:
+             "numbing", "trauma_avoid", "guilt_trauma") >= 2:
         picks.append((
             "آثار صدمة / يقظة مفرطة",
             "استرجاعات/كوابيس/توتر شديد/تجنّب مرتبط بحدث مؤلم",
             "درجة 70"
         ))
 
-    # نوم
-    if _cnt(flags, "insomnia", "hypersomnia", "nightmares",
-            "irregular_sleep") >= 1:
+    if _cnt(flags, "insomnia", "hypersomnia", "nightmares", "irregular_sleep") >= 1:
         picks.append((
             "صعوبات نوم",
             "مشاكل بدء/استمرار النوم أو نوم زائد/كوابيس",
             "درجة 55"
         ))
 
-    # تشتت/اندفاع
-    if _cnt(flags, "adhd_inattention", "adhd_hyper",
-            "disorganization", "time_blindness") >= 2:
+    if _cnt(flags, "adhd_inattention", "adhd_hyper", "disorganization", "time_blindness") >= 2:
         picks.append((
             "سمات تشتت/اندفاع (ADHD سمات)",
-            "نسيان، تشتت، فوضى تنظيم ممكن تأثر على الدراسة/العمل",
+            "تشتت/نسيان/اندفاع/ضعف التنظيم ممكن يأثر على العمل أو الدراسة",
             "درجة 60"
         ))
 
-    # مزاج مرتفع / تهور
     if _cnt(flags, "elevated_mood", "decreased_sleep_need", "grandiosity",
-            "racing_thoughts", "pressured_speech", "risk_spending") >= 3:
+             "racing_thoughts", "pressured_speech", "risk_spending") >= 3:
         picks.append((
             "سمات مزاج مرتفع / اندفاع عالي",
-            "طاقة عالية جدًا + نوم قليل + اندفاع/مخاطرة",
+            "طاقة عالية جدًا + نوم قليل + سلوك متهور ممكن يشير لسمات هوس/ثنائي القطب",
             "درجة 70"
         ))
 
-    # ذهاني / فصامي
     if _cnt(flags, "hallucinations", "delusions",
-            "disorganized_speech", "negative_symptoms",
-            "catatonia") >= 2 and flags.get("decline_function"):
+             "disorganized_speech", "negative_symptoms",
+             "catatonia") >= 2 and flags.get("decline_function"):
         picks.append((
             "سمات ذهانية / فصامية",
-            "هلوسات/أوهام/تفكك تفكير مع تأثير واضح على الأداء",
+            "وجود هلوسات/أوهام/تفكك تفكير مع تأثير واضح على الأداء اليومي",
             "درجة 80"
         ))
 
-    # أكل / صورة الجسد
-    if _cnt(flags, "binge_eating", "restrict_eating", "body_image",
-            "purging") >= 2:
+    if _cnt(flags, "binge_eating", "restrict_eating", "body_image", "purging") >= 2:
         picks.append((
             "صعوبات أكل/صورة الجسد",
             "نوبات أكل أو تقييد أو قلق عالي حول الجسم/الوزن",
             "درجة 60"
         ))
 
-    # إدمان / تعاطي
     if _cnt(flags, "craving", "withdrawal", "use_harm",
-            "loss_control", "relapse_history") >= 2:
+             "loss_control", "relapse_history") >= 2:
         picks.append((
             "تعاطي مواد / سلوك إدماني",
             "اشتهاء قوي، انسحاب، أو استمرار رغم الضرر",
             "درجة 80"
         ))
 
-    # تنظيم عاطفة / غضب
     if _cnt(flags, "emotion_instability", "impulsivity", "anger_issues",
-            "perfectionism", "dependence", "social_withdrawal") >= 3:
+             "perfectionism", "dependence", "social_withdrawal") >= 3:
         picks.append((
             "تنظيم عاطفي / غضب / علاقات",
-            "اندفاع، تقلب مزاج حاد، غضب مفاجئ، تمسّك زائد يضغط العلاقات",
+            "تقلب عاطفي، اندفاع، انفجارات غضب أو تمسك زائد يضغط العلاقات",
             "درجة 60"
         ))
 
-    # ثقة بالنفس
     if flags.get("self_conf_low"):
         picks.append((
             "ثقة بالنفس منخفضة",
-            "نظرة ذاتية سلبية / جلد ذاتي / إحساس بعدم الكفاية",
+            "نظرة ذاتية سلبية / تردد عالي / إحساس بعدم الكفاية",
             "درجة 50"
         ))
 
-    # سمات تواصل/حسّية (طيف توحد)
     if _cnt(flags, "asd_social", "sensory", "rigidity") >= 2:
         picks.append((
             "سمات تواصل/حسّية (طيف توحد)",
-            "حساسية حسّية / صعوبة قراءة الإشارات الاجتماعية / تمسّك عالي بالروتين",
+            "صعوبة قراءة الإشارات الاجتماعية، حساسية حسّية، أو تمسّك روتيني عالي",
             "درجة 55"
         ))
 
-    # أمان
     if flags.get("suicidal"):
         picks.insert(0, (
-            "🚨 تنبيه أمان",
-            "وجود أفكار إيذاء أو انتحار — تواصل مع مختص الآن أو اطلب مساعدة طارئة.",
+            "تنبيه أمان",
+            "وجود أفكار إيذاء أو انتحار — نوصي بالتواصل الفوري مع مختص أو دعم طارئ.",
             "درجة 99"
         ))
 
     return picks
 
 def suggest_plans(flags):
-    """
-    يربط الأعراض بخطط CBT اللي ممكن تساعد
-    يرجّع قائمة أكواد خطط CBT (ba, sleep_hygiene, ...)
-    """
     sug = []
 
     dep_core = _cnt(flags, "low_mood", "anhedonia")
-    dep_more = _cnt(
-        flags,
+    dep_more = _cnt(flags,
         "fatigue", "sleep_issue", "appetite_change",
         "worthlessness", "poor_concentration",
         "psychomotor", "hopeless", "somatic_pain"
@@ -239,7 +765,7 @@ def suggest_plans(flags):
         sug += ["ba", "thought_record", "sleep_hygiene", "problem_solving"]
 
     if _cnt(flags, "worry", "tension", "restlessness", "irritability",
-            "mind_blank", "sleep_anxiety", "concentration_anxiety") >= 3:
+             "mind_blank", "sleep_anxiety", "concentration_anxiety") >= 3:
         sug += ["worry_time", "mindfulness", "problem_solving"]
 
     if flags.get("panic_attacks") or flags.get("panic_fear"):
@@ -255,1320 +781,1314 @@ def suggest_plans(flags):
         sug += ["ocd_erp", "safety_behaviors", "mindfulness"]
 
     if _cnt(flags, "flashbacks", "hypervigilance", "startle",
-            "numbing", "trauma_avoid", "guilt_trauma") >= 2:
+             "numbing", "trauma_avoid", "guilt_trauma") >= 2:
         sug += ["ptsd_grounding", "mindfulness", "sleep_hygiene"]
 
-    if _cnt(flags, "insomnia", "hypersomnia", "nightmares",
-            "irregular_sleep") >= 1:
+    if _cnt(flags, "insomnia", "hypersomnia", "nightmares", "irregular_sleep") >= 1:
         sug += ["sleep_hygiene", "mindfulness"]
 
-    if _cnt(flags, "adhd_inattention", "adhd_hyper",
-            "disorganization", "time_blindness") >= 2:
+    if _cnt(flags, "adhd_inattention", "adhd_hyper", "disorganization", "time_blindness") >= 2:
         sug += ["problem_solving", "ba"]
 
     if _cnt(flags, "elevated_mood", "decreased_sleep_need", "grandiosity",
-            "racing_thoughts", "pressured_speech", "risk_spending") >= 3:
+             "racing_thoughts", "pressured_speech", "risk_spending") >= 3:
         sug += ["bipolar_routine", "sleep_hygiene"]
 
     if _cnt(flags, "craving", "withdrawal", "use_harm",
-            "loss_control", "relapse_history") >= 2:
+             "loss_control", "relapse_history") >= 2:
         sug += ["relapse_prevention", "problem_solving", "mindfulness"]
 
     if _cnt(flags, "emotion_instability", "impulsivity", "anger_issues",
-            "perfectionism", "dependence", "social_withdrawal") >= 2:
+             "perfectionism", "dependence", "social_withdrawal") >= 2:
         sug += ["anger_management", "mindfulness", "problem_solving", "self_confidence"]
 
     if _cnt(flags, "asd_social", "sensory", "rigidity") >= 2:
         sug += ["social_skills", "self_confidence", "problem_solving"]
 
-    # dedupe
-    out = []
+    final = []
     seen = set()
     for k in sug:
         if k not in seen:
             seen.add(k)
-            out.append(k)
-    return out[:10]
+            final.append(k)
+    return final[:10]
 
 
-# خريطة أسماء الخطط لعرضها في UI / CBT generator
-CBT_LIBRARY = {
-    "ba": {
-        "title": "BA — تنشيط سلوكي",
-        "tasks": [
-            "اخرج 10 دقايق مشي/شمس.",
-            "سوِّ نشاط بسيط يعطيك حتى 1% سعادة.",
-            "ارسل رسالة دافئة لشخص تثق فيه."
-        ]
-    },
-    "thought_record": {
-        "title": "TR — سجل أفكار",
-        "tasks": [
-            "اكتب الموقف اللي ضايقك.",
-            "ما هي الفكرة السلبية؟",
-            "ما الدليل معها؟ ضدها؟",
-            "اكتب نسخة فكرية أهدأ."
-        ]
-    },
-    "sleep_hygiene": {
-        "title": "SH — نظافة النوم",
-        "tasks": [
-            "وقت نوم/استيقاظ شبه ثابت.",
-            "قاطع الجوال قبل النوم بـ 60 دقيقة.",
-            "قهوة خفيفة أو معدومة آخر اليوم."
-        ]
-    },
-    "problem_solving": {
-        "title": "PS — حلّ المشكلات",
-        "tasks": [
-            "عرّف المشكلة كسؤال محدد.",
-            "أكتب 3 حلول بدون حكم.",
-            "اختر حل صغير جرّبه اليوم.",
-            "قيّم النتيجة."
-        ]
-    },
-    "worry_time": {
-        "title": "WT — وقت القلق",
-        "tasks": [
-            "أجّل التفكير للمساء 15 دقيقة مخصصة.",
-            "دوّن مخاوفك في ذيك الـ15 فقط.",
-            "راقب: كم فعلاً منها صار؟"
-        ]
-    },
-    "mindfulness": {
-        "title": "MB — يقظة ذهنية",
-        "tasks": [
-            "تنفس 4-4-6 (شهيق4/ثبات4/زفير6).",
-            "ركّز إحساس القدم بالأرض 60 ثانية.",
-            "لاحظ الفكرة كحدث عابر مو حقيقة."
-        ]
-    },
-    "interoceptive_exposure": {
-        "title": "IE — تعرّض داخلي (هلع)",
-        "tasks": [
-            "راقب دقات قلبك بلا هروب.",
-            "ذكر نفسك: مزعج مش خطير.",
-            "قيّم شدة القلق بعد دقيقتين."
-        ]
-    },
-    "safety_behaviors": {
-        "title": "SA — تقليل طلب الطمأنة",
-        "tasks": [
-            "خفّض كم مرة تسأل (أنا بخير صح؟).",
-            "جرب تبقى في الموقف بدون تطمين فوري.",
-            "راقب: هل فعلاً انهار الوضع؟"
-        ]
-    },
-    "graded_exposure": {
-        "title": "GE — تعرّض تدرّجي",
-        "tasks": [
-            "اختر موقف خوف 3/10 (مو أقصى رعب).",
-            "ادخل الموقف فترة قصيرة بدون هروب.",
-            "اكتب النتيجة الواقعية مو الكارثة المتخيلة."
-        ]
-    },
-    "social_skills": {
-        "title": "SS — مهارات اجتماعية",
-        "tasks": [
-            "ابدأ تحية لطيفة مع شخص (السلام + سؤال بسيط).",
-            "قول: 'أحتاج دقيقة أرتب فكرتي'.",
-            "سمِّ شعورك بصوت واضح (أنا قلق شوي)."
-        ]
-    },
-    "self_confidence": {
-        "title": "SC — تعزيز الثقة",
-        "tasks": [
-            "دوّن إنجاز اليوم حتى لو صغير.",
-            "قل لنفسك بصوت مسموع: (أنا قاعد أتحرك).",
-            "أوقف جملة جلد ذاتي وحدة واستبدلها بجملة أهدى."
-        ]
-    },
-    "ocd_erp": {
-        "title": "ERP — وسواس قهري",
-        "tasks": [
-            "اختر وسواس متوسّط مو أعلى شي.",
-            "أجّل الطقس القهري دقيقة إضافية.",
-            "دوّن مستوى الضيق بعد 1 و5 دقايق."
-        ]
-    },
-    "ptsd_grounding": {
-        "title": "PTSD — تأريض بعد الصدمة",
-        "tasks": [
-            "تمرين 5-4-3-2-1 (أشياء تشوفها/تسمعها/تلمسها...).",
-            "ذكّر نفسك: الآن آمن، الحدث انتهى.",
-            "تنفس بطني بطيء دقيقتين."
-        ]
-    },
-    "bipolar_routine": {
-        "title": "IPSRT — روتين ثابت للمزاج",
-        "tasks": [
-            "نوم/استيقاظ تقريباً نفس الوقت.",
-            "وجبات بأوقات شبه ثابتة.",
-            "سجّل مزاجك رقمياً 0-10 يومياً."
-        ]
-    },
-    "relapse_prevention": {
-        "title": "RP — منع الانتكاس (إدمان)",
-        "tasks": [
-            "حدد أقوى مُحفّز اليوم.",
-            "اكتب بديل سلوك آمن.",
-            "راسل دعمك البشري (حتى سلام بسيط)."
-        ]
-    },
-    "anger_management": {
-        "title": "AM — إدارة الغضب",
-        "tasks": [
-            "لو فوق 6/10 غضب: خذ استراحة دقيقة هدوء.",
-            "اسأل نفسك: تحت الغضب وش في؟ جرح؟ إحساس عدم احترام؟",
-            "ارجع وتكلم بصيغة (أنا أحس...) مو (إنت دايم...)."
-        ]
-    },
-}
-
-
-# ======================== القالب العام لكل صفحة ========================
-
-def render_page(page_title, active_tab, inner_html):
-    """
-    نبني صفحة HTML كاملة:
-    - نفس الثيم البنفسجي × الذهبي
-    - شريط روابط
-    - صندوق "تواصل الآن"
-    - المحتوى الداخلي اللي نمرره
-    """
-
-    # CSS
-    css = """
-    body {
-        background: radial-gradient(circle at 20% 20%, #1b132d 0%, #0a0a0f 60%);
-        color:#f7f3d6;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-        margin:0;
-        padding:16px;
-        line-height:1.6;
-        direction:rtl;
-        text-align:right;
-    }
-    header {
-        text-align:center;
-        margin-bottom:16px;
-        color:#f7f3d6;
-    }
-    .brand-circle {
-        width:64px;
-        height:64px;
-        border-radius:50%;
-        border:2px solid #d1b23a;
-        background:#1a132b;
-        box-shadow:0 0 20px rgba(209,178,58,.4);
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        margin:0 auto 8px;
-        overflow:hidden;
-    }
-    .brand-circle img{
-        width:48px;
-        height:48px;
-        object-fit:contain;
-    }
-    .brand-name{
-        font-size:18px;
-        font-weight:600;
-        color:#f7f3d6;
-    }
-    .slogan{
-        font-size:13px;
-        color:#d1b23a;
-        font-weight:500;
-        margin-top:4px;
-    }
-    nav.nav{
-        display:flex;
-        flex-wrap:wrap;
-        gap:8px;
-        justify-content:center;
-        margin:16px auto;
-        max-width:900px;
-    }
-    nav.nav a{
-        flex:1;
-        min-width:140px;
-        text-decoration:none;
-        border-radius:12px;
-        border:1px solid #3a2f55;
-        background:#1a132b;
-        box-shadow:0 0 12px rgba(209,178,58,.25);
-        color:#f7f3d6;
-        font-size:14px;
-        padding:8px 10px;
-        line-height:1.4;
-        display:flex;
-        flex-direction:column;
-    }
-    nav.nav a small{
-        font-size:11px;
-        color:#d1b23a;
-    }
-    nav.nav a.active{
-        border:1px solid #d1b23a;
-        box-shadow:0 0 16px rgba(209,178,58,.6);
-    }
-    .support-box{
-        max-width:900px;
-        margin:0 auto 16px;
-        background:#1a132b;
-        border:1px solid #3a2f55;
-        border-radius:14px;
-        box-shadow:0 0 24px rgba(209,178,58,.2);
-        padding:12px;
-    }
-    .support-box h4{
-        color:#d1b23a;
-        margin:0 0 8px;
-        font-size:14px;
-        font-weight:600;
-    }
-    .support-links{
-        display:flex;
-        flex-wrap:wrap;
-        gap:8px;
-    }
-    .support-links a{
-        flex:1;
-        min-width:140px;
-        border-radius:10px;
-        background:#241a3c;
-        border:1px solid #3a2f55;
-        color:#f7f3d6;
-        text-decoration:none;
-        font-size:13px;
-        padding:8px;
-        box-shadow:0 0 16px rgba(209,178,58,.15);
-    }
-    .support-links span{
-        display:block;
-        font-size:11px;
-        color:#d1b23a;
-        margin-top:2px;
-        line-height:1.4;
-    }
-    main.main-card{
-        max-width:900px;
-        margin:0 auto;
-        background:#1a132b;
-        border:1px solid #3a2f55;
-        border-radius:16px;
-        box-shadow:0 0 30px rgba(209,178,58,.2);
-        padding:16px;
-        color:#f7f3d6;
-        font-size:14px;
-        line-height:1.6;
-    }
-    h1{
-        font-size:18px;
-        margin-top:0;
-        color:#f7f3d6;
-        font-weight:600;
-    }
-    h2{
-        font-size:16px;
-        color:#d1b23a;
-        font-weight:600;
-        margin:16px 0 8px;
-    }
-    h3{
-        font-size:14px;
-        color:#d1b23a;
-        font-weight:600;
-        margin:12px 0 6px;
-    }
-    p, li, label, div, small{
-        font-size:14px;
-    }
-    small.small{
-        font-size:11px;
-        color:#999;
-    }
-    .section-card{
-        background:#241a3c;
-        border:1px solid #3a2f55;
-        border-radius:12px;
-        box-shadow:0 0 24px rgba(209,178,58,.18);
-        padding:12px;
-        margin-bottom:12px;
-    }
-    .grid{
-        display:flex;
-        flex-wrap:wrap;
-        gap:12px;
-    }
-    .tile{
-        flex:1;
-        min-width:250px;
-        background:#241a3c;
-        border:1px solid #3a2f55;
-        border-radius:12px;
-        box-shadow:0 0 16px rgba(209,178,58,.15);
-        padding:10px;
-    }
-    .tile h3{
-        margin-top:0;
-        font-size:13px;
-        color:#d1b23a;
-    }
-    .badge2{
-        display:flex;
-        align-items:flex-start;
-        gap:6px;
-        flex-wrap:wrap;
-        background:#2a2045;
-        border:1px solid #3a2f55;
-        border-radius:10px;
-        box-shadow:0 0 12px rgba(209,178,58,.15);
-        padding:6px 8px;
-        font-size:13px;
-        line-height:1.4;
-        color:#f7f3d6;
-        margin:4px 0;
-    }
-    .badge2 input[type=checkbox]{
-        accent-color:#d1b23a;
-        transform:scale(1.2);
-        margin-top:2px;
-    }
-    input, select, textarea{
-        width:100%;
-        background:#2a2045;
-        border:1px solid #3a2f55;
-        border-radius:8px;
-        color:#f7f3d6;
-        font-size:14px;
-        padding:8px;
-        font-family:inherit;
-        margin-top:4px;
-    }
-    textarea{min-height:80px; resize:vertical;}
-    .divider{
-        border-top:1px solid #3a2f55;
-        margin:16px 0;
-    }
-    .row{
-        display:flex;
-        flex-wrap:wrap;
-        gap:10px;
-    }
-    .btn{
-        background:#2a2045;
-        border:1px solid #3a2f55;
-        border-radius:10px;
-        color:#f7f3d6;
-        font-size:14px;
-        padding:8px 12px;
-        text-decoration:none;
-        cursor:pointer;
-        line-height:1.4;
-        min-width:120px;
-        text-align:center;
-        box-shadow:0 0 12px rgba(209,178,58,.2);
-    }
-    .gold{
-        background:#3b2a00;
-        border:1px solid #d1b23a;
-        box-shadow:0 0 16px rgba(209,178,58,.5);
-        font-weight:600;
-    }
-    .wa{ background:#1a2f1a; border:1px solid #2d5f2d; }
-    .tg{ background:#1a2538; border:1px solid #2d4b7a; }
-    .pro{ background:#241a3c; border:1px solid #3a2f55; flex:1; min-width:140px; }
-
-    .dx-list{ padding-right:20px; margin:0; }
-
-    /* جدول CBT */
-    #checklist{
-        margin-top:16px;
-        background:#241a3c;
-        border:1px solid #3a2f55;
-        border-radius:12px;
-        box-shadow:0 0 24px rgba(209,178,58,.15);
-        padding:12px;
-        font-size:14px;
-        line-height:1.6;
-        overflow-x:auto;
-    }
-    .check-day{
-        border-bottom:1px solid #3a2f55;
-        padding:8px 0;
-    }
-    .check-day:last-child{border-bottom:none;}
-    .check-day h4{
-        margin:0 0 6px;
-        font-size:14px;
-        color:#d1b23a;
-    }
-    .todo-item{
-        display:flex;
-        align-items:flex-start;
-        gap:6px;
-        font-size:14px;
-        line-height:1.5;
-    }
-    .todo-item input[type=checkbox]{
-        accent-color:#d1b23a;
-        transform:scale(1.2);
-        margin-top:2px;
-    }
-
-    /* كروت الأدوية */
-    .drug-card{
-        background:#241a3c;
-        border:1px solid #3a2f55;
-        border-radius:12px;
-        box-shadow:0 0 24px rgba(209,178,58,.18);
-        padding:12px;
-        margin-bottom:12px;
-        font-size:13px;
-        line-height:1.5;
-    }
-    .drug-card h3{
-        margin:0 0 8px;
-        font-size:14px;
-        color:#d1b23a;
-    }
-    .warn{
-        color:#ff7676;
-        font-size:12px;
-        margin-top:6px;
-        line-height:1.5;
-    }
-
-    footer{
-        text-align:center;
-        color:#888;
-        font-size:12px;
-        line-height:1.5;
-        max-width:900px;
-        margin:24px auto 8px;
-    }
-    footer .legal{
-        color:#d1b23a;
-        margin-top:8px;
-        font-size:12px;
-    }
-    #print-note{
-        font-size:11px;
-        color:#777;
-        text-align:center;
-        margin-top:8px;
-    }
-    """
-
-    # JS: مولّد جداول CBT + بحث الأدوية + اختبارات بسيطة
-    js = """
-    const CBT_LIBRARY = %CBT_LIBRARY_JSON%;
-    function initPlanSelectors(){
-      const selA = document.getElementById("planA");
-      const selB = document.getElementById("planB");
-      if(!selA || !selB) return;
-      Object.keys(CBT_LIBRARY).forEach(key=>{
-        const optA=document.createElement("option");
-        optA.value=key;
-        optA.textContent=CBT_LIBRARY[key].title;
-        selA.appendChild(optA);
-        const optB=document.createElement("option");
-        optB.value=key;
-        optB.textContent=CBT_LIBRARY[key].title;
-        selB.appendChild(optB);
-      });
-    }
-    function buildChecklist(){
-      const days=parseInt(document.getElementById("daysSelect").value||"7");
-      const planA=document.getElementById("planA").value;
-      const planB=document.getElementById("planB").value||null;
-      const out=[];
-      for(let d=1;d<=days;d++){out.push({day:d,tasks:[]});}
-      function pushTasks(planKey){
-        if(!planKey) return;
-        const lib=CBT_LIBRARY[planKey];
-        if(!lib) return;
-        lib.tasks.forEach(t=>{
-          out.forEach(dayObj=>{
-            dayObj.tasks.push({text:t,plan:planKey});
-          });
-        });
-      }
-      pushTasks(planA); pushTasks(planB);
-      const wrap=document.getElementById("checklist");
-      wrap.innerHTML="";
-      out.forEach(dayObj=>{
-        const div=document.createElement("div");
-        div.className="check-day";
-        div.innerHTML="<h4>اليوم "+dayObj.day+"</h4>";
-        dayObj.tasks.forEach(task=>{
-          const row=document.createElement("div");
-          row.className="todo-item";
-          row.innerHTML = `
-            <input type="checkbox">
-            <div>
-              <div>${task.text}</div>
-              <small class="small">الخطة: ${CBT_LIBRARY[task.plan]?.title||task.plan}</small>
-            </div>`;
-          div.appendChild(row);
-        });
-        wrap.appendChild(div);
-      });
-      const wa=document.getElementById("share-wa");
-      const tg=document.getElementById("share-tg");
-      if(wa){wa.href="%WA_BASE%?text="+encodeURIComponent("جدول CBT جاهز ✅");}
-      if(tg){tg.href="%TG_URL%";}
-    }
-    function saveChecklist(){
-      const wrap=document.getElementById("checklist");
-      const txt=wrap.innerText||wrap.textContent||"";
-      const blob=new Blob([txt],{type:"application/json"});
-      const a=document.createElement("a");
-      a.href=URL.createObjectURL(blob);
-      a.download="cbt-plan-%BUILD%.json";
-      a.click();
-    }
-    function downloadCaseSummary(){
-      const sec=document.querySelector(".case-result");
-      if(!sec)return;
-      const data={
-        brand:"%BRAND%",
-        ts:"%BUILD%",
-        summaryText:sec.innerText
-      };
-      const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
-      const a=document.createElement("a");
-      a.href=URL.createObjectURL(blob);
-      a.download="case-summary-%BUILD%.json";
-      a.click();
-    }
-    // بيانات الأدوية التثقيفية
-    const DRUGS = [
-      {
-        name:"مثبطات السيروتونين الانتقائية (SSRI)",
-        use:"اكتئاب، قلق عام، وسواس قهري غالباً",
-        common:"غثيان خفيف، صداع، تغير نوم/شهية، أحيانًا برود جنسي",
-        urgent:"أفكار انتحارية جديدة بشكل مفاجئ أو تهيج/هوس غير طبيعي"
-      },
-      {
-        name:"مثبتات المزاج",
-        use:"لتقلب مزاج حاد أو نوبات مزاج مرتفع",
-        common:"عطش، رجفة خفيفة، زيادة وزن محتملة",
-        urgent:"إقياء شديد، تشوش وعي، خمول أو نعاس غريب جدًا"
-      },
-      {
-        name:"مضادات الذهان الحديثة",
-        use:"هلاوس، أوهام، اضطراب إدراك شديد",
-        common:"نعاس، زيادة شهية، جفاف فم",
-        urgent:"تيبس قوي بالعضلات + حرارة + ارتباك ذهني قوي"
-      },
-      {
-        name:"أدوية نوم/قلق مهدئة قصيرة المدى",
-        use:"قلق شديد مؤقت أو أرق حاد قصير",
-        common:"نعاس، إبطاء تركيز/تفاعل",
-        urgent:"نعاس مفرط جدًا أو صعوبة تنفس"
-      },
-      {
-        name:"أدوية دعم الإدمان / منع الانتكاس",
-        use:"تقلل الاشتهاء أو تساعد تثبيت السلوك بعد الإيقاف",
-        common:"غثيان بسيط، صداع، دوخة",
-        urgent:"اصفرار عين/جلد، ألم بطن قوي، تشنجات شديدة"
-      }
-    ];
-    function pharmSearch(){
-      const q=(document.getElementById("pharm-q").value||"").trim().toLowerCase();
-      const zone=document.getElementById("pharm-results");
-      zone.innerHTML="";
-      DRUGS.filter(d=>
-        d.name.toLowerCase().includes(q) ||
-        d.use.toLowerCase().includes(q)
-      ).forEach(d=>{
-        const card=document.createElement("div");
-        card.className="drug-card";
-        card.innerHTML = `
-          <h3>${d.name}</h3>
-          <div><b>لماذا يُصرف؟</b> ${d.use}</div>
-          <div><b>شائع:</b> ${d.common}</div>
-          <div class="warn"><b>عناية طبية فورية لو:</b> ${d.urgent}</div>
-          <div class="warn"><b>تحذير:</b> لا تبدأ/توقف دواء بدون طبيب/صيدلي مختص.</div>
-        `;
-        zone.appendChild(card);
-      });
-    }
-    // اختبارات سريعة (مزاج/قلق ذاتي)
-    function calcMoodTest(){
-      // قراءة 3 أسئلة بسيطة (0-3) وجمعها
-      const f = document.getElementById("mood-form");
-      if(!f)return;
-      let total=0;
-      ["m1","m2","m3"].forEach(name=>{
-        const v=f.querySelector(`input[name="${name}"]:checked`);
-        if(v){ total+=parseInt(v.value||"0"); }
-      });
-      const out=document.getElementById("mood-result");
-      let msg="مستوى منخفض / طبيعي نسبيًا 🌿";
-      if(total>=4 and total<=6):  # intentionally invalid python, we'll fix
-        pass
-    }
-    """
-
-    # NOTE:
-    # ^ we can't leave invalid python in JS generation. So we won't actually generate mood calc in python.
-    # We'll embed JS directly without python logic.
-
-    js_tests = r"""
-    function calcMoodTest(){
-      const f = document.getElementById("mood-form");
-      if(!f){return;}
-      let total=0;
-      ["m1","m2","m3"].forEach(function(name){
-        const v=f.querySelector('input[name="'+name+'"]:checked');
-        if(v){ total+=parseInt(v.value||"0"); }
-      });
-      let msg="مستوى منخفض / طبيعي نسبيًا 🌿";
-      if(total>=4 && total<=6){
-        msg="علامات توتر/ضيق متوسط 😟 يحتاج راحة منظمة ودعم بسيط.";
-      }else if(total>=7){
-        msg="ضيق عالي 😢 — لو التفكير صار فيه إيذاء أو عجز، اطلب دعم مختص بسرعة.";
-      }
-      document.getElementById("mood-result").innerText =
-        "النتيجة: "+total+" ← "+msg;
-    }
-    """
-
-    # نحط مكتبة CBT كـ JSON نصي داخل السكربت:
-    import json
-    js_final = js.replace(
-        "%CBT_LIBRARY_JSON%",
-        json.dumps(CBT_LIBRARY, ensure_ascii=False)
-    ).replace(
-        "%WA_BASE%", WA_BASE
-    ).replace(
-        "%TG_URL%", TG_URL
-    ).replace(
-        "%BUILD%", BUILD_STAMP
-    ).replace(
-        "%BRAND%", BRAND
-    )
-
-    js_final += js_tests
-
-    # العلامة النشطة للتاب
-    def active(tab):
-        return "active" if tab == active_tab else ""
-
-    html = f"""
-    <!DOCTYPE html>
-    <html lang="ar" dir="rtl">
-    <head>
-      <meta charset="utf-8"/>
-      <meta name="viewport" content="width=device-width,initial-scale=1"/>
-      <title>{page_title}</title>
-      <style>{css}</style>
-      <script>{js_final}</script>
-    </head>
-    <body onload="initPlanSelectors()">
-
-      <header>
-        <div class="brand-circle">
-          <img src="{LOGO}" alt="logo"/>
-        </div>
-        <div class="brand-name">{BRAND}</div>
-        <div class="slogan">{SLOGAN}</div>
-        <small class="small">بنفسجي × ذهبي — {BUILD_STAMP}</small>
-      </header>
-
-      <nav class="nav">
-        <a href="/" class="{active('home')}">
-          <span>🏠 الرئيسية</span>
-          <small>واجهة آمنة</small>
-        </a>
-        <a href="/case" class="{active('case')}">
-          <span>📝 دراسة الحالة</span>
-          <small>أعراضك وتشخيص مبدئي</small>
-        </a>
-        <a href="/cbt" class="{active('cbt')}">
-          <span>🧠 CBT</span>
-          <small>خطط + الجدول</small>
-        </a>
-        <a href="/pharm" class="{active('pharm')}">
-          <span>💊 الصيدلية النفسية</span>
-          <small>لماذا يُصرف؟ التحذيرات</small>
-        </a>
-        <a href="/tests" class="{active('tests')}">
-          <span>🧪 اختبارات نفسية</span>
-          <small>مقياس شعورك الآن</small>
-        </a>
-      </nav>
-
-      <section class="support-box">
-        <h4>📞 دعم مباشر الآن</h4>
-        <div class="support-links">
-          <a href="{PSYCHO_WA}" target="_blank" rel="noopener">
-            👨‍🎓 أخصائي نفسي
-            <span>خطة سلوكية/CBT</span>
-          </a>
-          <a href="{PSYCH_WA}" target="_blank" rel="noopener">
-            👨‍⚕️ طبيب نفسي
-            <span>تشخيص طبي / أدوية</span>
-          </a>
-          <a href="{SOCIAL_WA}" target="_blank" rel="noopener">
-            🤝 أخصائي اجتماعي
-            <span>دعم حياتي / أسري</span>
-          </a>
-        </div>
-      </section>
-
-      <main class="main-card">
-        {inner_html}
-      </main>
-
-      <footer>
-        © جميع الحقوق محفوظة لـ {BRAND} — {SLOGAN}<br/>
-        تيليجرام الدعم: {TG_URL} · واتساب: {WA_URL}<br/>
-        الإصدار البنفسجي × الذهبي — BUILD {BUILD_STAMP}
-        <div class="legal">
-          هذه الأداة ليست بديلاً عن رعاية طبية طارئة أو طبيب نفسي مرخّص.
-        </div>
-        <div id="print-note">احتفظ بنسختك بسرّية. هذه بيانات حسّاسة.</div>
-      </footer>
-
-    </body>
-    </html>
-    """
-    return html
-
-
-# ======================== الصفحات ========================
-
-@app.get("/")
-def home_page():
-    inner = f"""
-    <h1>مرحبًا بك في {BRAND} 👋</h1>
-    <p>
-    مكان آمن ومحترم. فكرتنا واضحة:
-    </p>
-    <ol class="dx-list">
-      <li>📝 قيّم نفسك في «دراسة الحالة»</li>
-      <li>🧠 نولّد لك خطة CBT عملية مع جدول يومي</li>
-      <li>🤝 لو تحتاج بشر الآن: تواصل مع أخصائي/طبيب/أخصائي اجتماعي بزر واحد</li>
-      <li>💊 تبي شرح عن أدوية نفسية ولماذا تُصرف؟ افتح «الصيدلية النفسية»</li>
-      <li>🧪 تبي مقياس سريع لمستوى القلق/المزاج؟ افتح «الاختبارات النفسية»</li>
-    </ol>
-
-    <div class="divider"></div>
-
-    <div class="section-card">
-      <h2>جاهز تبدأ؟</h2>
-      <div class="row">
-        <a class="btn gold" href="/case">ابدأ دراسة الحالة</a>
-        <a class="btn gold" href="/cbt">افتح CBT الآن</a>
-        <a class="btn gold" href="/pharm">شوف الصيدلية النفسية</a>
-        <a class="btn gold" href="/tests">قيّم شعورك السريع</a>
-      </div>
-    </div>
-
-    <small class="small">
-    ⚠ ما نعطي تشخيص طبي رسمي. هذا يساعدك ترتّب أفكارك وتاخذ خطوة واعية بدل ما تضيع لحالك.
-    </small>
-    """
-    return render_page("الرئيسية — " + BRAND, "home", inner)
-
-
-# ---------- /case : دراسة الحالة ----------
-
-CASE_FORM_HTML = """
-<h1>📝 دراسة الحالة</h1>
-
-<p>
-اختر الأعراض اللي فعلاً تحسها هذه الفترة. بعدين اضغط "عرض النتيجة".
-هذي مو تشخيص نهائي — هذي خريطة أولية تساعدك تعرف وين تبدأ.
-</p>
-
-<p class="small">
-خصوصيتك: المدخلات تنرسل بس مع الطلب هذا. ما عندنا قاعدة بيانات هنا.
-</p>
-
-<form method="POST" action="/case">
-  <h2>معلومات أساسية</h2>
-  <div class="grid">
-    <div class="tile">
-      <label>العمر
-        <input name="age" type="number" min="5" max="120" placeholder="28">
-      </label>
-    </div>
-    <div class="tile">
-      <label>الحالة الاجتماعية
-        <select name="marital">
-          <option value="">—</option>
-          <option>أعزب/عزباء</option>
-          <option>متزوج/ة</option>
-          <option>منفصل/ة</option>
-          <option>مطلق/ة</option>
-          <option>أرمل/أرملة</option>
-        </select>
-      </label>
-    </div>
-    <div class="tile">
-      <label>عمل/دراسة
-        <input name="work" placeholder="طالب / موظف / باحث عن عمل / غير ذلك">
-      </label>
-    </div>
-  </div>
-
-  <div class="divider"></div>
-
-  <h2>الأعراض (اختر اللي ينطبق فعلاً)</h2>
-
-  <div class="grid">
-
-    <div class="tile">
-      <h3>🟣 المزاج / الاكتئاب</h3>
-      <label class="badge2"><input type="checkbox" name="low_mood"> مزاج منخفض أغلب الوقت</label>
-      <label class="badge2"><input type="checkbox" name="anhedonia"> فقدان المتعة بالأشياء</label>
-      <label class="badge2"><input type="checkbox" name="hopeless"> إحساس باليأس/التشاؤم</label>
-      <label class="badge2"><input type="checkbox" name="fatigue"> إرهاق / طاقة منخفضة</label>
-      <label class="badge2"><input type="checkbox" name="sleep_issue"> نوم متقطع / نوم سيئ</label>
-      <label class="badge2"><input type="checkbox" name="appetite_change"> تغيير بالشّهية / الوزن</label>
-      <label class="badge2"><input type="checkbox" name="somatic_pain"> آلام جسدية بدون سبب واضح</label>
-      <label class="badge2"><input type="checkbox" name="worthlessness"> شعور ذنب / عدم قيمة</label>
-      <label class="badge2"><input type="checkbox" name="poor_concentration"> تركيز ضعيف / بطء تفكير</label>
-      <label class="badge2"><input type="checkbox" name="psychomotor"> بطء أو تهيّج حركي واضح</label>
-      <label class="badge2"><input type="checkbox" name="suicidal"> أفكار إيذاء أو انتحار</label>
-    </div>
-
-    <div class="tile">
-      <h3>🟣 القلق / الهلع / الرهاب</h3>
-      <label class="badge2"><input type="checkbox" name="worry"> قلق زائد صعب السيطرة</label>
-      <label class="badge2"><input type="checkbox" name="tension"> شد عضلي / توتر جسدي</label>
-      <label class="badge2"><input type="checkbox" name="restlessness"> عصبية / تململ</label>
-      <label class="badge2"><input type="checkbox" name="irritability"> سرعة انفعال</label>
-      <label class="badge2"><input type="checkbox" name="mind_blank"> فراغ ذهني تحت الضغط</label>
-      <label class="badge2"><input type="checkbox" name="sleep_anxiety"> صعوبة نوم بسبب القلق</label>
-      <label class="badge2"><input type="checkbox" name="concentration_anxiety"> تشوش تركيز مع القلق</label>
-      <label class="badge2"><input type="checkbox" name="panic_attacks"> نوبات هلع متكررة</label>
-      <label class="badge2"><input type="checkbox" name="panic_fear"> خوف قوي من نوبة هلع جديدة</label>
-      <label class="badge2"><input type="checkbox" name="agoraphobia"> رهبة أماكن مزدحمة/مفتوحة</label>
-      <label class="badge2"><input type="checkbox" name="specific_phobia"> رُهاب محدد (طيران/حيوان..)</label>
-      <label class="badge2"><input type="checkbox" name="social_fear"> خوف من التقييم/الإحراج</label>
-    </div>
-
-    <div class="tile">
-      <h3>🟣 وسواس قهري (OCD)</h3>
-      <label class="badge2"><input type="checkbox" name="obsessions"> أفكار/صور مُلِحّة ما توقف</label>
-      <label class="badge2"><input type="checkbox" name="compulsions"> أفعال قهرية (غسل/تفقد...)</label>
-      <label class="badge2"><input type="checkbox" name="contamination"> خوف تلوث / غسل مفرط</label>
-      <label class="badge2"><input type="checkbox" name="checking"> تفقد الأقفال/الأبواب كثير</label>
-      <label class="badge2"><input type="checkbox" name="ordering"> لازم ترتيب/تماثل مثالي</label>
-      <label class="badge2"><input type="checkbox" name="harm_obs"> وساوس أذى (أضر نفسي/غيري؟)</label>
-      <label class="badge2"><input type="checkbox" name="scrupulosity"> تدقيق ديني/أخلاقي قهري</label>
-    </div>
-
-    <div class="tile">
-      <h3>🟣 صدمة / بعد الصدمة</h3>
-      <label class="badge2"><input type="checkbox" name="flashbacks"> استرجاعات/كوابيس لحادث صعب</label>
-      <label class="badge2"><input type="checkbox" name="hypervigilance"> يقظة مفرطة / على أهبة الاستعداد</label>
-      <label class="badge2"><input type="checkbox" name="startle"> فزع مفرط من الأصوات/المفاجآت</label>
-      <label class="badge2"><input type="checkbox" name="numbing"> خدر عاطفي / إحساس بالانفصال</label>
-      <label class="badge2"><input type="checkbox" name="trauma_avoid"> أتجنب تذكير بالحدث</label>
-      <label class="badge2"><input type="checkbox" name="guilt_trauma"> شعور بالذنب تجاه اللي صار</label>
-    </div>
-
-    <div class="tile">
-      <h3>🟣 النوم</h3>
-      <label class="badge2"><input type="checkbox" name="insomnia"> أرق / صعوبة بداية النوم</label>
-      <label class="badge2"><input type="checkbox" name="hypersomnia"> نوم مفرط / صعوبة أقوم</label>
-      <label class="badge2"><input type="checkbox" name="nightmares"> كوابيس متكررة</label>
-      <label class="badge2"><input type="checkbox" name="irregular_sleep"> مواعيد نوم فوضوية</label>
-    </div>
-
-    <div class="tile">
-      <h3>🟣 تركيز / تنظيم / اندفاع</h3>
-      <label class="badge2"><input type="checkbox" name="adhd_inattention"> تشتت / نسيان أساسيات</label>
-      <label class="badge2"><input type="checkbox" name="adhd_hyper"> فرط حركة / صعوبة أجلس</label>
-      <label class="badge2"><input type="checkbox" name="disorganization"> فوضى تنظيم / تسويف مزمن</label>
-      <label class="badge2"><input type="checkbox" name="time_blindness"> ضياع الإحساس بالوقت دائم</label>
-    </div>
-
-    <div class="tile">
-      <h3>🟣 مزاج مرتفع / اندفاع عالي</h3>
-      <label class="badge2"><input type="checkbox" name="elevated_mood"> مزاج مرتفع جدًا / تهوّر</label>
-      <label class="badge2"><input type="checkbox" name="decreased_sleep_need"> ما أحتاج نوم كثير وأحس تمام</label>
-      <label class="badge2"><input type="checkbox" name="grandiosity"> إحساس بالعظمة / قدرات خارقة</label>
-      <label class="badge2"><input type="checkbox" name="racing_thoughts"> أفكار سريعة جدًا</label>
-      <label class="badge2"><input type="checkbox" name="pressured_speech"> كلام سريع/مندفع جدًا</label>
-      <label class="badge2"><input type="checkbox" name="risk_spending"> صرف فلوس/مخاطرة عالية فجأة</label>
-    </div>
-
-    <div class="tile">
-      <h3>🟣 إدراك/تفكير (ذهاني/فصامي)</h3>
-      <label class="badge2"><input type="checkbox" name="hallucinations"> هلوسات (أسمع/أشوف شي غير الناس)</label>
-      <label class="badge2"><input type="checkbox" name="delusions"> أفكار يقين غريب / مراقبة / مؤامرة</label>
-      <label class="badge2"><input type="checkbox" name="disorganized_speech"> كلام/تفكير متشتت وغير مفهوم</label>
-      <label class="badge2"><input type="checkbox" name="negative_symptoms"> انسحاب / برود عاطفي</label>
-      <label class="badge2"><input type="checkbox" name="catatonia"> تجمّد / بطء تفاعل شديد</label>
-      <label class="badge2"><input type="checkbox" name="decline_function"> تدهور واضح في الدراسة/العمل/العلاقات</label>
-    </div>
-
-    <div class="tile">
-      <h3>🟣 الأكل / صورة الجسد</h3>
-      <label class="badge2"><input type="checkbox" name="binge_eating"> نوبات أكل شره / فقدان سيطرة</label>
-      <label class="badge2"><input type="checkbox" name="restrict_eating"> تقييد قوي / تجويع نفسي</label>
-      <label class="badge2"><input type="checkbox" name="body_image"> قلق عالي حول شكل الجسم/الوزن</label>
-      <label class="badge2"><input type="checkbox" name="purging"> تطهير/إقياء قهري بعد الأكل</label>
-    </div>
-
-    <div class="tile">
-      <h3>🟣 تعاطي مواد / إدمان</h3>
-      <label class="badge2"><input type="checkbox" name="craving"> اشتهاء قوي / أحتاج أستخدم الآن</label>
-      <label class="badge2"><input type="checkbox" name="withdrawal"> انسحاب جسدي/نفسي لو وقفت</label>
-      <label class="badge2"><input type="checkbox" name="use_harm"> أستمر رغم ضرر واضح</label>
-      <label class="badge2"><input type="checkbox" name="loss_control"> صعوبة إيقاف / فقدان السيطرة</label>
-      <label class="badge2"><input type="checkbox" name="relapse_history"> انتكاسات بعد المحاولة</label>
-    </div>
-
-    <div class="tile">
-      <h3>🟣 تنظيم العاطفة / العلاقات / الغضب</h3>
-      <label class="badge2"><input type="checkbox" name="emotion_instability"> تقلب مزاج حاد / مشاعر قوية فجأة</label>
-      <label class="badge2"><input type="checkbox" name="impulsivity"> اندفاع / أتصرف قبل ما أفكر</label>
-      <label class="badge2"><input type="checkbox" name="anger_issues"> نوبات غضب / انفجار سريع</label>
-      <label class="badge2"><input type="checkbox" name="perfectionism"> كمالية خانقة / كل شي لازم مثالي</label>
-      <label class="badge2"><input type="checkbox" name="dependence"> تعلق عالي / خوف من الهجر</label>
-      <label class="badge2"><input type="checkbox" name="social_withdrawal"> انسحاب اجتماعي قوي</label>
-      <label class="badge2"><input type="checkbox" name="self_conf_low"> ثقة بالنفس منخفضة / جلد ذاتي</label>
-    </div>
-
-    <div class="tile">
-      <h3>🟣 تواصل / حساسية حسّية</h3>
-      <label class="badge2"><input type="checkbox" name="asd_social"> صعوبة قراءة الإشارات الاجتماعية</label>
-      <label class="badge2"><input type="checkbox" name="sensory"> حساسية حسّية (صوت/إضاءة/ملمس)</label>
-      <label class="badge2"><input type="checkbox" name="rigidity"> تمسّك عالي بروتين/نظام يضايقك لو تغيّر</label>
-    </div>
-
-  </div>
-
-  <div class="divider"></div>
-
-  <label>ملاحظاتك (اختياري)
-    <textarea name="notes" placeholder="شي محدد مضايقك؟ موقف صار؟ شي يخوفك؟"></textarea>
-  </label>
-
-  <div class="row" style="margin-top:14px">
-    <button class="btn gold" type="submit">عرض النتيجة</button>
-    <a class="btn" href="/cbt">🧠 فتح CBT الآن</a>
-  </div>
-</form>
-"""
-
-def build_case_result_html(picks, plans):
-    # تحويل النتائج لواجهة جاهزة داخل الصفحة
-    if picks:
-        dx_html = "".join([
-            "<li><b>{}</b> — {} <span class='small'>({})</span></li>".format(
-                title, desc, score
-            )
-            for (title, desc, score) in picks
-        ])
-    else:
-        dx_html = (
-            "<li>ما لقينا مؤشرات قوية حالياً. وعيك بنفسك خطوة مهمة 👏</li>"
-        )
-
+def build_case_result_html(picks, plan_keys):
     PLAN_TITLES = {
         "ba": "BA — تنشيط سلوكي",
         "thought_record": "TR — سجل أفكار",
         "sleep_hygiene": "SH — نظافة النوم",
+        "interoceptive_exposure": "IE — تعرّض داخلي (هلع)",
+        "graded_exposure": "GE — تعرّض تدرّجي (رهاب/اجتماعي)",
+        "ocd_erp": "ERP — وسواس قهري",
+        "ptsd_grounding": "PTSD — تأريض/تنظيم",
         "problem_solving": "PS — حلّ المشكلات",
         "worry_time": "WT — وقت القلق",
         "mindfulness": "MB — يقظة ذهنية",
-        "interoceptive_exposure": "IE — تعرّض داخلي (هلع)",
-        "safety_behaviors": "SA — تقليل طلب الطمأنة",
-        "graded_exposure": "GE — تعرّض تدرّجي",
-        "social_skills": "SS — مهارات اجتماعية",
-        "self_confidence": "SC — تعزيز الثقة",
-        "ocd_erp": "ERP — وسواس قهري",
-        "ptsd_grounding": "PTSD — تأريض/تنظيم بعد الصدمة",
-        "bipolar_routine": "IPSRT — روتين ثابت للمزاج",
+        "behavioral_experiments": "BE — تجارب سلوكية",
+        "safety_behaviors": "SA — إيقاف سلوكيات آمنة/طمأنة",
+        "bipolar_routine": "IPSRT — روتين ثنائي القطب",
         "relapse_prevention": "RP — منع الانتكاس (إدمان)",
+        "social_skills": "SS — مهارات اجتماعية",
         "anger_management": "AM — إدارة الغضب",
+        "self_confidence": "SC — تعزيز الثقة"
     }
 
-    if plans:
-        plans_html = "".join([
-            "<span class='badge2'>🔧 {}</span>".format(
-                PLAN_TITLES.get(key, key)
-            )
-            for key in plans
+    if picks:
+        lis = "".join([
+            f"<li><b>{t}</b> — {desc} <span class='small'>({score})</span></li>"
+            for (t, desc, score) in picks
         ])
     else:
-        plans_html = "<span class='small'>لا توصيات محددة الآن.</span>"
+        lis = "<li>لا توجد مؤشرات كافية حالياً. استمر بالملاحظة الذاتية 👀</li>"
+
+    if plan_keys:
+        cbt_badges = "".join([
+            f"<span class='badge2 plan' data-key='{k}'>🔧 {PLAN_TITLES.get(k,k)}</span>"
+            for k in plan_keys
+        ])
+    else:
+        cbt_badges = "<span class='small'>لا توجد توصيات محددة الآن.</span>"
+
+    js = f"""
+<script>
+  function saveJSON(){{
+    const data={{
+      items:[...document.querySelectorAll('#diag-items li')].map(li=>li.innerText),
+      cbt:[...document.querySelectorAll('.badge2.plan')].map(b=>b.dataset.key),
+      created_at:new Date().toISOString(),
+      build: window.__BUILD__
+    }};
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{{type:'application/json'}}));
+    a.download='case_result.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }}
+
+  function buildShare(){{
+    const items=[...document.querySelectorAll('#diag-items li')].map(li=>'- '+li.innerText).join('\\n');
+    const msg='نتيجة دراسة الحالة — {BRAND}\\n\\n'+items+'\\n'+location.origin+'/case';
+    const text=encodeURIComponent(msg);
+    document.getElementById('share-wa').href='{WA_BASE}'+'?text='+text;
+    document.getElementById('share-tg').href='https://t.me/share/url?url='+encodeURIComponent(location.origin+'/case')+'&text='+text;
+  }}
+
+  function openCBTWithSuggestions(keys){{
+    try {{
+      localStorage.setItem('cbt_suggested', JSON.stringify(keys||[]));
+    }} catch(e){{}}
+    const qp = (keys && keys.length) ? ('?suggest='+encodeURIComponent(keys.join(','))) : '';
+    location.href = '/cbt'+qp;
+  }}
+
+  buildShare();
+</script>
+"""
 
     praise_line = (
-        "أحسنت 👏 — وعيك بنفسك مهم. هذا مو تشخيص طبي رسمي،"
-        " لكنه خريطة أولية تساعد تختار خطة سلوكية عملية بدل ما تبقى ضايع."
+        "أحسنت 👏 — كل خطوة وعي تقرّبك من التعافي. "
+        "هذه ليست تشخيص نهائي طبي، لكنها خريطة أولية لمساعدتك على اختيار الخطة السلوكية."
     )
 
-    out = f"""
-    <section class="case-result">
-      <div class="section-card">
-        <h2>📌 نتائج مبدئية</h2>
-        <p>{praise_line}</p>
-        <ul class="dx-list">{dx_html}</ul>
+    html = f"""
+<div class="card">
+  <div class="header-result">
+    <img src="{LOGO}" alt="logo" onerror="this.style.display='none'">
+    <div class="header-brand-wrap">
+      <div class="header-brand-title">{BRAND}</div>
+      <div class="header-brand-sub">نتيجة دراسة الحالة — ملخص جاهز للطباعة والمشاركة</div>
+    </div>
+  </div>
+
+  <div class="note">{praise_line}</div>
+
+  <h2>📌 الترشيحات المبدئية</h2>
+  <ol id="diag-items" style="line-height:1.95; padding-inline-start: 20px">{lis}</ol>
+
+  <div class="divider"></div>
+
+  <h3>🔧 أدوات CBT المقترحة حسب حالتك</h3>
+  <div>{cbt_badges}</div>
+
+  <div class="divider"></div>
+
+  <h3>🚀 ماذا بعد؟</h3>
+  <div class="small">
+    1. اطبع أو خزّن هذه النتائج.<br/>
+    2. اضغط "فتح CBT" لتوليد جدول 7 / 10 / 14 يوم بخطوات يومية واضحة.<br/>
+    3. إذا حسّيت أنك تحتاج دعم بشري مباشر: تواصل من الأزرار تحت.
+  </div>
+
+  <div class="row screen-only" style="margin-top:14px">
+    <button class="btn alt" onclick="window.print()">🖨️ طباعة</button>
+    <button class="btn" onclick="saveJSON()">💾 تنزيل JSON</button>
+    <a class="btn wa" id="share-wa" target="_blank" rel="noopener">🟢 مشاركة واتساب</a>
+    <a class="btn tg" id="share-tg" target="_blank" rel="noopener">✈️ مشاركة تيليجرام</a>
+    <a class="btn gold" onclick='openCBTWithSuggestions({json.dumps(plan_keys)})'>🧠 فتح CBT (مخصّص لحالتك)</a>
+  </div>
+
+  <div class="row screen-only" style="margin-top:16px">
+    <a class="btn" href="{PSYCHO_WA}" target="_blank" rel="noopener">👨‍🎓 أخصائي نفسي الآن</a>
+    <a class="btn" href="{PSYCH_WA}"  target="_blank" rel="noopener">👨‍⚕️ طبيب نفسي</a>
+    <a class="btn" href="{SOCIAL_WA}" target="_blank" rel="noopener">🤝 أخصائي اجتماعي</a>
+  </div>
+
+  {js}
+</div>
+"""
+    return html
+
+
+# ======================== /home ========================
+
+@app.get("/")
+def home():
+    content = f"""
+<div class="card" style="margin-bottom:18px; border:2px solid #000;">
+  <h1>مرحبًا بك في {BRAND}</h1>
+  <div class="small">
+    هذه مساحة آمنة تساعدك تحلل وضعك بصراحة، بدون حُكم.
+    <br/>
+    الخطوات عندنا واضحة:
+    <br/>1) 📝 قيّم نفسك في «دراسة الحالة»
+    <br/>2) 🧠 ننشئ لك خطة CBT يومية عملية (7 / 10 / 14 يوم)
+    <br/>3) 🤝 لو احتجت دعم بشري مباشر: أخصائي نفسي / طبيب نفسي / أخصائي اجتماعي — بزر واحد تكلمهم.
+    <br/>4) 💊 تبغى تعرف عن الأدوية النفسية والآثار الجانبية وليش تنصرف؟ افتح «دليل الأدوية».
+  </div>
+  <div class="note">"نحن نحترمك، ونعامل ألمك كشيء حقيقي يستحق خطة — مش ضعف."</div>
+</div>
+
+<div class="grid">
+
+  <div class="tile" style="border:2px solid #000;">
+    <h3>📝 دراسة الحالة (DSM + الإدمان مدمج)</h3>
+    <p class="small">
+      أكثر من 70 عرض (مزاج، قلق، وسواس، صدمة، نوم، تركيز، ثقة، غضب، تعاطي مواد...)
+      <br/>بعدها يطلع لك ملخص مبدئي + توصيات CBT + زر تحويل مباشر للاختصاصي.
+    </p>
+    <a class="btn gold" href="/case">ابدأ الآن</a>
+  </div>
+
+  <div class="tile" style="border:2px solid #000;">
+    <h3>🧠 CBT العلاج السلوكي المعرفي</h3>
+    <p class="small">
+      17 خطة واضحة (تنشيط سلوكي، إدارة الغضب، تعزيز الثقة بالنفس، نوم، هلع، وسواس...).
+      <br/>الموقع يبني لك جدول يومي قابل للطباعة والمشاركة.
+    </p>
+    <a class="btn" href="/cbt">افتح CBT</a>
+  </div>
+
+  <div class="tile" style="border:2px solid #000;">
+    <h3>💊 دليل الأدوية النفسية</h3>
+    <p class="small">
+      SSRIs, مثبت مزاج, أدوية الذهان, القلق, الإدمان...
+      <br/>ليش ينصرف الدواء؟ أهم الأعراض الجانبية؟ متى لازم دكتور فورًا؟
+    </p>
+    <a class="btn alt" href="/pharm">استعرض الأدوية</a>
+  </div>
+
+  <div class="tile" style="border:2px solid #000;">
+    <h3>📞 تواصل سريع</h3>
+    <p class="small">
+      تحتاج تتكلم مع بشر حقيقي؟
+      <br/>نوصلك مباشرة.
+    </p>
+    <div class="row">
+      <a class="btn tg" href="{TG_URL}" target="_blank" rel="noopener">✈️ تيليجرام</a>
+      <a class="btn wa" href="{WA_URL}" target="_blank" rel="noopener">🟢 واتساب</a>
+    </div>
+  </div>
+
+</div>
+"""
+    return shell("الرئيسية — " + BRAND, content, "home")
+
+
+# ======================== /case ========================
+
+CASE_FORM_HTML = r"""
+<div class="card" style="border:2px solid #000;">
+  <h1>📝 دراسة الحالة — (DSM + الإدمان مدمج)</h1>
+  <div class="small">
+    اختر الأعراض اللي تحس إنها <b>عندك فعلاً</b> بالفترة الحالية.
+    بعدها اضغط «عرض النتيجة».
+    <br/>مهم: هذا مو تشخيص طبي نهائي. هذا مسار مبدئي يساعدك تبني خطة سلوكية محترمة.
+  </div>
+  <div class="note">
+    هذه بيانات حساسة. يتم حفظ اختياراتك محليًا في جهازك (localStorage) وليس في السيرفر.
+  </div>
+
+  <form method="post" action="/case" oninput="persistCase()">
+
+    <h2>1) معلومات أساسية</h2>
+    <div class="grid">
+      <div class="tile" style="border:1px solid #000;">
+        <label>العمر
+          <input name="age" type="number" min="5" max="120" placeholder="28">
+        </label>
+      </div>
+      <div class="tile" style="border:1px solid #000;">
+        <label>الحالة الاجتماعية
+          <select name="marital">
+            <option value="">—</option>
+            <option>أعزب/عزباء</option>
+            <option>متزوج/ة</option>
+            <option>منفصل/ة</option>
+            <option>مطلق/ة</option>
+            <option>أرمل/أرملة</option>
+          </select>
+        </label>
+      </div>
+      <div class="tile" style="border:1px solid #000;">
+        <label>العمل / الدراسة
+          <input name="work" placeholder="طالب / موظف / باحث عن عمل / غير ذلك">
+        </label>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h2>2) الأعراض الحالية (اختر ما ينطبق فعلاً)</h2>
+
+    <div class="grid">
+
+      <div class="tile" style="border:1px solid #000;">
+        <h3>🟣 المزاج / الاكتئاب</h3>
+        <label class="badge2"><input type="checkbox" name="low_mood"> مزاج منخفض أكثر اليوم</label>
+        <label class="badge2"><input type="checkbox" name="anhedonia"> فقدان المتعة بالأشياء</label>
+        <label class="badge2"><input type="checkbox" name="hopeless"> إحساس بالتشاؤم / اليأس</label>
+        <label class="badge2"><input type="checkbox" name="fatigue"> إرهاق / طاقة منخفضة</label>
+        <label class="badge2"><input type="checkbox" name="sleep_issue"> نوم مضطرب أو متقطع</label>
+        <label class="badge2"><input type="checkbox" name="appetite_change"> تغيّر واضح بالشّهية / الوزن</label>
+        <label class="badge2"><input type="checkbox" name="somatic_pain"> آلام جسدية مرتبطة بالمزاج</label>
+        <label class="badge2"><input type="checkbox" name="worthlessness"> شعور بالذنب / عدم القيمة</label>
+        <label class="badge2"><input type="checkbox" name="poor_concentration"> تركيز ضعيف / بطء تفكير</label>
+        <label class="badge2"><input type="checkbox" name="psychomotor"> تباطؤ أو تهيّج حركي</label>
+        <label class="badge2"><input type="checkbox" name="suicidal"> أفكار إيذاء أو انتحار</label>
       </div>
 
-      <div class="section-card">
-        <h2>🔧 أدوات CBT المقترحة لك</h2>
-        <div class="row">{plans_html}</div>
+      <div class="tile" style="border:1px solid #000;">
+        <h3>🟣 القلق / الهلع / الرهاب</h3>
+        <label class="badge2"><input type="checkbox" name="worry"> قلق زائد صعب السيطرة</label>
+        <label class="badge2"><input type="checkbox" name="tension"> توتر عضلي / شد جسدي</label>
+        <label class="badge2"><input type="checkbox" name="restlessness"> تململ / أرق / عصبية</label>
+        <label class="badge2"><input type="checkbox" name="irritability"> سرعة انفعال / عصبية سريعة</label>
+        <label class="badge2"><input type="checkbox" name="mind_blank"> فراغ ذهني تحت الضغط</label>
+        <label class="badge2"><input type="checkbox" name="sleep_anxiety"> صعوبة نوم بسبب القلق</label>
+        <label class="badge2"><input type="checkbox" name="concentration_anxiety"> تشوش تركيز مع القلق</label>
+        <label class="badge2"><input type="checkbox" name="panic_attacks"> نوبات هلع متكررة</label>
+        <label class="badge2"><input type="checkbox" name="panic_fear"> خوف من تكرار نوبة هلع</label>
+        <label class="badge2"><input type="checkbox" name="agoraphobia"> رهبة الأماكن المزدحمة / المفتوحة</label>
+        <label class="badge2"><input type="checkbox" name="specific_phobia"> رُهاب محدد (حيوان/قيادة/طيران..)</label>
+        <label class="badge2"><input type="checkbox" name="social_fear"> خوف من تقييم الآخرين / إحراج اجتماعي</label>
+        <label class="badge2"><input type="checkbox" name="avoidance"> تجنّب مواقف خوفًا من الأعراض</label>
+        <label class="badge2"><input type="checkbox" name="safety_behaviors"> أحتاج طمأنة أو مرافقة عشان أهدى</label>
       </div>
 
-      <div class="section-card">
-        <h2>🚀 ماذا بعد؟</h2>
-        <ol class="dx-list">
-          <li>احفظ أو اطبع هذا الملخص.</li>
-          <li>اضغط "فتح CBT" لتوليد جدول 7 / 10 / 14 يوم بخطوات يومية.</li>
-          <li>لو تحس الوضع أكبر من قدرتك لوحدك: تواصل مع أخصائي/طبيب من فوق.</li>
-        </ol>
-        <div class="row">
-          <button class="btn gold" onclick="window.print()">🖨️ طباعة</button>
-          <button class="btn" onclick="downloadCaseSummary()">💾 تنزيل JSON</button>
-          <a class="btn gold" href="/cbt">🧠 فتح CBT الآن</a>
-        </div>
+      <div class="tile" style="border:1px solid #000;">
+        <h3>🟣 وسواس قهري (OCD)</h3>
+        <label class="badge2"><input type="checkbox" name="obsessions"> أفكار/صور مُلِحّة ما أقدر أوقفها</label>
+        <label class="badge2"><input type="checkbox" name="compulsions"> أفعال قهرية (غسل/تفقد/ترتيب...)</label>
+        <label class="badge2"><input type="checkbox" name="contamination"> هوس تلوّث / غسل مفرط</label>
+        <label class="badge2"><input type="checkbox" name="checking"> تفقد الأبواب/القفل/الأشياء كثير</label>
+        <label class="badge2"><input type="checkbox" name="ordering"> لازم ترتيب/تماثل كامل</label>
+        <label class="badge2"><input type="checkbox" name="harm_obs"> وساوس أذى (أخاف أضر نفسي/غيري)</label>
+        <label class="badge2"><input type="checkbox" name="scrupulosity"> تدقيق ديني/أخلاقي قهري</label>
       </div>
-    </section>
-    """
-    return out
+
+      <div class="tile" style="border:1px solid #000;">
+        <h3>🟣 الصدمة / ما بعد الصدمة</h3>
+        <label class="badge2"><input type="checkbox" name="flashbacks"> استرجاعات / كوابيس عن حدث صعب</label>
+        <label class="badge2"><input type="checkbox" name="hypervigilance"> يقظة مفرطة / دائمًا على أهبة الاستعداد</label>
+        <label class="badge2"><input type="checkbox" name="startle"> فزع مفرط من الأصوات/المفاجآت</label>
+        <label class="badge2"><input type="checkbox" name="numbing"> خدر عاطفي / كأني مو موجود</label>
+        <label class="badge2"><input type="checkbox" name="trauma_avoid"> أتجنب أي تذكير بالحدث (أماكن/كلام)</label>
+        <label class="badge2"><input type="checkbox" name="guilt_trauma"> شعور بالذنب تجاه الحدث</label>
+      </div>
+
+      <div class="tile" style="border:1px solid #000;">
+        <h3>🟣 النوم</h3>
+        <label class="badge2"><input type="checkbox" name="insomnia"> صعوبة بداية/استمرار النوم (أرق)</label>
+        <label class="badge2"><input type="checkbox" name="hypersomnia"> نوم مفرط / صعوبة القيام</label>
+        <label class="badge2"><input type="checkbox" name="nightmares"> كوابيس متكررة</label>
+        <label class="badge2"><input type="checkbox" name="irregular_sleep"> مواعيد نوم فوضوية جدًا</label>
+      </div>
+
+      <div class="tile" style="border:1px solid #000;">
+        <h3>🟣 تركيز / حركة / تنظيم الوقت</h3>
+        <label class="badge2"><input type="checkbox" name="adhd_inattention"> تشتت / نسيان أشياء أساسية</label>
+        <label class="badge2"><input type="checkbox" name="adhd_hyper"> فرط حركة / اندفاع / صعوبة الجلوس</label>
+        <label class="badge2"><input type="checkbox" name="disorganization"> فوضى تنظيم / تأجيل مزمن</label>
+        <label class="badge2"><input type="checkbox" name="time_blindness"> ضياع الإحساس بالوقت / التأخير الدائم</label>
+      </div>
+
+      <div class="tile" style="border:1px solid #000;">
+        <h3>🟣 مزاج مرتفع / طاقة مفرطة</h3>
+        <label class="badge2"><input type="checkbox" name="elevated_mood"> مزاج مرتفع جدًا / تهوّر</label>
+        <label class="badge2"><input type="checkbox" name="decreased_sleep_need"> أحتاج نوم قليل جدًا وأحس طبيعي</label>
+        <label class="badge2"><input type="checkbox" name="grandiosity"> إحساس بالعظمة / قدرات خارقة</label>
+        <label class="badge2"><input type="checkbox" name="racing_thoughts"> أفكار سريعة جدًا / ما ألحقها</label>
+        <label class="badge2"><input type="checkbox" name="pressured_speech"> كلام سريع/متدفق جدًا</label>
+        <label class="badge2"><input type="checkbox" name="risk_spending"> صرف فلوس/مخاطرة عالية بدون تفكير</label>
+      </div>
+
+      <div class="tile" style="border:1px solid #000;">
+        <h3>🟣 إدراك/تفكير (ذهاني/فصام)</h3>
+        <label class="badge2"><input type="checkbox" name="hallucinations"> هلوسات (أسمع/أشوف شي غير طبيعي)</label>
+        <label class="badge2"><input type="checkbox" name="delusions"> أفكار مراقبة / مؤامرة / يقين غريب</label>
+        <label class="badge2"><input type="checkbox" name="disorganized_speech"> كلام/تفكير متشتت أو غير مفهوم</label>
+        <label class="badge2"><input type="checkbox" name="negative_symptoms"> انسحاب / برود عاطفي</label>
+        <label class="badge2"><input type="checkbox" name="catatonia"> تجمّد حركي / سلوك غير متجاوب</label>
+        <label class="badge2"><input type="checkbox" name="decline_function"> تدهور واضح بالدراسة/العمل/العلاقات</label>
+      </div>
+
+      <div class="tile" style="border:1px solid #000;">
+        <h3>🟣 الأكل / صورة الجسد</h3>
+        <label class="badge2"><input type="checkbox" name="binge_eating"> نوبات أكل شره / فقدان التحكم</label>
+        <label class="badge2"><input type="checkbox" name="restrict_eating"> تقييد قوي / تجويع نفسي</label>
+        <label class="badge2"><input type="checkbox" name="body_image"> انشغال قوي بالشكل/الوزن</label>
+        <label class="badge2"><input type="checkbox" name="purging"> تطهير/إقياء قهري بعد الأكل</label>
+      </div>
+
+      <div class="tile" style="border:1px solid #000;">
+        <h3>🟣 تعاطي مواد / إدمان</h3>
+        <label class="badge2"><input type="checkbox" name="craving"> اشتهاء قوي / أحتاج أستخدم الآن</label>
+        <label class="badge2"><input type="checkbox" name="withdrawal"> انسحاب جسدي/نفسي إذا ما استخدمت</label>
+        <label class="badge2"><input type="checkbox" name="use_harm"> أستمر رغم ضرر واضح</label>
+        <label class="badge2"><input type="checkbox" name="loss_control"> صعوبة إيقاف / فقدان السيطرة</label>
+        <label class="badge2"><input type="checkbox" name="relapse_history"> انتكاسات بعد محاولات الإيقاف</label>
+      </div>
+
+      <div class="tile" style="border:1px solid #000;">
+        <h3>🟣 تنظيم العاطفة / العلاقات / الغضب</h3>
+        <label class="badge2"><input type="checkbox" name="emotion_instability"> تقلب مزاج حاد / مشاعر قوية فجأة</label>
+        <label class="badge2"><input type="checkbox" name="impulsivity"> اندفاعية / أتصرف قبل ما أفكر</label>
+        <label class="badge2"><input type="checkbox" name="anger_issues"> نوبات غضب / صراخ / انفجار سريع</label>
+        <label class="badge2"><input type="checkbox" name="perfectionism"> كمالية تعطلني (كل شيء لازم مثالي)</label>
+        <label class="badge2"><input type="checkbox" name="dependence"> تعلق عالي / خوف قوي من الهجر</label>
+        <label class="badge2"><input type="checkbox" name="social_withdrawal"> انسحاب اجتماعي / صعوبة تواصل</label>
+        <label class="badge2"><input type="checkbox" name="self_conf_low"> ثقة بالنفس منخفضة / جلد ذاتي</label>
+      </div>
+
+      <div class="tile" style="border:1px solid #000;">
+        <h3>🟣 تواصل / حساسية حسّية</h3>
+        <label class="badge2"><input type="checkbox" name="asd_social"> صعوبة قراءة الإشارات الاجتماعية</label>
+        <label class="badge2"><input type="checkbox" name="sensory"> حساسية حسّية (أصوات/إضاءة/ملمس)</label>
+        <label class="badge2"><input type="checkbox" name="rigidity"> تمسّك عالي بروتين/ترتيب (أتضايق لو تغيّر)</label>
+      </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="tile" style="border:1px solid #000; margin-top:10px">
+      <label>ملاحظاتك (اختياري)
+        <textarea name="notes" rows="4" placeholder="أهم التفاصيل بالنسبة لك / متى بدأت / وش اللي مضايقك أكثر الآن؟"></textarea>
+      </label>
+    </div>
+
+    <div class="row" style="margin-top:14px">
+      <button class="btn gold" type="submit">عرض النتيجة</button>
+      <a class="btn" href="/cbt">🧠 فتح CBT الآن</a>
+    </div>
+
+  </form>
+
+  <script>
+    const KEY='case_state_v7';
+
+    function persistCase(){
+      const f=document.querySelector('form[action="/case"]');
+      const data={};
+      if(!f) return;
+
+      f.querySelectorAll('input[type=checkbox]').forEach(function(ch){
+        if(ch.checked) data[ch.name]=true;
+      });
+
+      ["age","marital","work","notes"].forEach(function(n){
+        const el=f.querySelector('[name="'+n+'"]');
+        if(el) data[n]=el.value||'';
+      });
+
+      try{
+        localStorage.setItem(KEY, JSON.stringify(data));
+      }catch(e){}
+    }
+
+    (function restore(){
+      try{
+        const d=JSON.parse(localStorage.getItem(KEY)||'{}');
+        Object.keys(d).forEach(function(k){
+          const el=document.querySelector('[name="'+k+'"]');
+          if(!el) return;
+          if(el.type==='checkbox' && d[k]) el.checked=true;
+          else if(el.tagName==='INPUT' || el.tagName==='TEXTAREA' || el.tagName==='SELECT'){
+            el.value=d[k];
+          }
+        });
+      }catch(e){}
+    })();
+  </script>
+
+</div>
+"""
 
 @app.route("/case", methods=["GET", "POST"])
-def case_page():
+def case():
     if request.method == "GET":
-        return render_page("دراسة الحالة — " + BRAND, "case", CASE_FORM_HTML)
+        return shell("دراسة الحالة — " + BRAND, CASE_FORM_HTML, "case")
 
-    # POST: اجمع العلامات اللي المستخدم اخترها
-    form_data = {
-        k: True
-        for k in request.form.keys()
-        if k not in ("age", "marital", "work", "notes")
-    }
-    # meta info (مو مستخدم حالياً لكن ممكن نعرض لاحقاً)
-    form_data["age_val"]     = request.form.get("age","").strip()
-    form_data["marital_val"] = request.form.get("marital","").strip()
-    form_data["work_val"]    = request.form.get("work","").strip()
-    _user_notes              = request.form.get("notes","").strip()
+    form_data = {k: True for k in request.form.keys() if k not in ("age","marital","work","notes")}
+    form_data["age_val"] = request.form.get("age", "").strip()
+    form_data["marital_val"] = request.form.get("marital", "").strip()
+    form_data["work_val"] = request.form.get("work", "").strip()
+    _ = request.form.get("notes", "").strip()  # ملاحظات المستخدم (ممكن نستخدمها مستقبلاً)
 
     picks = preliminary_picks(form_data)
     plans = suggest_plans(form_data)
-    result_html = build_case_result_html(picks, plans)
+    html = build_case_result_html(picks, plans)
+    return shell("نتيجة دراسة الحالة — " + BRAND, html, "case")
 
-    return render_page("نتيجة الحالة — " + BRAND, "case", result_html)
 
+# ======================== /cbt ========================
 
-# ---------- /cbt : العلاج السلوكي المعرفي ----------
+CBT_PAGE_HTML = r"""
+<div class="card" style="border:2px solid #000;">
 
-CBT_HTML = f"""
-<h1>🧠 العلاج السلوكي المعرفي (CBT)</h1>
-
-<p>
-الهدف: مو بس "تفهم مشكلتك"، بل خطة يومية صغيرة ممكن تنفذها فعلاً.
-إختر خطة أو خطتين، وحدد المدة (7 / 10 / 14 يوم)،
-واضغط "إنشاء الجدول".
-</p>
-
-<div class="section-card">
-  <h2>الخطط (أمثلة من المكتبة)</h2>
-  <ul class="dx-list">
-    <li>BA — تنشيط سلوكي (مزاج منخفض)</li>
-    <li>WT — وقت القلق (قلق عام)</li>
-    <li>IE — تعرّض داخلي (نوبات هلع)</li>
-    <li>ERP — وسواس قهري</li>
-    <li>PTSD — تأريض/تنظيم بعد الصدمة</li>
-    <li>IPSRT — روتين ثابت للمزاج المرتفع/الهايج</li>
-    <li>RP — منع الانتكاس (إدمان)</li>
-    <li>AM — إدارة الغضب</li>
-    <li>SC — تعزيز الثقة بالنفس</li>
-  </ul>
-</div>
-
-<div class="section-card">
-  <h2>📅 مولّد الجدول اليومي</h2>
-  <div class="row">
-    <label style="flex:1;min-width:160px;">
-      الخطة A:
-      <select id="planA"></select>
-    </label>
-    <label style="flex:1;min-width:160px;">
-      الخطة B (اختياري):
-      <select id="planB"><option value="">— بدون —</option></select>
-    </label>
-    <label style="flex:1;min-width:120px;">
-      المدة (أيام):
-      <select id="daysSelect">
-        <option value="7">7</option>
-        <option value="10">10</option>
-        <option value="14">14</option>
-      </select>
-    </label>
-    <button class="btn gold" type="button" onclick="buildChecklist()">إنشاء الجدول</button>
-    <button class="btn" type="button" onclick="saveChecklist()">💾 تنزيل الجدول</button>
-    <a class="btn wa" id="share-wa" target="_blank" rel="noopener">🟢 واتساب</a>
-    <a class="btn tg" id="share-tg" target="_blank" rel="noopener">✈️ تيليجرام</a>
+  <h1>🧠 العلاج المعرفي السلوكي (CBT)</h1>
+  <div class="small">
+    الهدف: تحويل الأعراض إلى خطوات يومية قابلة للتنفيذ.
+    <br/>
+    اختَر خطة (أو خطتين مع بعض)، حدّد عدد الأيام (7 / 10 / 14)،
+    واضغط "إنشاء الجدول" 👇
+  </div>
+  <div class="note">
+    لو جيت من «دراسة الحالة»، بنوسّط لك الخطط المقترحة بخط ذهبي.
+    إذا ما جيت من هناك، عادي؛ تقدر تختار يدوي.
   </div>
 
-  <div id="checklist"></div>
-</div>
+  <h2>الخطط المتاحة (17 خطة)</h2>
+  <div class="grid" id="plans"></div>
 
-<div class="section-card">
-  <h2>هل تحتاج بشر فعلي الآن؟</h2>
-  <div class="row">
-    <a class="btn pro" target="_blank" rel="noopener" href="{PSYCHO_WA}">👨‍🎓 أخصائي نفسي (خطة CBT معك)</a>
-    <a class="btn pro" target="_blank" rel="noopener" href="{PSYCH_WA}">👨‍⚕️ طبيب نفسي (تشخيص وأدوية)</a>
-    <a class="btn pro" target="_blank" rel="noopener" href="{SOCIAL_WA}">🤝 أخصائي اجتماعي (موقف حياتي)</a>
+  <div class="divider"></div>
+
+  <h2 style="margin-top:18px">📅 مولّد الجدول اليومي</h2>
+  <div class="tile" style="border:1px solid #000;">
+    <div class="row">
+
+      <label style="flex:1;min-width:160px;">
+        الخطة A:
+        <select id="planA"></select>
+      </label>
+
+      <label style="flex:1;min-width:160px;">
+        الخطة B (اختياري):
+        <select id="planB"><option value="">— بدون —</option></select>
+      </label>
+
+      <label style="flex:1;min-width:120px;">
+        المدة (أيام):
+        <select id="daysSelect">
+          <option value="7">7</option>
+          <option value="10">10</option>
+          <option value="14">14</option>
+        </select>
+      </label>
+
+      <button class="btn gold" onclick="buildChecklist()">إنشاء الجدول</button>
+      <button class="btn alt" onclick="window.print()">🖨️ طباعة</button>
+      <button class="btn" onclick="saveChecklist()">💾 تنزيل JSON</button>
+      <a class="btn wa" id="share-wa" target="_blank" rel="noopener">🟢 واتساب</a>
+      <a class="btn tg" id="share-tg" target="_blank" rel="noopener">✈️ تيليجرام</a>
+
+    </div>
+
+    <div id="checklist" style="margin-top:16px"></div>
   </div>
+
+  <div class="divider"></div>
+
+  <h3>هل تحتاج بشري الآن؟</h3>
+  <div class="row screen-only">
+    <a class="btn" href="[[PSYCHO_WA]]" target="_blank" rel="noopener">👨‍🎓 أخصائي نفسي</a>
+    <a class="btn" href="[[PSYCH_WA]]"  target="_blank" rel="noopener">👨‍⚕️ طبيب نفسي</a>
+    <a class="btn" href="[[SOCIAL_WA]]" target="_blank" rel="noopener">🤝 أخصائي اجتماعي</a>
+  </div>
+
+  <script>
+    const PLANS = {
+      ba:{
+        title:"BA — تنشيط سلوكي",
+        steps:[
+          "3 نشاطات مُجزية أو ممتعة كل يوم حتى لو المزاج منخفض.",
+          "أقيس مزاجي قبل وبعد (0-10) عشان أشوف الفرق.",
+          "أرفع صعوبة أو اجتماعية النشاط تدريجيًا خلال الأيام."
+        ]
+      },
+      thought_record:{
+        title:"TR — سجل أفكار",
+        steps:[
+          "موقف → فكرة تلقائية (وش خطر ببالي فورًا؟).",
+          "دلائل مع و ضد الفكرة (أشيك الواقع مو الإحساس فقط).",
+          "أكتب فكرة بديلة واقعية ومتوازنة وأجرّبها في السلوك."
+        ]
+      },
+      sleep_hygiene:{
+        title:"SH — نظافة النوم",
+        steps:[
+          "أثبت وقت نوم/استيقاظ يومي حتى نهاية الأسبوع.",
+          "أوقف الشاشات القوية قبل النوم بـ 60 دقيقة.",
+          "أمنع الكافيين والنيكوتين قبل النوم بست ساعات."
+        ]
+      },
+      interoceptive_exposure:{
+        title:"IE — تعرّض داخلي (هلع)",
+        steps:[
+          "أخلق إحساس جسدي يشبه الهلع (تنفّس سريع 30 ثانية) في مكان آمن.",
+          "أبقى مع الإحساس وأمنع طقوس الطمأنة القهرية.",
+          "أكرر لين عقلي يتعلم إن الإحساس ما يقتلني."
+        ]
+      },
+      graded_exposure:{
+        title:"GE — تعرّض تدرّجي (رهاب/اجتماعي)",
+        steps:[
+          "قائمة مواقف من الأسهل للأصعب (0→100 خوف).",
+          "أواجه الموقف من الأقل خوفًا وصعود بدون هروب.",
+          "أبقى داخل الموقف إلى أن القلق يطيح ~50٪."
+        ]
+      },
+      ocd_erp:{
+        title:"ERP — وسواس قهري",
+        steps:[
+          "أحدد وسواس محدد + الطقس اللي أسويه عادة.",
+          "أعرّض نفسي للمثير بدون تنفيذ الطقس.",
+          "أقيس القلق (0-100) وأشوف كيف ينزل مع الاستمرار."
+        ]
+      },
+      ptsd_grounding:{
+        title:"PTSD — تأريض/تنظيم",
+        steps:[
+          "تمرين 5-4-3-2-1 حواس للرجوع للحظة الحالية.",
+          "تنفّس بطني بطيء (شهيق4/حجز2/زفير6-8) عشر مرات.",
+          "روتين أمان قبل النوم (إضاءة هادية/وقت تهدئة ثابت)."
+        ]
+      },
+      problem_solving:{
+        title:"PS — حلّ المشكلات",
+        steps:[
+          "أكتب المشكلة بصيغة محددة وواضحة.",
+          "أجمع حلول بدون حكم ثم أقيّم الواقعي منها.",
+          "أختار حل واحد وأطبقه اليوم وأراجع آخر اليوم."
+        ]
+      },
+      worry_time:{
+        title:"WT — وقت القلق",
+        steps:[
+          "إذا جا القلق أكتب الفكرة بدل ما أغرق فيها الآن.",
+          "أأجل التفكير فيها لوقت محدد (15 دق مثلًا مساء).",
+          "وقت القلق المخصص أراجع القائمة بهدوء ومع قلم."
+        ]
+      },
+      mindfulness:{
+        title:"MB — يقظة ذهنية",
+        steps:[
+          "٥ دقائق ملاحظة تنفّسي بدون حكم.",
+          "فحص جسدي بطيء من الرأس للقدم وملاحظة الإحساس.",
+          "أذكر نفسي: الفكرة مجرد فكرة مو حقيقة إلزامية."
+        ]
+      },
+      behavioral_experiments:{
+        title:"BE — تجارب سلوكية",
+        steps:[
+          "أكتب الاعتقاد السلبي (مثال: لو قلت رأيي بينرفض).",
+          "أجرب خطوة صغيرة ضد الاعتقاد مع شخص آمن.",
+          "أقارن النتيجة بالتوقع وأكتب وش تعلمت."
+        ]
+      },
+      safety_behaviors:{
+        title:"SA — إيقاف سلوكيات الأمان",
+        steps:[
+          "أحصر سلوك الأمان (اتصال فوري لطمأنة، مثلاً).",
+          "أقلله شوي شوي بدل ما أقطعه فجأة.",
+          "أراقب: هل خوفي يطيح لحاله حتى بدون الطمأنة؟"
+        ]
+      },
+      bipolar_routine:{
+        title:"IPSRT — روتين ثنائي القطب",
+        steps:[
+          "ثبات أوقات النوم/الأكل/النشاط اليومي.",
+          "تدوين مزاج يومي (مرتفع/منخفض/مستقر).",
+          "أعرف العلامات المبكرة (صرف مجنون، نوم شبه صفر...)."
+        ]
+      },
+      relapse_prevention:{
+        title:"RP — منع الانتكاس (إدمان)",
+        steps:[
+          "أحدد محفزاتي (أماكن/أشخاص/مزاج).",
+          "أبني بدائل فورية وقت الرغبة (أطلع، ماء بارد، أكتب، أكلم دعم).",
+          "أجهز شبكة دعم ما تحكم ولا تفضح."
+        ]
+      },
+      social_skills:{
+        title:"SS — مهارات اجتماعية",
+        steps:[
+          "أتمرن على جملة حازمة وواضحة (أنا أحتاج...).",
+          "أتدرّب على تواصل بصري ونبرة هادية لثواني قصيرة.",
+          "تعرض اجتماعي خفيف يوميًا (سلام بسيط، سؤال قصير)."
+        ]
+      },
+      anger_management:{
+        title:"AM — إدارة الغضب",
+        steps:[
+          "أحدد إشارات الغضب المبكرة بجسمي وفكري.",
+          "أطبق إيقاف مؤقت + تنفس 4-6-8 (شهيق4/حجز6/زفير8).",
+          "أرجع وأتكلم عن السلوك مو عن شخصية الشخص."
+        ]
+      },
+      self_confidence:{
+        title:"SC — تعزيز الثقة",
+        steps:[
+          "أكتب إنجاز صغير كل يوم وأسميه نجاح.",
+          "تعرض ثقة تدريجي (خطوة سهلة قبل الصعبة).",
+          "أستبدل جلد الذات بجملة واقعية إيجابية ('قاعد أتعلم')."
+        ]
+      }
+    };
+
+    const plansDiv  = document.getElementById('plans');
+    const selectA   = document.getElementById('planA');
+    const selectB   = document.getElementById('planB');
+    const daysSel   = document.getElementById('daysSelect');
+    const shareWA   = document.getElementById('share-wa');
+    const shareTG   = document.getElementById('share-tg');
+    const checklistDiv = document.getElementById('checklist');
+
+    (function renderPlans(){
+      let html = '';
+      for (const key in PLANS){
+        const plan = PLANS[key];
+        html += `
+          <div class="tile" style="border:1px solid #000;">
+            <h3 id="t-${key}">${plan.title}</h3>
+            <ol style="padding-right:20px;line-height:1.7;font-size:.9rem;color:#2b1a4c;">
+              <li>${plan.steps[0]}</li>
+              <li>${plan.steps[1]}</li>
+              <li>${plan.steps[2]}</li>
+            </ol>
+            <div class="row">
+              <button class="btn alt" onclick="pick('${key}')">اختيار</button>
+              <button class="btn" onclick="dl('${key}')">💾 تنزيل JSON</button>
+            </div>
+          </div>
+        `;
+      }
+      plansDiv.innerHTML = html;
+
+      for (const key in PLANS){
+        const optA = document.createElement('option');
+        optA.value = key;
+        optA.textContent = PLANS[key].title;
+        selectA.appendChild(optA);
+
+        const optB = document.createElement('option');
+        optB.value = key;
+        optB.textContent = PLANS[key].title;
+        selectB.appendChild(optB);
+      }
+
+      try {
+        const saved = JSON.parse(localStorage.getItem('cbt_state')||'{}');
+        if (saved.planA && PLANS[saved.planA]) selectA.value = saved.planA;
+        else selectA.value = 'ba';
+        if (saved.planB && PLANS[saved.planB]) selectB.value = saved.planB;
+        if (saved.days) daysSel.value = String(saved.days);
+      } catch(e){ selectA.value='ba'; }
+
+      let suggest = new URLSearchParams(location.search).get('suggest');
+      if(!suggest){
+        try {
+          const fromLocal = JSON.parse(localStorage.getItem('cbt_suggested')||'[]') || [];
+          suggest = fromLocal.join(',');
+        } catch(e){}
+      }
+      if(suggest){
+        const keys = suggest.split(',').map(s=>s.trim()).filter(Boolean);
+        if(keys.length && PLANS[keys[0]]) {
+          selectA.value = keys[0];
+        }
+        keys.forEach(k=>{
+          const h = document.getElementById('t-'+k);
+          if(h){
+            h.style.outline = '3px solid var(--g)';
+            h.style.boxShadow = '0 0 0 4px rgba(255,215,0,.25)';
+            h.style.borderRadius = '12px';
+            h.style.padding = '4px 6px';
+          }
+        });
+      }
+    })();
+
+    function persistCBTState(){
+      const state = {
+        planA: selectA.value,
+        planB: selectB.value || '',
+        days:  parseInt(daysSel.value,10) || 7
+      };
+      try { localStorage.setItem('cbt_state', JSON.stringify(state)); } catch(e){}
+    }
+
+    window.pick = function(key){
+      selectA.value = key;
+      persistCBTState();
+      window.scrollTo({top: daysSel.offsetTop - 60, behavior:'smooth'});
+    };
+
+    window.dl = function(key){
+      const data = PLANS[key] || {};
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+      a.download = key + ".json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    };
+
+    window.buildChecklist = function(){
+      persistCBTState();
+
+      const keyA = selectA.value;
+      const keyB = selectB.value;
+      const days = parseInt(daysSel.value,10);
+
+      if(!keyA || !PLANS[keyA]){
+        alert('اختر خطة A أولاً');
+        return;
+      }
+
+      const planA = PLANS[keyA];
+      const planB = keyB && PLANS[keyB] ? PLANS[keyB] : null;
+
+      const steps = [...planA.steps, ...(planB?planB.steps:[])];
+      const titleCombo = [planA.title].concat(planB?[planB.title]:[]).join(" + ");
+
+      let html = `<h3 style="margin:6px 0">${titleCombo} — جدول ${days} يوم</h3>`;
+      html += "<table class='table'><thead><tr><th>اليوم</th>";
+      steps.forEach((s,i)=>{
+        html += "<th>"+(i+1)+". "+s+"</th>";
+      });
+      html += "</tr></thead><tbody>";
+
+      for(let d=1; d<=days; d++){
+        html += "<tr><td><b>"+d+"</b></td>";
+        for(let c=0; c<steps.length; c++){
+          html += "<td><input type='checkbox' /></td>";
+        }
+        html += "</tr>";
+      }
+      html += "</tbody></table>";
+
+      checklistDiv.innerHTML = html;
+
+      updateShareLinks(titleCombo, days);
+    };
+
+    window.saveChecklist = function(){
+      const rows = checklistDiv.querySelectorAll('tbody tr');
+      if(!rows.length) return;
+
+      const head = checklistDiv.querySelector('h3')?.innerText || '';
+      const parts = head.split(' — جدول ');
+      const days = parseInt((parts[1]||'7').split(' ')[0],10);
+
+      const headerCells = [...checklistDiv.querySelectorAll('thead th')]
+        .slice(1)
+        .map(th=>th.innerText);
+
+      const progress = [];
+      rows.forEach((tr, idx)=>{
+        const done = [...tr.querySelectorAll('input[type=checkbox]')].map(ch=>ch.checked);
+        progress.push({
+          day:(idx+1),
+          done:done
+        });
+      });
+
+      const data = {
+        title: parts[0] || '',
+        steps: headerCells,
+        days: days,
+        progress: progress,
+        created_at: new Date().toISOString(),
+        build: window.__BUILD__
+      };
+
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+      a.download='cbt_checklist.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    };
+
+    function updateShareLinks(title, days){
+      const url = location.origin + '/cbt';
+      const msg = "خطة CBT: "+title+"\\nمدة: "+days+" يوم\\n— من {{BRAND}}\\n"+url;
+      const text = encodeURIComponent(msg);
+      shareWA.href = "{{WA_BASE}}" + '?text=' + text;
+      shareTG.href = 'https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + text;
+    }
+  </script>
+
 </div>
 """
+
+def render_cbt_page():
+    return CBT_PAGE_HTML.replace("{{BRAND}}", BRAND)\
+                        .replace("{{WA_BASE}}", WA_BASE)\
+                        .replace("[[PSYCHO_WA]]", PSYCHO_WA)\
+                        .replace("[[PSYCH_WA]]", PSYCH_WA)\
+                        .replace("[[SOCIAL_WA]]", SOCIAL_WA)
 
 @app.get("/cbt")
-def cbt_page():
-    return render_page("CBT — " + BRAND, "cbt", CBT_HTML)
+def cbt():
+    return shell("CBT — خطط وتمارين", render_cbt_page(), "cbt")
 
 
-# ---------- /pharm : الصيدلية النفسية ----------
+# ======================== /pharm ========================
+# صفحة الأدوية النفسية / العصبية: تثقيف فقط (ليش يوصف الدواء؟ أعراض جانبية شائعة؟ متى لازم تراجع فورًا؟)
+# لا نذكر جرعات ولا جداول استعمال، ونحذر من الإيقاف المفاجئ لأن هذا ممكن يكون خطير.
 
-PHARM_HTML = f"""
-<h1>💊 الصيدلية النفسية (تثقيف فقط)</h1>
+PHARM_PAGE_HTML = r"""
+<div class="card" style="border:2px solid #000;">
+  <h1>💊 دليل الأدوية النفسية (فارماسي)</h1>
 
-<p>
-المحتوى هنا للتوعية، مو وصفة علاج.
-لا تبدأ/توقف دواء بدون دكتور/صيدلي مختص.
-بعض الأدوية لو تنقطع فجأة يكون فيه انسحاب أو ارتداد خطير.
-لو فيه أفكار إيذاء نفسك أو غيرك، هذا طارئ.
-</p>
-
-<div class="section-card">
-  <h2>🔍 ابحث</h2>
-  <div class="row" style="align-items:flex-end;">
-    <label style="flex:1;min-width:200px;">
-      اكتب اسم دواء أو حالة (مثال: اكتئاب / هلع / ذهان)
-      <input id="pharm-q" placeholder="مثلاً: وسواس، قلق، اكتئاب">
-    </label>
-    <button class="btn gold" type="button" onclick="pharmSearch()">بحث</button>
+  <div class="note">
+    مهم جدًا:
+    <br/>• هذه الصفحة تثقيف فقط — مو وصفة علاج.
+    <br/>• لا تبدأ ولا توقف دواء بدون طبيب/صيدلي مختص.
+    <br/>• بعض الأدوية إيقافها فجأة خطر (انسحاب، هلع، تشنجات، انتكاس شديد).
+    <br/>• لو فيه أفكار إيذاء نفسك أو غيرك لازم دعم طبي عاجل.
   </div>
-  <div id="pharm-results" style="margin-top:16px;"></div>
-</div>
 
-<div class="section-card">
-  <h2>متى أحتاج دكتور فوراً؟</h2>
-  <ul class="dx-list">
-    <li>لو فجأة صار عندك أفكار انتحار/إيذاء قوية ومستمرة</li>
-    <li>لو في هلوسات جديدة قوية (أصوات/رؤية أشياء مش موجودة)</li>
-    <li>لو تشنجات، ارتباك ذهني شديد، حرارة مع تيبس عضلات</li>
-    <li>لو صرت خطر على نفسك أو أحد</li>
-  </ul>
+  <div class="tile" style="border:1px solid #000; margin-bottom:16px;">
+    <label class="small" style="font-weight:700;">بحث باسم الدواء / الحالة
+      <input id="drugSearch" placeholder="مثال: سيرترالين / قلق / ذهان / ليريكا" oninput="filterMeds()">
+    </label>
+  </div>
+
+  <div id="medList" class="grid"></div>
+
+  <div class="divider"></div>
+
+  <h3>أحتاج مختص الآن؟</h3>
+  <div class="row screen-only">
+    <a class="btn" href="[[PSYCHO_WA]]" target="_blank" rel="noopener">👨‍🎓 أخصائي نفسي (سلوكي)</a>
+    <a class="btn" href="[[PSYCH_WA]]"  target="_blank" rel="noopener">👨‍⚕️ طبيب نفسي (دوائي)</a>
+    <a class="btn" href="[[SOCIAL_WA]]" target="_blank" rel="noopener">🤝 أخصائي اجتماعي (دعم حياتي)</a>
+  </div>
+
+  <script>
+    // قائمة أدوية شائعة في الطب النفسي / العصبي
+    // بدون جرعات، فقط: متى يُستخدم غالبًا / آثار جانبية / تحذير
+
+    const MEDS = [
+      // SSRIs
+      {
+        name:"سيرترالين (Sertraline)",
+        klass:"SSRI مضاد اكتئاب/قلق",
+        uses:"اكتئاب، قلق عام، وسواس قهري، هلع، قلق اجتماعي",
+        sfx:"غثيان، إسهال، صداع، أرق بسيط، تأخير القذف/ضعف الرغبة",
+        warn:"يحتاج متابعة طبيب. لا توقف فجأة بدون جدول نزول."
+      },
+      {
+        name:"فلوكستين (Fluoxetine / بروزاك)",
+        klass:"SSRI",
+        uses:"اكتئاب، وسواس قهري، أكل بنوبات شَرَه",
+        sfx:"تنشيط/أرق بالبداية، غثيان، صداع",
+        warn:"طويل المفعول. لا تخلطه مع أدوية سيروتونين ثانية بدون طبيب."
+      },
+      {
+        name:"إسيتالوبرام (Escitalopram)",
+        klass:"SSRI",
+        uses:"قلق عام، اكتئاب",
+        sfx:"غثيان خفيف، صداع، تغييرات جنسية",
+        warn:"يراقب طبيب أي زيادة قلق بالبداية."
+      },
+      {
+        name:"باروكسيتين (Paroxetine)",
+        klass:"SSRI",
+        uses:"قلق شديد، هلع، اكتئاب",
+        sfx:"نعاس، زيادة وزن محتملة، صعوبة إيقاف مفاجئ",
+        warn:"إيقافه فجأة يعطي أعراض انسحاب مزعجة."
+      },
+      {
+        name:"سيتالوبرام (Citalopram)",
+        klass:"SSRI",
+        uses:"اكتئاب، قلق",
+        sfx:"غثيان، دوخة، نعاس خفيف",
+        warn:"جرعات أعلى تحتاج مراقبة نظم القلب عند البعض."
+      },
+      {
+        name:"فلوفوكسامين (Fluvoxamine)",
+        klass:"SSRI",
+        uses:"وسواس قهري بشكل خاص",
+        sfx:"نعاس أو تنبيه، اضطراب معدة",
+        warn:"يتداخل مع أدوية ثانية كثيرة؛ لازم دكتور يتابع."
+      },
+
+      // SNRIs
+      {
+        name:"فينلافاكسين (Venlafaxine / إيفكسور)",
+        klass:"SNRI مضاد اكتئاب/قلق",
+        uses:"قلق معمّم قوي، اكتئاب، هلع",
+        sfx:"خفقان، تعرّق، احتمال ارتفاع ضغط بسيط",
+        warn:"إيقاف سريع = دوخة/صدمات كهربائية بالرأس. لازم نزول تدريجي."
+      },
+      {
+        name:"ديسفينلافاكسين (Desvenlafaxine)",
+        klass:"SNRI",
+        uses:"اكتئاب",
+        sfx:"غثيان، تعرّق، خدران خفيف",
+        warn:"نفس مبدأ فينلافاكسين بخصوص ضرورة الإيقاف التدريجي."
+      },
+      {
+        name:"دولوكستين (Duloxetine / سيمبالتا)",
+        klass:"SNRI",
+        uses:"اكتئاب، ألم عصبي، قلق عام",
+        sfx:"غثيان، جفاف فم، تعرّق",
+        warn:"أحيانًا يراقب الكبد. يحتاج إشراف طبي."
+      },
+
+      // مضادات اكتئاب غير تقليدية
+      {
+        name:"بوبروبيون (Bupropion / ويلبوترين)",
+        klass:"مضاد اكتئاب NDRI (دوبامين/نورأدرينالين)",
+        uses:"اكتئاب، مساعد للإقلاع عن التدخين، نقص طاقة/دافعية",
+        sfx:"أرق، قلق، صداع",
+        warn:"يرفع خطر التشنجات بجرعات عالية أو مع أكل قليل جدًا."
+      },
+      {
+        name:"ميرتازابين (Mirtazapine / ريميرون)",
+        klass:"مضاد اكتئاب مهدئ",
+        uses:"اكتئاب مع أرق أو فقدان وزن/شهية",
+        sfx:"نعاس قوي، زيادة شهية وزيادة وزن",
+        warn:"عادةً يُؤخذ ليل. لازم طبيب يقرر إذا مناسب."
+      },
+      {
+        name:"ترازودون (Trazodone)",
+        klass:"مضاد اكتئاب يُستخدم كثير للنوم",
+        uses:"أرق مرتبط باكتئاب/قلق",
+        sfx:"نعاس، دوخة صباح، جفاف فم",
+        warn:"نادر جدًا يسبب انتصاب مؤلم طويل عند الرجال؛ هذي طوارئ."
+      },
+      {
+        name:"فورتييوكسيتين (Vortioxetine)",
+        klass:"مضاد اكتئاب متعدد المستقبلات السيروتونينية",
+        uses:"اكتئاب مع مشاكل تركيز/تفكير",
+        sfx:"غثيان خفيف غالبًا",
+        warn:"أي أفكار إيذاء لازم تُبلغ الطبيب فورًا."
+      },
+
+      // مثبتات مزاج / ثنائي القطب
+      {
+        name:"ليثيوم (Lithium)",
+        klass:"مثبت مزاج كلاسيكي",
+        uses:"ثنائي القطب (نوبات هوس/اكتئاب)، يقلل خطر الانتحار عند بعض المرضى",
+        sfx:"عطش، تبول متكرر، رعشة خفيفة باليد، زيادة وزن بسيطة",
+        warn:"لازم فحوص دم للمستوى. جرعة خطأ ممكن تسمم خطير."
+      },
+      {
+        name:"فالبروات / ديفالبروإكس (Valproate / Depakote)",
+        klass:"مثبت مزاج/مضاد نوبات",
+        uses:"هوس حاد، نوبات غضب وانفجار عند بعض الحالات",
+        sfx:"زيادة وزن، نعاس، غثيان",
+        warn:"يراقب الكبد والدم. يمنع الحمل بدون إشراف صارم لأنه خطير على الجنين."
+      },
+      {
+        name:"لاموتريجين (Lamotrigine / لامكتال)",
+        klass:"مثبت مزاج (يركز على الاكتئاب ثنائي القطب)",
+        uses:"يقلل نوبات الاكتئاب في ثنائي القطب",
+        sfx:"صداع، دوخة خفيفة",
+        warn:"أي طفح جلدي جديد = طوارئ (نادر جدًا بس مهم)."
+      },
+      {
+        name:"كاربامازيبين (Carbamazepine / تجريتول)",
+        klass:"مضاد نوبات/مثبت مزاج",
+        uses:"هوس، تهيج شديد، ألم عصبي وجهي",
+        sfx:"دوار، نعاس، غثيان",
+        warn:"يراقب تعداد الدم وإنزيمات الكبد. يتداخل مع أدوية كثيرة."
+      },
+
+      // مضادات الذهان (ذهان / فصام / هوس شديد)
+      {
+        name:"كويتيابين (Quetiapine / سيروكويل)",
+        klass:"مضاد ذهان غير نمطي",
+        uses:"ذهان، هوس، أرق شديد/قلق شديد بجرعات صغيرة (بإشراف طبي)",
+        sfx:"نعاس، زيادة وزن، شهية عالية",
+        warn:"يسبب خمول. لا تسوق لو نعسان."
+      },
+      {
+        name:"أولانزابين (Olanzapine / زيبريكسا)",
+        klass:"مضاد ذهان غير نمطي",
+        uses:"ذهان، هوس حاد",
+        sfx:"زيادة وزن قوية، جوع، نعاس",
+        warn:"يراقب سكر الدم والدهون؛ ممكن يرفعها."
+      },
+      {
+        name:"ريسبيريدون (Risperidone / ريسبردال)",
+        klass:"مضاد ذهان غير نمطي",
+        uses:"فصام، هوس، اندفاع/عدوانية ببعض الاضطرابات السلوكية",
+        sfx:"تيبّس عضلي بسيط، نعاس، زيادة وزن متوسطة",
+        warn:"بجرعات أعلى ممكن يرفع هرمون الحليب (حساسية بالصدر/إفراز)."
+      },
+      {
+        name:"باليبيريدون (Paliperidone)",
+        klass:"مضاد ذهان غير نمطي (مشابه ريسبيريدون)",
+        uses:"فصام، ذهان مستمر",
+        sfx:"تململ، تيبّس، زيادة وزن متوسطة",
+        warn:"فيه نسخ حقن طويلة المفعول (شهرية/أكثر) بس فقط تحت إشراف طبي."
+      },
+      {
+        name:"أريببرازول (Aripiprazole / أبيليفاي)",
+        klass:"مضاد ذهان غير نمطي جزئي التأثير",
+        uses:"ذهان، هوس، وأحيانًا يُضاف للاكتئاب المقاوم",
+        sfx:"نشاط/أرق/عصبية بدل النعاس عند بعض الناس",
+        warn:"راقب أي سلوك اندفاعي جديد (صرف فلوس بدون تفكير، أكل قهري...)."
+      },
+      {
+        name:"زيبراسيدون (Ziprasidone / جيوودون)",
+        klass:"مضاد ذهان غير نمطي",
+        uses:"ذهان، هوس",
+        sfx:"غثيان، دوار، احتمال تأثير على نبض القلب",
+        warn:"ينبلع غالبًا مع الأكل ويحتاج مراقبة نظم القلب عند بعض المرضى."
+      },
+      {
+        name:"لوراسيدون (Lurasidone / لاتودا)",
+        klass:"مضاد ذهان غير نمطي",
+        uses:"اكتئاب ثنائي القطب، ذهان",
+        sfx:"غثيان خفيف، نعاس أو بالعكس تنبيه بسيط",
+        warn:"عادةً أقل زيادة وزن من بعض الأدوية الثانية بس لازم إشراف."
+      },
+      {
+        name:"كلوزابين (Clozapine / كلوزاريل)",
+        klass:"مضاد ذهان غير نمطي قوي",
+        uses:"فصام شديد ما تحسّن مع أدوية ثانية",
+        sfx:"نعاس، سيلان لعاب، زيادة وزن",
+        warn:"لازم فحوص دم دورية لكريات الدم البيضاء. بدون طبيب مستحيل يُصرف."
+      },
+      {
+        name:"هالوبيريدول (Haloperidol / هالدول)",
+        klass:"مضاد ذهان نموذجي (قديم)",
+        uses:"ذهان حاد، هياج شديد (أحيانًا طوارئ)",
+        sfx:"تيبّس/تشنجات عضلية حادة خصوصًا بجرعات عالية",
+        warn:"يستعمل غالبًا في بيئة طبية وتحت رقابة مباشرة."
+      },
+
+      // مهدئات / قلق / نوم / أعصاب
+      {
+        name:"كلونازيبام (Clonazepam)",
+        klass:"بنزوديازبين مهدئ",
+        uses:"هلع حاد، قلق شديد مؤقت، نوبات صرع",
+        sfx:"نعاس قوي، بطء تفكير، اعتماد جسدي",
+        warn:"إدماني. الإيقاف المفاجئ ممكن يسبب انسحاب خطير/تشنجات."
+      },
+      {
+        name:"ألبرازولام (Alprazolam / زاناكس)",
+        klass:"بنزوديازبين قصير المفعول",
+        uses:"نوبات هلع حادة، قلق شديد قصير المدى",
+        sfx:"نعاس، نسيان قصير، تعلّق سريع",
+        warn:"قابل للإدمان بسرعة. مو حل بعيد المدى."
+      },
+      {
+        name:"لورازيبام (Lorazepam / أتيفان)",
+        klass:"بنزوديازبين",
+        uses:"قلق حاد، أرق قصير المدى، تشنجات",
+        sfx:"نعاس، دوار، بطء حركة",
+        warn:"نفس العائلة الإدمانية. لا توقف بدون طبيب."
+      },
+      {
+        name:"ديازيبام (Diazepam / فاليوم)",
+        klass:"بنزوديازبين أطول شوي",
+        uses:"قلق، شد عضلي، انسحاب كحول طبي بإشراف",
+        sfx:"نعاس، تشوش، بطء رد الفعل",
+        warn:"خطر مع القيادة/الآلات. قابل للإدمان."
+      },
+      {
+        name:"بوسبيرون (Buspirone)",
+        klass:"مضاد قلق غير مهدئ تقليديًا",
+        uses:"قلق معمّم طويل المدى",
+        sfx:"دوار خفيف، صداع، غثيان",
+        warn:"مو مسعف فوري للهلع. يحتاج وقت حتى يشتغل."
+      },
+      {
+        name:"هيدروكسيزين (Hydroxyzine / أتركس)",
+        klass:"مضاد هستامين مهدئ",
+        uses:"قلق قصير المدى، صعوبة نوم بسيطة",
+        sfx:"نعاس، جفاف فم",
+        warn:"يسبب نوم قوي عند بعض الناس. لا تسوق قبل ما تتأكد."
+      },
+      {
+        name:"بروبرانولول (Propranolol)",
+        klass:"حاصر بيتا (ضغط/نبض)",
+        uses:"قلق الأداء الجسدي (رجفة، خفقان قبل عرض أو موقف اجتماعي)",
+        sfx:"تعب، برودة الأطراف، دوار خفيف",
+        warn:"ما يناسب بعض حالات الربو أو الضغط المنخفض إلا بإذن طبي."
+      },
+      {
+        name:"بريجابالين (Pregabalin / ليريكا)",
+        klass:"مضاد قلق/ألم عصبي",
+        uses:"قلق عام ببعض الدول، ألم أعصاب، آلام مزمنة",
+        sfx:"دوخة، نعاس، إحساس 'هاي' عند بعض الناس",
+        warn:"قابل لسوء الاستخدام/الإدمان، يصرف تحت إشراف فقط."
+      },
+      {
+        name:"جابابنتين (Gabapentin)",
+        klass:"عصب/ألم مزمن",
+        uses:"ألم أعصاب، وأحيانًا قلق/أرق خفيف تحت إشراف",
+        sfx:"دوخة، ترنّح، نعاس",
+        warn:"صار يُساء استخدامه عند البعض. مو مسكّن حر."
+      },
+      {
+        name:"زولبيديم (Zolpidem / أمبيان)",
+        klass:"منوّم قصير المدى",
+        uses:"أرق حاد قصير المدى",
+        sfx:"نعاس، أحيانًا سلوكيات نوم غريبة (مشي/أكل)",
+        warn:"مو للاستخدام الدائم يوميًا بدون تقييم. لا تاخذه مع كحول."
+      },
+
+      // ADHD / التركيز
+      {
+        name:"ميثيل فينيدات (Methylphenidate / ريتالين)",
+        klass:"منشّط للجهاز العصبي المركزي",
+        uses:"اضطراب فرط الحركة وتشتت الانتباه ADHD",
+        sfx:"نقص شهية، أرق، خفقان",
+        warn:"يُصرف بضوابط شديدة. إساءة الاستخدام خطر."
+      },
+      {
+        name:"ليزدكسامفيتامين (Lisdexamfetamine / فيفانس)",
+        klass:"منشّط طويل المفعول نسبيًا",
+        uses:"ADHD، وأحيانًا أكل شره تحت إشراف",
+        sfx:"نبض سريع، نقص شهية، أرق",
+        warn:"مادة مراقَبة. لازم متابعة نبض/ضغط/وزن."
+      },
+
+      // إدمان / تعاطي
+      {
+        name:"نالتريكسون (Naltrexone)",
+        klass:"مضاد مستقبلات الأفيون",
+        uses:"تقليل الرغبة في الكحول وبعض الأفيونات",
+        sfx:"غثيان، صداع، تعب",
+        warn:"لا يُستخدم إذا فيه أفيون نشط بالجسم حاليًا بدون إشراف، ومهم فحص الكبد."
+      },
+      {
+        name:"أكامبروسيت (Acamprosate / كامبرال)",
+        klass:"منظّم للشهوة الكحولية بعد الإيقاف",
+        uses:"يساعد يحافظ الامتناع عن شرب الكحول بعد التوقف",
+        sfx:"إسهال، غثيان خفيف، أرق بسيط",
+        warn:"يحتاج تقييم كلى. مهم أنك أصلًا موقف شرب قبل ما ينصرف."
+      },
+      {
+        name:"ديسلفيرام (Disulfiram / أنتابيوس)",
+        klass:"دواء ينفّر من الكحول",
+        uses:"يُستخدم ببعض الحالات لمنع الشرب (يخلي شرب الكحول تجربة سيئة جدًا)",
+        sfx:"غثيان شديد/خفقان/احمرار لو شربت كحول",
+        warn:"لو تشرب كحول فوقه ممكن يصير تفاعل قوي جدًا وخطر. لازم وعي تام ومتابعة."
+      },
+      {
+        name:"بوبـرينورفين/نالكسون (Buprenorphine + Naloxone / سوبوكسون)",
+        klass:"علاج بديل منظم للأفيونات",
+        uses:"إدمان أفيونات (هروين/مسكنات قوية)، يقلل الرغبة والانسحاب",
+        sfx:"إمساك، نعاس، صداع",
+        warn:"ينصرف بأنظمة مرخّصة فقط وتحت إشراف شديد. إيقافه فجأة ممكن يسبب انسحاب قوي."
+      }
+    ];
+
+    function cardHTML(m){
+      return `
+        <div class="tile" style="border:1px solid #000;">
+          <h3>${m.name}</h3>
+          <div class="small"><b>الفئة:</b> ${m.klass}</div>
+          <div class="small"><b>يُصرف غالبًا لـ:</b> ${m.uses}</div>
+          <div class="small"><b>أعراض جانبية شائعة:</b> ${m.sfx}</div>
+          <div class="note" style="margin-top:10px;">
+            <b>تحذير سريع:</b> ${m.warn}
+          </div>
+          <div class="small" style="margin-top:8px;color:#444;font-weight:600;">
+            هذا ليس بديل زيارة طبيب/صيدلي. لا تعدّل جرعة ولا توقف فجأة بدون إشراف.
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAll(){
+      const box = document.getElementById('medList');
+      if(!box) return;
+      let out = "";
+      MEDS.forEach(m => { out += cardHTML(m); });
+      box.innerHTML = out;
+    }
+
+    window.filterMeds = function(){
+      const q = (document.getElementById('drugSearch').value || "").toLowerCase().trim();
+      const box = document.getElementById('medList');
+      if(!box) return;
+      if(!q){
+        renderAll();
+        return;
+      }
+      let out = "";
+      MEDS.forEach(m=>{
+        const blob = (m.name+" "+m.klass+" "+m.uses).toLowerCase();
+        if(blob.indexOf(q)>=0){
+          out += cardHTML(m);
+        }
+      });
+      if(!out){
+        out = `
+          <div class="tile" style="border:1px solid #000;">
+            <h3>ما لقينا</h3>
+            <div class="small">جرّب تكتب جزء من اسم الدواء أو الحالة (مثال: "ذهان" أو "قلق")</div>
+          </div>
+        `;
+      }
+      box.innerHTML = out;
+    };
+
+    // أول ما تفتح الصفحة نرسم كل الأدوية
+    renderAll();
+  </script>
+
 </div>
 """
+
+def render_pharm_page():
+    return PHARM_PAGE_HTML\
+        .replace("[[PSYCHO_WA]]", PSYCHO_WA)\
+        .replace("[[PSYCH_WA]]", PSYCH_WA)\
+        .replace("[[SOCIAL_WA]]", SOCIAL_WA)
 
 @app.get("/pharm")
-def pharm_page():
-    return render_page("الصيدلية النفسية — " + BRAND, "pharm", PHARM_HTML)
+def pharm():
+    return shell("دليل الأدوية النفسية — " + BRAND, render_pharm_page(), "pharm")
 
 
-# ---------- /tests : اختبارات نفسية سريعة ----------
-
-TESTS_HTML = """
-<h1>🧪 اختبارات نفسية سريعة</h1>
-
-<p>
-هذي مو تشخيص رسمي. الهدف: وعي لحظي.
-جاوب بكل صدق، ما في صح/غلط، ما في حكم.
-</p>
-
-<div class="section-card">
-  <h2>مستوى الضيق / المزاج الآن</h2>
-  <form id="mood-form" onsubmit="event.preventDefault();calcMoodTest();">
-    <p>خلال آخر يومين...</p>
-
-    <label class="badge2">
-      1) كم تحس بالحزن / الكتمة / الضيق؟
-      <div class="row" style="gap:4px;">
-        <label><input type="radio" name="m1" value="0"> لا تقريبًا</label>
-        <label><input type="radio" name="m1" value="2"> متوسط</label>
-        <label><input type="radio" name="m1" value="3"> عالي جدًا</label>
-      </div>
-    </label>
-
-    <label class="badge2">
-      2) كم تحس بالقلق / توتر الجسم / صعوبة تهدى؟
-      <div class="row" style="gap:4px;">
-        <label><input type="radio" name="m2" value="0"> لا تقريبًا</label>
-        <label><input type="radio" name="m2" value="2"> متوسط</label>
-        <label><input type="radio" name="m2" value="3"> عالي جدًا</label>
-      </div>
-    </label>
-
-    <label class="badge2">
-      3) كم جاءك أفكار "أنا ما أقدر أتحمل / خلاص تعبت"؟
-      <div class="row" style="gap:4px;">
-        <label><input type="radio" name="m3" value="0"> تقريبًا أبدًا</label>
-        <label><input type="radio" name="m3" value="2"> أحيانًا</label>
-        <label><input type="radio" name="m3" value="3"> كثير / مزعج</label>
-      </div>
-    </label>
-
-    <div class="row" style="margin-top:10px;">
-      <button class="btn gold" type="submit">احسب النتيجة</button>
-    </div>
-  </form>
-
-  <div id="mood-result" style="
-    margin-top:12px;
-    background:#2a2045;
-    border:1px solid #3a2f55;
-    border-radius:10px;
-    box-shadow:0 0 12px rgba(209,178,58,.15);
-    padding:10px;
-    font-size:13px;
-    line-height:1.5;
-  ">
-    النتيجة: —
-  </div>
-
-  <small class="small">
-  لو طلعت نتيجة عالية وفيها أفكار إيذاء أو عجز تام: لا تبقى لحالك. تواصل مع مختص أو خدمة دعم مباشر.
-  </small>
-</div>
-
-<div class="section-card">
-  <h2>ملاحظة</h2>
-  <p>
-    الاختبار هذا "لقطة سريعة" لحالتك الآن.
-    مو بدل تقييم مهني، لكنه يساعدك تتكلم أو تشرح لحياتك/لطبيبك/للأخصائي بدل ما تقول "ما أدري".
-  </p>
-</div>
-"""
-
-@app.get("/tests")
-def tests_page():
-    return render_page("الاختبارات النفسية — " + BRAND, "tests", TESTS_HTML)
-
-
-# ---------- /health : readiness ping ----------
+# ======================== /health ========================
 
 @app.get("/health")
 def health():
     return jsonify({
         "ok": True,
         "brand": BRAND,
-        "build": BUILD_STAMP
+        "build": CACHE_BUST
     }), 200
 
 
-# ======================== Security Headers ========================
+# ======================== Security headers ========================
 
 @app.after_request
 def add_headers(resp):
-    # أكثر شيء معقول نحطه بعالم single-file selfhost
+    # CSP يحمي قدر الإمكان (يسمح بالـ inline لأن الصفحة ملف واحد)
     csp = (
         "default-src 'self' data: blob: https://t.me https://wa.me https://api.whatsapp.com; "
         "script-src 'self' 'unsafe-inline' data: blob: https://t.me https://wa.me https://api.whatsapp.com; "
@@ -1585,12 +2105,14 @@ def add_headers(resp):
     return resp
 
 
-# ======================== تشغيل محلّي / WSGI ========================
+# ======================== Run ========================
 
 if __name__ == "__main__":
-    # محلي:
-    # python app.py
+    # محلي (بيثون مباشر):
+    #   python app.py
     #
-    # في Render استخدم:
-    # gunicorn app:app --bind 0.0.0.0:$PORT
+    # على Render / Railway:
+    #   gunicorn app:app --bind 0.0.0.0:$PORT
+    #
+    # ملاحظة: Render يعطي env PORT تلقائي
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "10000")))
