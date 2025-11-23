@@ -1,4 +1,4 @@
- # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 عربي سايكو — ملف واحد (Purple × Gold, Black Border)
 v8.1 production / single-file Flask
@@ -43,257 +43,7 @@ CACHE_BUST = os.environ.get("CACHE_BUST", datetime.utcnow().strftime("%Y%m%d%H%M
 SLOGAN = "«نراك بعين الاحترام، ونسير معك بخطوات عملية.»"
 
 
-# ================== القسم العام للصفحة /consult ==================
-CONSULTATIONS_FILE = "consultations.json"
-CONSULT_PAGE_HTML = ""
-# shell(...)
-<!doctype html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="utf-8">
-    <title>الاستشارات النفسية - عربي سايكو</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <style>
-        body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background: #f5f3ff;
-            margin: 0;
-            padding: 0;
-            direction: rtl;
-            text-align: right;
-        }
-        .page {
-            max-width: 720px;
-            margin: 24px auto;
-            background: #ffffff;
-            border-radius: 16px;
-            border: 2px solid #4b0082;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-            padding: 24px 20px 28px;
-        }
-        h1 {
-            margin-top: 0;
-            font-size: 1.5rem;
-            color: #4b0082;
-        }
-        p.lead {
-            margin-top: 4px;
-            margin-bottom: 16px;
-            color: #444;
-            font-size: 0.95rem;
-        }
-        .alert {
-            padding: 10px 12px;
-            border-radius: 10px;
-            margin-bottom: 14px;
-            font-size: 0.9rem;
-        }
-        .alert-ok {
-            background: #ecfdf3;
-            border: 1px solid #16a34a;
-            color: #166534;
-        }
-        .alert-note {
-            background: #eff6ff;
-            border: 1px solid #3b82f6;
-            color: #1d4ed8;
-        }
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #111827;
-        }
-        input[type="text"],
-        input[type="email"],
-        input[type="number"],
-        select,
-        textarea {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 8px 10px;
-            border-radius: 10px;
-            border: 1px solid #d4d4d8;
-            margin-bottom: 12px;
-            font-size: 0.9rem;
-        }
-        textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-        .hint {
-            font-size: 0.8rem;
-            color: #6b7280;
-            margin-top: -6px;
-            margin-bottom: 10px;
-        }
-        .row {
-            display: flex;
-            gap: 10px;
-        }
-        .row > div {
-            flex: 1;
-        }
-        .checkbox-line {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 14px;
-            font-size: 0.85rem;
-        }
-        .checkbox-line input {
-            width: 16px;
-            height: 16px;
-        }
-        button {
-            width: 100%;
-            padding: 10px 14px;
-            border-radius: 999px;
-            border: none;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            background: linear-gradient(135deg, #4b0082, #facc15);
-            color: white;
-        }
-        button:active {
-            transform: translateY(1px);
-        }
-        .footer-note {
-            margin-top: 14px;
-            font-size: 0.78rem;
-            color: #6b7280;
-            text-align: center;
-            line-height: 1.6;
-        }
-    </style>
-</head>
-<body>
-    <div class="page">
-        <h1>طلب استشارة نفسية</h1>
-        <p class="lead">
-            أرسل استشارتك بشكل سري، وسيتم الاطلاع عليها من قبل مختص نفسي.  
-            هذه الخدمة للتوجيه النفسي العام وليست بديلاً عن مراجعة الطبيب أو الطوارئ في الحالات الحرجة.
-        </p>
-
-        <div class="alert alert-note">
-            ⚠️ إذا كانت لديك أفكار انتحار أو نية لإيذاء نفسك أو الآخرين: هذه حالة طارئة،  
-            تواصل فورًا مع الطوارئ أو أقرب مستشفى ولا تنتظر الرد على الاستشارة.
-        </div>
-
-        {% if success_message %}
-        <div class="alert alert-ok">
-            {{ success_message }}
-        </div>
-        {% endif %}
-
-        <form method="post" action="/consult">
-            <div class="row">
-                <div>
-                    <label for="name">الاسم (اختياري)</label>
-                    <input id="name" name="name" type="text" placeholder="يمكنك كتابة اسم مستعار">
-                </div>
-                <div>
-                    <label for="age">العمر</label>
-                    <input id="age" name="age" type="number" min="8" max="100" placeholder="مثال: 28">
-                </div>
-            </div>
-
-            <label for="gender">الجنس</label>
-            <select id="gender" name="gender">
-                <option value="">اختر...</option>
-                <option value="ذكر">ذكر</option>
-                <option value="أنثى">أنثى</option>
-                <option value="أفضل عدم التحديد">أفضل عدم التحديد</option>
-            </select>
-
-            <label for="contact">وسيلة التواصل (واتساب أو إيميل)</label>
-            <input id="contact" name="contact" type="text" placeholder="مثال: 05XXXXXXXX أو name@email.com">
-            <div class="hint">تُستخدم فقط للرد على استشارتك، ولن تُشارك مع أي جهة أخرى.</div>
-
-            <label for="topic">موضوع الاستشارة</label>
-            <select id="topic" name="topic">
-                <option value="">اختر أقرب موضوع</option>
-                <option value="قلق وتوتر">قلق وتوتر</option>
-                <option value="اكتئاب وحزن">اكتئاب وحزن</option>
-                <option value="مشكلات زوجية / أسرية">مشكلات زوجية / أسرية</option>
-                <option value="تربية الأبناء">تربية الأبناء</option>
-                <option value="إدمان مواد / سلوكيات">إدمان مواد / سلوكيات</option>
-                <option value="ثقة بالنفس / تقدير ذات">ثقة بالنفس / تقدير ذات</option>
-                <option value="أعراض ذهانية / غريبة">أعراض ذهانية / غريبة</option>
-                <option value="شيء آخر">شيء آخر</option>
-            </select>
-
-            <label for="message">وصف مشكلتك بالتفصيل</label>
-            <textarea id="message" name="message" placeholder="اكتب ما تعاني منه، منذ متى، وما الذي يزيد الأعراض أو يخففها..."></textarea>
-
-            <div class="checkbox-line">
-                <input id="consent" name="consent" type="checkbox" value="yes" required>
-                <label for="consent">أوافق أن هذه الاستشارة للتوجيه النفسي العام وليست تشخيصًا طبيًا أو وصفًا دوائيًا.</label>
-            </div>
-
-            <button type="submit">إرسال الاستشارة</button>
-
-            <div class="footer-note">
-                🛡️ خصوصيتك أولوية. يتم التعامل مع الاستشارات بسرية قدر الإمكان،  
-                لكن لا تُرسل معلومات هوية حساسة جدًا (مثل أرقام هويات، حسابات بنكية، إلخ).
-            </div>
-        </form>
-    </div>
-</body>
-</html>
-"""
-
-def save_consultation(data: dict):
-    """حفظ الاستشارة في ملف JSON بسيط."""
-    try:
-        with open(CONSULTATIONS_FILE, "r", encoding="utf-8") as f:
-            all_data = json.load(f)
-            if not isinstance(all_data, list):
-                all_data = []
-    except Exception:
-        all_data = []
-
-    all_data.append(data)
-
-    with open(CONSULTATIONS_FILE, "w", encoding="utf-8") as f:
-        json.dump(all_data, f, ensure_ascii=False, indent=2)
-
-@app.route("/consult", methods=["GET", "POST"])
-def consult_page():
-    if request.method == "POST":
-        name = request.form.get("name", "").strip()
-        age = request.form.get("age", "").strip()
-        gender = request.form.get("gender", "").strip()
-        contact = request.form.get("contact", "").strip()
-        topic = request.form.get("topic", "").strip()
-        message = request.form.get("message", "").strip()
-        consent = True if request.form.get("consent") == "yes" else False
-
-        # بيانات للاستشارة
-        consult_data = {
-            "name": name or "بدون اسم",
-            "age": age,
-            "gender": gender,
-            "contact": contact,
-            "topic": topic,
-            "message": message,
-            "consent": consent,
-            "created_at": datetime.utcnow().isoformat() + "Z"
-        }
-
-        # حفظ في ملف JSON
-        save_consultation(consult_data)
-
-        success_message = "🌿 تم استلام استشارتك بنجاح. سيتم الاطلاع عليها والرد عليك قدر المستطاع في أقرب وقت."
-        return render_template_string(CONSULT_PAGE_HTML, success_message=success_message)
-
-    # GET
-    return render_template_string(CONSULT_PAGE_HTML, success_message=None)
-
-# ================== نهاية قسم الاستشارات ==================
+# ======================== shell (الهيكل العام للصفحة) ========================
 
 def shell(title, content, active="home"):
     base_html = r"""
